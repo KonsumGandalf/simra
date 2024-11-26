@@ -42,6 +42,7 @@ subprojects {
 dependencies {
 	implementation(project(":rides"))
 	implementation(project(":common"))
+	implementation(project(":osmPlanet"))
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-rest")
 	implementation("org.springframework.boot:spring-boot-starter-web")
