@@ -1,5 +1,6 @@
 package com.simra.konsumgandalf.rides.services;
 
+import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.entities.RideLocation;
@@ -8,8 +9,6 @@ import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
-import org.assertj.core.util.Arrays;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,8 +61,6 @@ public class RideEntityServiceTest {
 
             RideEntity result = rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
 
-            // Verify that the repository save method was called
-            // Verify the order of method calls
             InOrder inOrder = inOrder(csvUtilService);
             inOrder.verify(csvUtilService).parseCsvToModel("bike,incident\n1,3", RideIncident.class);
             inOrder.verify(csvUtilService).parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class);
@@ -77,57 +73,71 @@ public class RideEntityServiceTest {
             mockRideEntity = new RideEntity("invalid.csv");
             when(fileReaderService.readFileFromPath("invalid.csv")).thenReturn("manual1,manual2\nvalue1,value2");
 
-            // Verify that an exception is thrown
             assertThrows(IllegalArgumentException.class, () -> {
                 rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
             });
 
-            // Verify that the repository save method was not called
             verify(csvUtilService, times(0)).parseCsvToModel(any(String.class), eq(RideIncident.class));
         }
     }
 
     @Nested
     class GenerateNewRideEntity {
+        RideEntityService rideEntityServiceSpy;
+
+        @BeforeEach
+        public void setUp() {
+            rideEntityServiceSpy = spy(rideEntityService);
+        }
+
         @Test
         public void testGenerateNewRideEntity_Valid() throws Exception {
             RideEntity mockRideEntity = new RideEntity("valid.csv");
             RideLocation mockRideLocation1 = new RideLocation();
             mockRideLocation1.setLat(1.0);
             mockRideLocation1.setLng(2.0);
-            when(fileReaderService.readFileFromPath("valid.csv")).thenReturn("bike,incident\n1,3\n====\nlat,lng\n1.0,4.0");
-            when(csvUtilService.parseCsvToModel("bike,incident\n1,3", RideIncident.class)).thenReturn(new ArrayList<>());
-            when(csvUtilService.parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class)).thenReturn(Collections.singletonList(mockRideLocation1));
+            mockRideEntity.setRideLocation(Collections.singletonList(mockRideLocation1));
 
-            RideEntity result = rideEntityService.generateNewRideEntity("valid.csv");
+            doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
 
-            verify(rideEntityService, times(1)).enrichRideEntityWithCsv(mockRideEntity);
-            verify(rideEntityService, times(1)).createGeometryFromRideLocations(Collections.singletonList(mockRideLocation1));
-            verify(rideCleanedLocationRepository, times(1)).findNearbyStreets(any(Long.class));
+            RideCleanedLocation mockRideCleanedLocation = new RideCleanedLocation();
+            mockRideCleanedLocation.setId(1L);
+            doReturn(mockRideCleanedLocation).when(rideEntityServiceSpy).createGeometryFromRideLocations(any(List.class));
+
+            when(rideCleanedLocationRepository.findNearbyStreets(1L)).thenReturn(new ArrayList<>());
+            when(planetOsmLineRepository.findAllById(any(List.class))).thenReturn(new ArrayList<>());
+            when(rideEntityRepository.save(mockRideEntity)).thenReturn(mockRideEntity);
+
+            RideEntity result = rideEntityServiceSpy.generateNewRideEntity("valid.csv");
+
+            assertEquals(mockRideEntity, result);
+
+            verify(rideEntityServiceSpy, times(1)).enrichRideEntityWithCsv(any(RideEntity.class));
+            verify(rideEntityServiceSpy, times(1)).createGeometryFromRideLocations(any(List.class));
+            verify(rideCleanedLocationRepository, times(1)).findNearbyStreets(1L);
             verify(planetOsmLineRepository, times(1)).findAllById(any(List.class));
             verify(rideEntityRepository, times(1)).save(mockRideEntity);
-
-            assertEquals(result, mockRideEntity);
         }
+
 
         @Test
         public void testGenerateNewRideEntity_InvalidCsvFile() {
             RideEntity mockRideEntity = new RideEntity("invalid.csv");
-            when(rideEntityService.enrichRideEntityWithCsv(mockRideEntity)).thenThrow(new IllegalArgumentException());
+            doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy).enrichRideEntityWithCsv(mockRideEntity);
 
             assertThrows(RuntimeException.class, () -> {
-                rideEntityService.generateNewRideEntity(mockRideEntity.getPath());
+                rideEntityServiceSpy.generateNewRideEntity(mockRideEntity.getPath());
             });
         }
 
         @Test
         public void testGenerateNewRideEntity_JsonProcessingException() throws Exception {
             RideEntity mockRideEntity = new RideEntity("valid.csv");
-            when(rideEntityService.enrichRideEntityWithCsv(mockRideEntity)).thenReturn(mockRideEntity);
-            when(rideEntityService.createGeometryFromRideLocations(Collections.singletonList(new RideLocation()))).thenThrow(new IllegalArgumentException());
+            doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
+            doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy).createGeometryFromRideLocations(any(List.class));
 
             assertThrows(RuntimeException.class, () -> {
-                rideEntityService.generateNewRideEntity(mockRideEntity.getPath());
+                rideEntityServiceSpy.generateNewRideEntity(mockRideEntity.getPath());
             });
         }
     }

@@ -36,11 +36,9 @@ public class CsvUtilServiceTest {
 
         @Test
         public void testParseCsvToModel_ValidFile() throws Exception {
-            Path tempFile = tempDir.resolve("valid.csv");
             String content = "column1,column2\nvalue1,value2\nvalue3,value4\n";
-            Files.write(tempFile, content.getBytes());
 
-            List<TestModel> result = csvUtilService.parseCsvToModel(tempFile.toString(), TestModel.class);
+            List<TestModel> result = csvUtilService.parseCsvToModel(content, TestModel.class);
 
             assertEquals(2, result.size());
             assertEquals("value1", result.get(0).column1);
