@@ -1,4 +1,4 @@
-package com.simra.konsumgandalf.repositories;
+package com.simra.konsumgandalf.osmPlanet.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import org.springframework.data.jpa.repository.JpaRepository;
