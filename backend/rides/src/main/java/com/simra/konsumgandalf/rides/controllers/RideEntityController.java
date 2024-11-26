@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,15 +23,21 @@ public class RideEntityController {
     @Autowired
     private RideEntityService rideEntityService;
 
-    private static final String BASE_DIR = "/home/konsum-gandalf/Programming/Master/Simra/data/dataset-master";
-
     @PostMapping("")
     @ResponseBody
     public void loadAllPreviousRides() throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(64);  // 4 threads for parallel execution
         List<Callable<String>> tasks = new ArrayList<>();
 
-        Files.walk(Paths.get(BASE_DIR))
+        Path dataPath = Paths.get("")
+                .toAbsolutePath()
+                .getParent()
+                .getParent()
+                .getParent()
+                .resolve("data/dataset-master")
+                .normalize();
+
+        Files.walk(dataPath)
                 .filter(Files::isRegularFile)
                 .filter(path -> path.getFileName().toString().startsWith("VM")) // Only process CSV files
                 .forEach(path -> {
