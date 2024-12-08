@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$/backend" />
             <option value="$PROJECT_DIR$/backend/common" />
+            <option value="$PROJECT_DIR$/backend/osmPlanet" />
             <option value="$PROJECT_DIR$/backend/rides" />
           </set>
         </option>
