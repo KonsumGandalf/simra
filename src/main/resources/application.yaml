@@ -1,0 +1,36 @@
+server:
+    port: 8081
+
+spring:
+    config:
+        import: optional:file:.env[.properties]
+    application:
+        name: backend
+    devtools:
+      restart:
+          enabled: true
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: ${POSTGIS_DB_HOST}
+        username: ${POSTGIS_DB_USER}
+        password: ${POSTGIS_DB_PASSWORD}
+        hikari:
+            connection-timeout: 600000
+
+    jpa:
+        hibernate:
+            ddl-auto: update # not delete existing columns which is important for the osm tables
+            show-sql: true
+            database: postgresql
+        database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
