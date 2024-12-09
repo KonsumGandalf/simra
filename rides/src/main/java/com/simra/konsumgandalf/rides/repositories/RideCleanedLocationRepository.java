@@ -12,21 +12,33 @@ import java.util.List;
 
 @Repository
 public interface RideCleanedLocationRepository extends JpaRepository<RideCleanedLocation, Long> {
+    /**
+     * Construct a geometry from a list of coordinates and save it to the database.
+     *
+     * @param coordinates - A list of coordinates in the form of a JSON string.
+     * @return The entity that encapsulates the geometry.
+     */
     @Query(value = """
-    INSERT INTO ride_cleaned_location (way, buffered_way)
+    INSERT INTO ride_cleaned_location (way)
     WITH points AS (
         SELECT ST_SetSRID(ST_MakePoint(coord.lng, coord.lat), 4326) AS geom
         FROM json_populate_recordset(NULL::record, CAST(:coordinates AS json)) AS coord(lng double precision, lat double precision)
     )
     SELECT 
-        ST_MakeLine(geom) AS way,
-        ST_Buffer(ST_MakeLine(geom), 0.0001) AS buffered_way
+        ST_MakeLine(geom) AS way
     FROM points
     RETURNING *
     """, nativeQuery = true)
     @Transactional
     RideCleanedLocation createAndSaveGeometry(@Param("coordinates") String coordinates);
 
+    /**
+     * Find nearby streets for a given ride.
+     *
+     * @deprecated This method is deprecated and should not be used.
+     * @param rideId
+     * @return
+     */
     @Query(value = """
             WITH ride_buffer AS (
         SELECT
@@ -64,41 +76,4 @@ public interface RideCleanedLocationRepository extends JpaRepository<RideCleaned
     """, nativeQuery = true)
     @Transactional
     List<Long> findNearbyStreets(@Param("rideId") long rideId);
-    /*
-    @Query(value = """
-    INSERT INTO ride_cleaned_location (way)
-    WITH points AS (
-        SELECT ST_SetSRID(ST_MakePoint(coord.lng, coord.lat), 4326) AS geom
-        FROM json_populate_recordset(NULL::record,CAST(:coordinates AS json)) AS coord(lng double precision, lat double precision)
-    )
-    SELECT ST_MakeLine(geom) AS geometry
-    FROM points
-    RETURNING *
-    """, nativeQuery = true)
-    @Transactional
-    RideCleanedLocation createAndSaveGeometry(@Param("coordinates") String coordinates);
-    @Query(value = """
-    SELECT pg_typeof(CAST(:coordinates AS jsonb))
-    """, nativeQuery = true)
-    Object testType(@Param("coordinates") Object coordinates);
-
-    @Query(value = """
-    WITH points AS (
-        SELECT ST_SetSRID(ST_MakePoint(c.lng, c.lat), 4326) AS geom
-        FROM unnest(:coordinates) AS c
-    )
-    SELECT ST_MakeLine(geom) AS geometry
-    FROM points;
-""", nativeQuery = true)
-    Geometry createLineStringFromCoordinates(@Param("coordinates") Coordinate[] coordinates);
-
-    @Query(value = """
-    WITH points AS (
-        SELECT ST_SetSRID(ST_MakePoint(coord.lng, coord.lat), 4326) AS geom
-        FROM json_populate_recordset(NULL::record, '[{"lng": 13.4050, "lat": 52.5200}, {"lng": 12.4964, "lat": 41.9028}, {"lng": 12.4964, "lat": 41.9028}]') AS coord(lng double precision, lat double precision)
-    )
-    SELECT ST_MakeLine(geom) AS geometry
-    FROM points;
-    """, nativeQuery = true)
-    Geometry test(@Param("coordinates") String coordinates);*/
 }

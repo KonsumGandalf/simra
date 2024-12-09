@@ -2,7 +2,9 @@ package com.simra.konsumgandalf.rides.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simra.konsumgandalf.common.models.classes.Coordinate;
 import com.simra.konsumgandalf.common.models.entities.*;
+import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
@@ -29,6 +31,9 @@ public class RideEntityService {
 
     @Autowired
     private PlanetOsmLineRepository planetOsmLineRepository;
+
+    @Autowired
+    private OsmrBackendService osmrBackendService;
 
     @Autowired
     private CsvUtilService csvUtilService;
@@ -77,8 +82,14 @@ public class RideEntityService {
             throw new RuntimeException(e);
         }
 
-        List<Long> result = rideCleanedLocationRepository.findNearbyStreets(cleanedRideLocation.getId());
-        List<PlanetOsmLine> streets = planetOsmLineRepository.findAllById(result);
+        List<Coordinate> coordinates = rideEntity.getRideLocation().stream()
+                .filter(location -> location.getLat() != 0 && location.getLng() != 0)
+                .map(location -> new Coordinate(location.getLng(), location.getLat()))
+                .collect(Collectors.toList());
+
+        List<Long> waypoints = osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(coordinates);
+
+        List<PlanetOsmLine> streets = planetOsmLineRepository.findAllByOsmId(waypoints);
 
         for (PlanetOsmLine street : streets) {
             street.getRideCleanedLocations().add(cleanedRideLocation);
