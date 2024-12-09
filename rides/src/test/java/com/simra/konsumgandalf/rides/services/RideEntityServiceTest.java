@@ -4,6 +4,7 @@ import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.entities.RideLocation;
+import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
@@ -38,6 +39,9 @@ public class RideEntityServiceTest {
 
     @Mock
     private PlanetOsmLineRepository planetOsmLineRepository;
+
+    @Mock
+    private OsmrBackendService osmrBackendService;
 
     @Mock
     private FileReaderService fileReaderService;
@@ -102,10 +106,10 @@ public class RideEntityServiceTest {
 
             RideCleanedLocation mockRideCleanedLocation = new RideCleanedLocation();
             mockRideCleanedLocation.setId(1L);
-            doReturn(mockRideCleanedLocation).when(rideEntityServiceSpy).createGeometryFromRideLocations(any(List.class));
+            doReturn(mockRideCleanedLocation).when(rideEntityServiceSpy).createGeometryFromRideLocations(anyList());
 
-            when(rideCleanedLocationRepository.findNearbyStreets(1L)).thenReturn(new ArrayList<>());
-            when(planetOsmLineRepository.findAllById(any(List.class))).thenReturn(new ArrayList<>());
+            when(osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(anyList())).thenReturn(Collections.singletonList(1L));
+            when(planetOsmLineRepository.findAllByOsmId(anyList())).thenReturn(new ArrayList<>());
             when(rideEntityRepository.save(mockRideEntity)).thenReturn(mockRideEntity);
 
             RideEntity result = rideEntityServiceSpy.generateNewRideEntity("valid.csv");
@@ -113,9 +117,9 @@ public class RideEntityServiceTest {
             assertEquals(mockRideEntity, result);
 
             verify(rideEntityServiceSpy, times(1)).enrichRideEntityWithCsv(any(RideEntity.class));
-            verify(rideEntityServiceSpy, times(1)).createGeometryFromRideLocations(any(List.class));
-            verify(rideCleanedLocationRepository, times(1)).findNearbyStreets(1L);
-            verify(planetOsmLineRepository, times(1)).findAllById(any(List.class));
+            verify(rideEntityServiceSpy, times(1)).createGeometryFromRideLocations(anyList());
+            verify(osmrBackendService, times(1)).calculateStreetSegmentOsmIdsOfRoute(anyList());
+            verify(planetOsmLineRepository, times(1)).findAllByOsmId(anyList());
             verify(rideEntityRepository, times(1)).save(mockRideEntity);
         }
 
@@ -134,7 +138,7 @@ public class RideEntityServiceTest {
         public void testGenerateNewRideEntity_JsonProcessingException() throws Exception {
             RideEntity mockRideEntity = new RideEntity("valid.csv");
             doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
-            doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy).createGeometryFromRideLocations(any(List.class));
+            doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy).createGeometryFromRideLocations(anyList());
 
             assertThrows(RuntimeException.class, () -> {
                 rideEntityServiceSpy.generateNewRideEntity(mockRideEntity.getPath());
