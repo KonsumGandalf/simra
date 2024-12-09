@@ -22,8 +22,6 @@ public class RideCleanedLocation {
 
     private Geometry way;
 
-    private Geometry bufferedWay;
-
     @ManyToMany(
             mappedBy = "rideCleanedLocations",
             cascade = {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.MERGE},
@@ -48,14 +46,6 @@ public class RideCleanedLocation {
 
     public void setWay(Geometry way) {
         this.way = way;
-    }
-
-    public Geometry getBufferedWay() {
-        return bufferedWay;
-    }
-
-    public void setBufferedWay(Geometry bufferedWay) {
-        this.bufferedWay = bufferedWay;
     }
 
     public List<PlanetOsmLine> getPlanetOsmLines() {

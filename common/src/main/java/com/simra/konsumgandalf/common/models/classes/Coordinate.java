@@ -1,4 +1,4 @@
-package com.simra.konsumgandalf.rides.models.classes;
+package com.simra.konsumgandalf.common.models.classes;
 
 public class Coordinate implements java.io.Serializable {
     private double lng;
