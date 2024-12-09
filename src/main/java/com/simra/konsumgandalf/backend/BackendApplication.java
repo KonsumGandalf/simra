@@ -14,7 +14,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 		"com.simra.konsumgandalf.osmPlanet.initializers",
 		"com.simra.konsumgandalf.common.utils.services",
 		"com.simra.konsumgandalf.rides.controllers",
-		"com.simra.konsumgandalf.rides.services"
+		"com.simra.konsumgandalf.rides.services",
+		"com.simra.konsumgandalf.osmrBackend.services"
 })
 @EntityScan(basePackages = {
 		"com.simra.konsumgandalf.rides.models.entities",
