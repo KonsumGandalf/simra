@@ -1,14 +1,7 @@
 package com.simra.konsumgandalf.common.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import org.geolatte.geom.Geometry;
-import org.n52.jackson.datatype.jts.GeometryDeserializer;
-import org.n52.jackson.datatype.jts.GeometrySerializer;
 
 import java.util.ArrayList;
 import java.util.List;
