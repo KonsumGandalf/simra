@@ -41,4 +41,10 @@ public class ZoomRoadTypeMapperTest {
         List<RoadTypes> result = roadTypeMapper.getRoadTypes(15);
         Assertions.assertIterableEquals(List.of(RoadTypes.PRIMARY, RoadTypes.PRIMARY_LINK, RoadTypes.SECONDARY, RoadTypes.SECONDARY_LINK, RoadTypes.TERTIARY, RoadTypes.TERTIARY_LINK, RoadTypes.UNCLASSIFIED, RoadTypes.RESIDENTIAL, RoadTypes.LIVING_STREET, RoadTypes.BRIDLEWAY), result);
     }
+
+    @Test
+    public void testZoomLevel18() {
+        List<RoadTypes> result = roadTypeMapper.getRoadTypes(18);
+        Assertions.assertIterableEquals(List.of(RoadTypes.values()), result);
+    }
 }
