@@ -9,6 +9,9 @@ public class Coordinate implements java.io.Serializable {
         this.lat = lat;
     }
 
+    public Coordinate() {
+    }
+
     public double getLng() {
         return lng;
     }
