@@ -20,7 +20,7 @@ public class PlanetOsmLine {
     private Geometry way;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(name = "planet_osm_line__ride_cleaned_location",
+    @JoinTable(name = "ride_cleaned_location__planet_osm_line",
             joinColumns = @JoinColumn(name = "planet_osm_line_id"),
             inverseJoinColumns = @JoinColumn(name = "ride_cleaned_location_id")
     )

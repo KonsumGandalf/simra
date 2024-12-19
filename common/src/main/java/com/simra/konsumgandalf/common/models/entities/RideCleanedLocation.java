@@ -13,6 +13,7 @@ public class RideCleanedLocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(nullable = true)
     private Geometry way;
 
     @ManyToMany(
