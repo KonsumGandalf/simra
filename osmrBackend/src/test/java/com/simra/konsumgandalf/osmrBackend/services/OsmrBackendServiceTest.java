@@ -1,6 +1,7 @@
 package com.simra.konsumgandalf.osmrBackend.services;
 
 import com.simra.konsumgandalf.common.models.classes.Coordinate;
+import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,9 +40,9 @@ public class OsmrBackendServiceTest {
 
     @Test
     public void testCalculateStreetSegmentOsmIdsOfRoute() {
-        ArrayList<Coordinate> coordinates = new ArrayList<>();
-        for (int i = 0; i <= 101; i++) {
-            coordinates.add(new Coordinate(52.520007, 13.404954));
+        ArrayList<OsmrMatchInformation> coordinates = new ArrayList<>();
+        for (int i = 0; i <= 301; i++) {
+            coordinates.add(new OsmrMatchInformation(52.520007, 13.404954, 1693842834, 12));
         }
 
         Mono<List<Long>> mockIds = Mono.just(Collections.singletonList(1L));
@@ -87,9 +89,9 @@ public class OsmrBackendServiceTest {
 
         @Test
         public void testFetchStepsFromChunk_ChunkSizing() throws InterruptedException {
-            ArrayList<Coordinate> chunk = new ArrayList<>();
-            chunk.add(new Coordinate(52.520007, 13.404954));
-            chunk.add(new Coordinate(42.520007, 23.404954));
+            ArrayList<OsmrMatchInformation> chunk = new ArrayList<>();
+            chunk.add(new OsmrMatchInformation(52.520007, 13.404954, 1693842834, 3));
+            chunk.add(new OsmrMatchInformation(42.520007, 23.404954, 1693842835, 7));
 
             String jsonResponse = "{ \"matchings\": [ { \"confidence\": 0.9, \"legs\": [ { \"steps\": [ { \"name\": 1 }, { \"name\": 2 } ] } ] } ] }";
             mockWebServer.enqueue(new MockResponse().setBody(jsonResponse).addHeader("Content-Type", "application/json"));
@@ -97,7 +99,7 @@ public class OsmrBackendServiceTest {
             List<Long> ids = osmrBackendService.fetchStepsFromChunk(chunk).block();
 
             RecordedRequest request = mockWebServer.takeRequest();
-            assertEquals("/52.520007,13.404954;42.520007,23.404954?steps=true", request.getPath());
+            assertEquals("/52.520007,13.404954;42.520007,23.404954?steps=true&radiuses=31.12;18.88&timestamps=1693842834;1693842835", request.getPath());
             assertEquals(List.of(1L, 2L), ids);
         }
     }
