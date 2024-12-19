@@ -2,7 +2,7 @@ package com.simra.konsumgandalf.rides.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simra.konsumgandalf.common.models.classes.Coordinate;
+import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
 import com.simra.konsumgandalf.common.models.entities.*;
 import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
@@ -41,7 +41,13 @@ public class RideEntityService {
     @Autowired
     private FileReaderService fileReaderService;
 
-    protected RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
+    /**
+     * Add the CSV data to the ride entity.
+     *
+     * @param rideEntity - The ride entity to enrich
+     * @return - The enriched ride entity
+     */
+    public RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
         String content = fileReaderService.readFileFromPath(rideEntity.getPath());
 
         String[] filteredParts = Arrays.stream(content.split("=+"))
@@ -64,7 +70,18 @@ public class RideEntityService {
         return rideEntity;
     }
 
-    public RideEntity generateNewRideEntity(String path){
+    public RideEntity generateNewRideEntity(String path) {
+        return generateNewRideEntity(path, true);
+    }
+
+    /**
+     * Generate a new ride entity from a CSV file.
+     *
+     * @param path - The path to the CSV file
+     * @param createGeometry - Whether to create the geometry from the ride locations
+     * @return - The generated ride entity
+     */
+    public RideEntity generateNewRideEntity(String path, boolean createGeometry) {
         RideEntity rideEntity = new RideEntity(path);
 
         try {
@@ -75,16 +92,21 @@ public class RideEntityService {
         }
 
         RideCleanedLocation cleanedRideLocation;
-        try {
-            cleanedRideLocation = createGeometryFromRideLocations(rideEntity.getRideLocation());
-        } catch (JsonProcessingException e) {
-            _logger.error("Error creating geometry from ride locations", e);
-            throw new RuntimeException(e);
+
+        if (createGeometry) {
+            try {
+                cleanedRideLocation = createGeometryFromRideLocations(rideEntity.getRideLocation());
+            } catch (JsonProcessingException e) {
+                _logger.error("Error creating geometry from ride locations", e);
+                throw new RuntimeException(e);
+            }
+        } else {
+            cleanedRideLocation = rideCleanedLocationRepository.save(new RideCleanedLocation());
         }
 
-        List<Coordinate> coordinates = rideEntity.getRideLocation().stream()
-                .filter(location -> location.getLat() != 0 && location.getLng() != 0)
-                .map(location -> new Coordinate(location.getLng(), location.getLat()))
+        List<OsmrMatchInformation> coordinates = rideEntity.getRideLocation().stream()
+                .filter(location -> location.getLat() != 0 && location.getLng() != 0 && location.getTimeStamp() != 0)
+                .map(location -> new OsmrMatchInformation(location.getLng(), location.getLat(), location.getTimeStamp()/1000, location.getAcc()))
                 .collect(Collectors.toList());
 
         List<Long> waypoints = osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(coordinates);
@@ -95,12 +117,20 @@ public class RideEntityService {
             street.getRideCleanedLocations().add(cleanedRideLocation);
         }
         cleanedRideLocation.setPlanetOsmLines(streets);
+        RideCleanedLocation cleanedRideLocationSaved = rideCleanedLocationRepository.save(cleanedRideLocation);
 
-        rideEntity.setRideCleanedIncident(cleanedRideLocation);
+        rideEntity.setRideCleanedIncident(cleanedRideLocationSaved);
         return rideEntityRepository.save(rideEntity);
     }
 
-    protected RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList) throws JsonProcessingException {
+    /**
+     * Create a geometry from a list of ride locations.
+     *
+     * @param rideLocationList - A list of ride locations with coordinates
+     * @return - The entity that encapsulates the geometry
+     * @throws JsonProcessingException
+     */
+    public RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList) throws JsonProcessingException {
         List<Map<String, Double>> coordinatesList = rideLocationList.stream()
                 .filter(coord -> coord.getLng() != 0 && coord.getLat() != 0)
                 .map(rideLocation -> {
