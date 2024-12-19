@@ -5,9 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.stereotype.Controller;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableJpaRepositories(basePackages = {
 		"com.simra.konsumgandalf.rides.repositories",
 		"com.simra.konsumgandalf.osmPlanet.repositories"
@@ -20,7 +21,8 @@ import org.springframework.stereotype.Controller;
 		"com.simra.konsumgandalf.osmrBackend.services",
 		"com.simra.konsumgandalf.osmPlanet.services",
 		"com.simra.konsumgandalf.osmPlanet.controller",
-		"com.simra.konsumgandalf.backend.config"
+		"com.simra.konsumgandalf.backend.config",
+		"com.simra.konsumgandalf.common.logging"
 })
 @EntityScan(basePackages = {
 		"com.simra.konsumgandalf.rides.models.entities",
