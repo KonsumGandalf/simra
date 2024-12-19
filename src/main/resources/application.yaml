@@ -4,6 +4,8 @@ server:
         context-path: /api
 
 spring:
+    codec:
+        max-in-memory-size: 10MB
     config:
         import: optional:file:.env[.properties]
     application:
@@ -36,3 +38,8 @@ management:
         web:
             exposure:
                 include: "*"
+
+# logging:
+#    level:
+#        org.springframework.web.reactive.function.client.WebClientResponseException: OFF
+#        reactor.core.publisher: OFF
