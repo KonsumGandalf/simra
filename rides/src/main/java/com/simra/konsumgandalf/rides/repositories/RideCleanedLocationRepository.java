@@ -1,6 +1,5 @@
 package com.simra.konsumgandalf.rides.repositories;
 
-import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -75,5 +74,6 @@ public interface RideCleanedLocationRepository extends JpaRepository<RideCleaned
         nearby_streets;
     """, nativeQuery = true)
     @Transactional
+    @Deprecated
     List<Long> findNearbyStreets(@Param("rideId") long rideId);
 }
