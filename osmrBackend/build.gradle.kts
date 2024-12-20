@@ -23,3 +23,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.bootJar {
+    mainClass.set("com.simra.konsumgandalf.backend.BackendApplication")
+}
