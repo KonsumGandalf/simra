@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   upload:
-    name: Build and Upload
+    name: Upload Artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
