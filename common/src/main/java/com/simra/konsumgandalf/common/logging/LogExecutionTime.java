@@ -6,10 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Custom annotation used for logging execution time of any method
- *
- * @See com.example.springaop.logging.LoggingAspect
- *
+ * Custom annotation used for logging execution time of any method.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

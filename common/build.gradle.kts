@@ -26,5 +26,5 @@ tasks.test {
 }
 
 tasks.bootJar {
-    mainClass = ""
+    mainClass.set("com.simra.konsumgandalf.backend.BackendApplication")
 }

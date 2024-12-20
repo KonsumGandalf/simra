@@ -12,27 +12,20 @@ import java.util.Map;
 
 @Service
 public class OsmHighwayService {
-    private final ZoomDistanceMapper zoomDistanceMapper = new ZoomDistanceMapper();
-    private final ZoomRoadTypeMapper zoomRoadTypeMapper = new ZoomRoadTypeMapper();
 
-    @Autowired
-    private OsmHighwayRepository osmHighwayRepository;
+	private final ZoomDistanceMapper zoomDistanceMapper = new ZoomDistanceMapper();
 
-    public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom) {
-        Integer distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
-        List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom)
-                .stream()
-                .map(RoadTypes::getType)
-                .toList();
+	private final ZoomRoadTypeMapper zoomRoadTypeMapper = new ZoomRoadTypeMapper();
 
-        List<Map<String, Object>> result = osmHighwayRepository.findHighways(
-                lng,
-                lat,
-                distanceFilter,
-                roadTypes,
-                0.01
-        );
-        return result;
-    }
+	@Autowired
+	private OsmHighwayRepository osmHighwayRepository;
+
+	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom) {
+		Integer distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
+		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
+
+		List<Map<String, Object>> result = osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.01);
+		return result;
+	}
 
 }

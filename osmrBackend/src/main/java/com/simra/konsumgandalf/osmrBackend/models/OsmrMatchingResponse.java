@@ -7,23 +7,24 @@ import java.util.List;
  */
 public class OsmrMatchingResponse {
 
-    private List<OsmrMatching> matchings;
-    
-    private List<OsmrWaypoint> waypoints;
+	private List<OsmrMatching> matchings;
 
-    public List<OsmrWaypoint> getWaypoints() {
-        return waypoints;
-    }
+	private List<OsmrWaypoint> waypoints;
 
-    public void setWaypoints(List<OsmrWaypoint> waypoints) {
-        this.waypoints = waypoints;
-    }
+	public List<OsmrWaypoint> getWaypoints() {
+		return waypoints;
+	}
 
-    public List<OsmrMatching> getMatchings() {
-        return matchings;
-    }
+	public void setWaypoints(List<OsmrWaypoint> waypoints) {
+		this.waypoints = waypoints;
+	}
 
-    public void setMatchings(List<OsmrMatching> matchings) {
-        this.matchings = matchings;
-    }
+	public List<OsmrMatching> getMatchings() {
+		return matchings;
+	}
+
+	public void setMatchings(List<OsmrMatching> matchings) {
+		this.matchings = matchings;
+	}
+
 }

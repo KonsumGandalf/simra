@@ -5,36 +5,30 @@ package com.simra.konsumgandalf.osmPlanet.classes.enums;
  * https://wiki.openstreetmap.org/wiki/Key:highway
  */
 public enum RoadTypes {
-    MOTORWAY("motorway"),
-    MOTORWAY_LINK("motorway_link"),
 
-    TRUNK("trunk"),
-    TRUNK_LINK("trunk_link"),
+	MOTORWAY("motorway"), MOTORWAY_LINK("motorway_link"),
 
-    PRIMARY("primary"),
-    PRIMARY_LINK("primary_link"),
+	TRUNK("trunk"), TRUNK_LINK("trunk_link"),
 
-    SECONDARY("secondary"),
-    SECONDARY_LINK("secondary_link"),
+	PRIMARY("primary"), PRIMARY_LINK("primary_link"),
 
-    TERTIARY("tertiary"),
-    TERTIARY_LINK("tertiary_link"),
+	SECONDARY("secondary"), SECONDARY_LINK("secondary_link"),
 
-    // from here everything should be displayed => no need to filter for highway types
+	TERTIARY("tertiary"), TERTIARY_LINK("tertiary_link"),
 
-    UNCLASSIFIED("unclassified"),
-    RESIDENTIAL("residential"),
-    LIVING_STREET("living_street"),
-    SERVICE("service"),
-    BRIDLEWAY("bridleway"),;
+	// from here everything should be displayed => no need to filter for highway types
 
-    public final String type;
+	UNCLASSIFIED("unclassified"), RESIDENTIAL("residential"), LIVING_STREET("living_street"), SERVICE("service"),
+	BRIDLEWAY("bridleway"),;
 
-    private RoadTypes(String type) {
-        this.type = type;
-    }
+	public final String type;
 
-    public String getType() {
-        return type;
-    }
+	private RoadTypes(String type) {
+		this.type = type;
+	}
+
+	public String getType() {
+		return type;
+	}
+
 }

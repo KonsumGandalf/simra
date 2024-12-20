@@ -1,30 +1,35 @@
 package com.simra.konsumgandalf.common.models.classes;
 
-public class Coordinate implements java.io.Serializable {
-    private double lng;
-    private double lat;
+import java.io.Serializable;
 
-    public Coordinate(double lng, double lat) {
-        this.lng = lng;
-        this.lat = lat;
-    }
+public class Coordinate implements Serializable {
 
-    public Coordinate() {
-    }
+	private double lng;
 
-    public double getLng() {
-        return lng;
-    }
+	private double lat;
 
-    public void setLng(double lng) {
-        this.lng = lng;
-    }
+	public Coordinate(double lng, double lat) {
+		this.lng = lng;
+		this.lat = lat;
+	}
 
-    public double getLat() {
-        return lat;
-    }
+	public Coordinate() {
+	}
 
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
+	public double getLng() {
+		return this.lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
+	}
+
+	public double getLat() {
+		return this.lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+
 }

@@ -3,88 +3,98 @@ package com.simra.konsumgandalf.osmrBackend.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OsmrStep {
-    private String geometry;
-    // private Maneuver maneuver;
-    private String mode;
-    private String driving_side;
-    @JsonProperty("name")
-    private Long id;
-    // private ArrayList<Intersection> intersections;
-    private double weight;
-    private double duration;
-    private double distance;
-    private String ref;
-    private String destinations;
 
-    public String getGeometry() {
-        return geometry;
-    }
+	private String geometry;
 
-    public void setGeometry(String geometry) {
-        this.geometry = geometry;
-    }
+	// private Maneuver maneuver;
+	private String mode;
 
-    public String getMode() {
-        return mode;
-    }
+	private String driving_side;
 
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
+	@JsonProperty("name")
+	private Long id;
 
-    public String getDriving_side() {
-        return driving_side;
-    }
+	// private ArrayList<Intersection> intersections;
+	private double weight;
 
-    public void setDriving_side(String driving_side) {
-        this.driving_side = driving_side;
-    }
+	private double duration;
 
-    public Long getId() {
-        return id;
-    }
+	private double distance;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	private String ref;
 
-    public double getWeight() {
-        return weight;
-    }
+	private String destinations;
 
-    public void setWeight(double weight) {
-        this.weight = weight;
-    }
+	public String getGeometry() {
+		return geometry;
+	}
 
-    public double getDuration() {
-        return duration;
-    }
+	public void setGeometry(String geometry) {
+		this.geometry = geometry;
+	}
 
-    public void setDuration(double duration) {
-        this.duration = duration;
-    }
+	public String getMode() {
+		return mode;
+	}
 
-    public double getDistance() {
-        return distance;
-    }
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
 
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
+	public String getDriving_side() {
+		return driving_side;
+	}
 
-    public String getRef() {
-        return ref;
-    }
+	public void setDriving_side(String driving_side) {
+		this.driving_side = driving_side;
+	}
 
-    public void setRef(String ref) {
-        this.ref = ref;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getDestinations() {
-        return destinations;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setDestinations(String destinations) {
-        this.destinations = destinations;
-    }
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+	public double getDuration() {
+		return duration;
+	}
+
+	public void setDuration(double duration) {
+		this.duration = duration;
+	}
+
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
+	}
+
+	public String getRef() {
+		return ref;
+	}
+
+	public void setRef(String ref) {
+		this.ref = ref;
+	}
+
+	public String getDestinations() {
+		return destinations;
+	}
+
+	public void setDestinations(String destinations) {
+		this.destinations = destinations;
+	}
+
 }
