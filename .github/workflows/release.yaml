@@ -37,4 +37,4 @@ jobs:
         id: release
         with:
           release-type: java
-          target-branch: develop
+          target-branch: main
