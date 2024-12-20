@@ -6,8 +6,11 @@ on:
     - main
 
 permissions:
-  actions: write
   packages: write
+
+env:
+  JAVA_VERSION: 23
+  JAVA_DISTRIBUTION: 'oracle'
 
 jobs:
   upload:
@@ -15,8 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: ./gradlew build
+      - name: Publish Artifact
+        id: publish-artifact
+        uses: actions/upload-artifact@v4
         with:
           name: simra-${{ github.sha }}
           path: build/libs
