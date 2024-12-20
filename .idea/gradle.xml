@@ -4,13 +4,14 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/backend" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/backend" />
-            <option value="$PROJECT_DIR$/backend/common" />
-            <option value="$PROJECT_DIR$/backend/osmPlanet" />
-            <option value="$PROJECT_DIR$/backend/rides" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/osmPlanet" />
+            <option value="$PROJECT_DIR$/osmrBackend" />
+            <option value="$PROJECT_DIR$/rides" />
           </set>
         </option>
       </GradleProjectSettings>
