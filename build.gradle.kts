@@ -53,8 +53,6 @@ allprojects {
 
 }
 
-println(rewrite.checkstyleConfigFile?.path)
-
 subprojects {
     apply(plugin = "java")
     apply(plugin = "io.spring.dependency-management")
