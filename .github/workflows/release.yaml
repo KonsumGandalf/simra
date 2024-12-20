@@ -3,8 +3,7 @@ name: Publish Artifact
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - develop
 
 permissions:
   contents: write
@@ -29,7 +28,7 @@ jobs:
       - name: Build
         run: ./gradlew build
       - name: Publish Artifact
-        id: publish_artifact
+        id: publish-artifact
         uses: actions/upload-artifact@v4
         with:
           name: simra-${{ github.sha }}
@@ -38,8 +37,4 @@ jobs:
         id: release
         with:
           release-type: java
-      - name: Upload Release Artifact
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} ${{ steps.publish_artifact.outputs.artifact-url }}
+          target-branch: main
