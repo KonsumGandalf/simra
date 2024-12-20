@@ -6,9 +6,6 @@ import com.simra.konsumgandalf.osmrBackend.models.OsmrLeg;
 import com.simra.konsumgandalf.osmrBackend.models.OsmrMatching;
 import com.simra.konsumgandalf.osmrBackend.models.OsmrMatchingResponse;
 import com.simra.konsumgandalf.osmrBackend.models.OsmrStep;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +17,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This service interacts with the OSMR backend.

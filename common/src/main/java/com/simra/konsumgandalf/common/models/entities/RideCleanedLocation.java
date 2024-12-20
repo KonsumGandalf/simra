@@ -8,9 +8,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import org.geolatte.geom.Geometry;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.geolatte.geom.Geometry;
 
 @Entity
 public class RideCleanedLocation {

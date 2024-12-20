@@ -23,9 +23,6 @@ import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +31,10 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class RideEntityServiceTest {

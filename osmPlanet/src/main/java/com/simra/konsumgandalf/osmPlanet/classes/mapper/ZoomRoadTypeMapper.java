@@ -1,6 +1,7 @@
 package com.simra.konsumgandalf.osmPlanet.classes.mapper;
 
 import com.simra.konsumgandalf.osmPlanet.classes.enums.RoadTypes;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

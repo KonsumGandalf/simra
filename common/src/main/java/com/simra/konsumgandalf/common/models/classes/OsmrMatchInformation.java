@@ -1,9 +1,11 @@
 package com.simra.konsumgandalf.common.models.classes;
 
+import java.io.Serializable;
+
 /**
  * This class is used to store the information of the matched point from the OSRM service
  */
-public class OsmrMatchInformation extends Coordinate implements java.io.Serializable {
+public class OsmrMatchInformation extends Coordinate implements Serializable {
 
 	/**
 	 * The timestamp of the matched point

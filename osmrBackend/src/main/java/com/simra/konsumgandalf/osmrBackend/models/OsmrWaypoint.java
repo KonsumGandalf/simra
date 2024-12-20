@@ -1,6 +1,7 @@
 package com.simra.konsumgandalf.osmrBackend.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**

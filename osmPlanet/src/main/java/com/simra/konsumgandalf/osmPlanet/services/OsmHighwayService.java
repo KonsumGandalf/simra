@@ -4,10 +4,11 @@ import com.simra.konsumgandalf.osmPlanet.classes.enums.RoadTypes;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
-import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class OsmHighwayService {

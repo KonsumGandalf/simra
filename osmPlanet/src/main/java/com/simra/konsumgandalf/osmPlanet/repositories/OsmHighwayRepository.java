@@ -1,12 +1,13 @@
 package com.simra.konsumgandalf.osmPlanet.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
-import java.util.List;
-import java.util.Map;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface OsmHighwayRepository extends JpaRepository<PlanetOsmLine, Long> {

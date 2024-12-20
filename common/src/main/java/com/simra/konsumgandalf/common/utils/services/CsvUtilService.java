@@ -2,9 +2,11 @@ package com.simra.konsumgandalf.common.utils.services;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import org.springframework.stereotype.Service;
+
 import java.io.StringReader;
 import java.util.List;
-import org.springframework.stereotype.Service;
 
 @Service
 public class CsvUtilService {
@@ -37,7 +39,7 @@ public class CsvUtilService {
 			return csvToBean.parse();
 		}
 		catch (RuntimeException e) {
-			if (e.getCause() instanceof com.opencsv.exceptions.CsvRequiredFieldEmptyException) {
+			if (e.getCause() instanceof CsvRequiredFieldEmptyException) {
 				if (retrying) {
 					throw new RuntimeException("Error reading CSV content after cleanup", e);
 				}

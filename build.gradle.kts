@@ -1,12 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("io.spring.javaformat:spring-javaformat-gradle-plugin:0.0.43")
-    }
-}
-
 plugins {
     java
     id("org.springframework.boot") version "3.3.5"
@@ -23,11 +14,8 @@ java {
 }
 
 rewrite {
-
-    setCheckstyleConfigFile(file("${rootDir}/config/checkstyle/google_checks.xml"))
+    setCheckstyleConfigFile(file("${rootDir}/config/checkstyle/checkstyle.xml"))
     activeRecipe("org.openrewrite.staticanalysis.CodeCleanup", "org.openrewrite.java.OrderImports")
-    isExportDatatables = true
-
 }
 
 allprojects {
@@ -35,6 +23,7 @@ allprojects {
     version = "0.0.2-SNAPSHOT"
 
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 
@@ -45,7 +34,7 @@ allprojects {
 
     checkstyle {
         toolVersion = "10.20.2"
-        configFile = file("${rootDir}/config/checkstyle/google_checks.xml")
+        configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
     }
     dependencies {
         checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:0.0.43")
