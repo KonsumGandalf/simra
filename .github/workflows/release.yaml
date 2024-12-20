@@ -1,4 +1,4 @@
-name: Publish Artifact
+name: Publish Release
 
 on:
   push:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   publish:
-    name: Build and Publish
+    name: Build and Publish Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
