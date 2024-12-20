@@ -29,6 +29,7 @@ jobs:
       - name: Build
         run: ./gradlew build
       - name: Publish Artifact
+        id: publish-artifact
         uses: actions/upload-artifact@v4
         with:
           name: simra-${{ github.sha }}
@@ -41,4 +42,4 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} build/libs/*.jar
+        run: gh release upload ${{ steps.release.outputs.tag_name }} ${{ steps.publish-artifact.outputs.artifact-url }}
