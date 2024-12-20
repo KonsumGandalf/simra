@@ -1,0 +1,29 @@
+name: Upload Artifact
+
+on:
+  push:
+    branches:
+    - main
+
+permissions:
+  actions: write
+  packages: write
+
+jobs:
+  upload:
+    name: Upload Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: simra-${{ github.sha }}
+          path: build/libs
+      - name: Fetch latest release version
+        id: fetch-latest-release
+        uses: reloc8/action-latest-release-version@1.0.0
+      - name: Upload Release Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ steps.fetch-latest-release.outputs.latest-release }} build/libs/*.jar
