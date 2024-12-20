@@ -23,7 +23,13 @@ jobs:
       - name: Build
         run: ./gradlew build
       - name: Publish Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref_name }}
+          name: simra-${{ github.sha }}
           path: build/libs
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
