@@ -1,5 +1,5 @@
-name: Publish Artifact
-
+name: Changelog and Release
+run-name: Create Changelog and Release by @${{ github.actor }}
 on:
   push:
     branches:
