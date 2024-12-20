@@ -1,9 +1,14 @@
 name: Publish Artifact
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 env:
   JAVA_VERSION: 23
