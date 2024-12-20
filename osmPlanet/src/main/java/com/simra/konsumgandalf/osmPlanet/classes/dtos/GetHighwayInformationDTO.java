@@ -3,22 +3,25 @@ package com.simra.konsumgandalf.osmPlanet.classes.dtos;
 import com.simra.konsumgandalf.common.models.classes.Coordinate;
 
 public class GetHighwayInformationDTO {
-    private Coordinate coordinate;
-    private int zoom;
 
-    public GetHighwayInformationDTO(Coordinate coordinate, int zoom) {
-        this.coordinate = coordinate;
-        this.zoom = zoom;
-    }
+	private Coordinate coordinate;
 
-    public GetHighwayInformationDTO() {
-    }
+	private int zoom;
 
-    public Coordinate getCoordinate() {
-        return coordinate;
-    }
+	public GetHighwayInformationDTO(Coordinate coordinate, int zoom) {
+		this.coordinate = coordinate;
+		this.zoom = zoom;
+	}
 
-    public int getZoom() {
-        return zoom;
-    }
+	public GetHighwayInformationDTO() {
+	}
+
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+
+	public int getZoom() {
+		return zoom;
+	}
+
 }

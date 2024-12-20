@@ -3,52 +3,59 @@ package com.simra.konsumgandalf.osmrBackend.models;
 import java.util.List;
 
 /**
- * This class represents a leg in the OSMR routing response, which are the segments of the route.
+ * This class represents a leg in the OSMR routing response, which are the segments of the
+ * route.
  */
 public class OsmrLeg {
-    private List<OsmrStep> steps;
-    private String summary;
-    private double weight;
-    private double duration;
-    private double distance;
 
-    public List<OsmrStep> getSteps() {
-        return steps;
-    }
+	private List<OsmrStep> steps;
 
-    public void setSteps(List<OsmrStep> steps) {
-        this.steps = steps;
-    }
+	private String summary;
 
-    public String getSummary() {
-        return summary;
-    }
+	private double weight;
 
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
+	private double duration;
 
-    public double getWeight() {
-        return weight;
-    }
+	private double distance;
 
-    public void setWeight(double weight) {
-        this.weight = weight;
-    }
+	public List<OsmrStep> getSteps() {
+		return steps;
+	}
 
-    public double getDuration() {
-        return duration;
-    }
+	public void setSteps(List<OsmrStep> steps) {
+		this.steps = steps;
+	}
 
-    public void setDuration(double duration) {
-        this.duration = duration;
-    }
+	public String getSummary() {
+		return summary;
+	}
 
-    public double getDistance() {
-        return distance;
-    }
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
 
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+	public double getDuration() {
+		return duration;
+	}
+
+	public void setDuration(double duration) {
+		this.duration = duration;
+	}
+
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
+	}
+
 }

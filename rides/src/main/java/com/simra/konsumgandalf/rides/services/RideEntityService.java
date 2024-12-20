@@ -3,150 +3,163 @@ package com.simra.konsumgandalf.rides.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
-import com.simra.konsumgandalf.common.models.entities.*;
+import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
+import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
+import com.simra.konsumgandalf.common.models.entities.RideEntity;
+import com.simra.konsumgandalf.common.models.entities.RideIncident;
+import com.simra.konsumgandalf.common.models.entities.RideLocation;
+import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
+import com.simra.konsumgandalf.common.utils.services.FileReaderService;
 import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
-import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
-import com.simra.konsumgandalf.common.utils.services.FileReaderService;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class RideEntityService {
-    private static final ObjectMapper _objectMapper = new ObjectMapper();
-    private static final Logger _logger = LoggerFactory.getLogger(RideEntityService.class);
 
-    @Autowired
-    private RideEntityRepository rideEntityRepository;
+	private static final ObjectMapper _objectMapper = new ObjectMapper();
 
-    @Autowired
-    private RideCleanedLocationRepository rideCleanedLocationRepository;
+	private static final Logger _logger = LoggerFactory.getLogger(RideEntityService.class);
 
-    @Autowired
-    private PlanetOsmLineRepository planetOsmLineRepository;
+	@Autowired
+	private RideEntityRepository rideEntityRepository;
 
-    @Autowired
-    private OsmrBackendService osmrBackendService;
+	@Autowired
+	private RideCleanedLocationRepository rideCleanedLocationRepository;
 
-    @Autowired
-    private CsvUtilService csvUtilService;
+	@Autowired
+	private PlanetOsmLineRepository planetOsmLineRepository;
 
-    @Autowired
-    private FileReaderService fileReaderService;
+	@Autowired
+	private OsmrBackendService osmrBackendService;
 
-    /**
-     * Add the CSV data to the ride entity.
-     *
-     * @param rideEntity - The ride entity to enrich
-     * @return - The enriched ride entity
-     */
-    public RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
-        String content = fileReaderService.readFileFromPath(rideEntity.getPath());
+	@Autowired
+	private CsvUtilService csvUtilService;
 
-        String[] filteredParts = Arrays.stream(content.split("=+"))
-                .map(part -> Arrays.stream(part.split("\n"))
-                        .filter(line -> !line.contains("#"))
-                        .collect(Collectors.joining("\n"))
-                        .trim())
-                .toArray(String[]::new);
+	@Autowired
+	private FileReaderService fileReaderService;
 
-        if (filteredParts.length < 2) {
-            throw new IllegalArgumentException("File does not contain two CSV sections");
-        }
+	/**
+	 * Add the CSV data to the ride entity.
+	 * @param rideEntity - The ride entity to enrich
+	 * @return - The enriched ride entity
+	 */
+	public RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
+		String content = fileReaderService.readFileFromPath(rideEntity.getPath());
 
-        List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
-        rideEntity.setRideIncidents(rideIncidentList);
+		String[] filteredParts = Arrays.stream(content.split("=+"))
+			.map(part -> Arrays.stream(part.split("\n"))
+				.filter(line -> !line.contains("#"))
+				.collect(Collectors.joining("\n"))
+				.trim())
+			.toArray(String[]::new);
 
-        List<RideLocation> rideLocationList = csvUtilService.parseCsvToModel(filteredParts[1], RideLocation.class);
-        rideEntity.setRideLocation(rideLocationList);
+		if (filteredParts.length < 2) {
+			throw new IllegalArgumentException("File does not contain two CSV sections");
+		}
 
-        return rideEntity;
-    }
+		List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
+		rideEntity.setRideIncidents(rideIncidentList);
 
-    public RideEntity generateNewRideEntity(String path) {
-        return generateNewRideEntity(path, true);
-    }
+		List<RideLocation> rideLocationList = csvUtilService.parseCsvToModel(filteredParts[1], RideLocation.class);
+		rideEntity.setRideLocation(rideLocationList);
 
-    /**
-     * Generate a new ride entity from a CSV file.
-     *
-     * @param path - The path to the CSV file
-     * @param createGeometry - Whether to create the geometry from the ride locations
-     * @return - The generated ride entity
-     */
-    public RideEntity generateNewRideEntity(String path, boolean createGeometry) {
-        RideEntity rideEntity = new RideEntity(path);
+		return rideEntity;
+	}
 
-        try {
-            rideEntity = enrichRideEntityWithCsv(rideEntity);
-        } catch (IllegalArgumentException e) {
-            _logger.error("Error enriching ride entity with CSV", e);
-            throw new RuntimeException(e);
-        }
+	public RideEntity generateNewRideEntity(String path) {
+		return generateNewRideEntity(path, true);
+	}
 
-        RideCleanedLocation cleanedRideLocation;
+	/**
+	 * Generate a new ride entity from a CSV file.
+	 * @param path - The path to the CSV file
+	 * @param createGeometry - Whether to create the geometry from the ride locations
+	 * @return - The generated ride entity
+	 */
+	public RideEntity generateNewRideEntity(String path, boolean createGeometry) {
+		RideEntity rideEntity = new RideEntity(path);
 
-        if (createGeometry) {
-            try {
-                cleanedRideLocation = createGeometryFromRideLocations(rideEntity.getRideLocation());
-            } catch (JsonProcessingException e) {
-                _logger.error("Error creating geometry from ride locations", e);
-                throw new RuntimeException(e);
-            }
-        } else {
-            cleanedRideLocation = rideCleanedLocationRepository.save(new RideCleanedLocation());
-        }
+		try {
+			rideEntity = enrichRideEntityWithCsv(rideEntity);
+		}
+		catch (IllegalArgumentException e) {
+			_logger.error("Error enriching ride entity with CSV", e);
+			throw new RuntimeException(e);
+		}
 
-        List<OsmrMatchInformation> coordinates = rideEntity.getRideLocation().stream()
-                .filter(location -> location.getLat() != 0 && location.getLng() != 0 && location.getTimeStamp() != 0)
-                .map(location -> new OsmrMatchInformation(location.getLng(), location.getLat(), location.getTimeStamp()/1000, location.getAcc()))
-                .collect(Collectors.toList());
+		RideCleanedLocation cleanedRideLocation;
 
-        List<Long> waypoints = osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(coordinates);
+		if (createGeometry) {
+			try {
+				cleanedRideLocation = createGeometryFromRideLocations(rideEntity.getRideLocation());
+			}
+			catch (JsonProcessingException e) {
+				_logger.error("Error creating geometry from ride locations", e);
+				throw new RuntimeException(e);
+			}
+		}
+		else {
+			cleanedRideLocation = rideCleanedLocationRepository.save(new RideCleanedLocation());
+		}
 
-        List<PlanetOsmLine> streets = planetOsmLineRepository.findAllByOsmId(waypoints);
+		List<OsmrMatchInformation> coordinates = rideEntity.getRideLocation()
+			.stream()
+			.filter(location -> location.getLat() != 0 && location.getLng() != 0 && location.getTimeStamp() != 0)
+			.map(location -> new OsmrMatchInformation(location.getLng(), location.getLat(),
+					location.getTimeStamp() / 1000, location.getAcc()))
+			.collect(Collectors.toList());
 
-        for (PlanetOsmLine street : streets) {
-            street.getRideCleanedLocations().add(cleanedRideLocation);
-        }
-        cleanedRideLocation.setPlanetOsmLines(streets);
-        RideCleanedLocation cleanedRideLocationSaved = rideCleanedLocationRepository.save(cleanedRideLocation);
+		List<Long> waypoints = osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(coordinates);
 
-        rideEntity.setRideCleanedIncident(cleanedRideLocationSaved);
-        return rideEntityRepository.save(rideEntity);
-    }
+		List<PlanetOsmLine> streets = planetOsmLineRepository.findAllByOsmId(waypoints);
 
-    /**
-     * Create a geometry from a list of ride locations.
-     *
-     * @param rideLocationList - A list of ride locations with coordinates
-     * @return - The entity that encapsulates the geometry
-     * @throws JsonProcessingException
-     */
-    public RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList) throws JsonProcessingException {
-        List<Map<String, Double>> coordinatesList = rideLocationList.stream()
-                .filter(coord -> coord.getLng() != 0 && coord.getLat() != 0)
-                .map(rideLocation -> {
-                    Map<String, Double> coordMap = new HashMap<>();
-                    coordMap.put("lng", rideLocation.getLng());
-                    coordMap.put("lat", rideLocation.getLat());
-                    return coordMap;
-                })
-                .collect(Collectors.toList());
+		for (PlanetOsmLine street : streets) {
+			street.getRideCleanedLocations().add(cleanedRideLocation);
+		}
+		cleanedRideLocation.setPlanetOsmLines(streets);
+		RideCleanedLocation cleanedRideLocationSaved = rideCleanedLocationRepository.save(cleanedRideLocation);
 
-        String coordinatesJson = _objectMapper.writeValueAsString(coordinatesList);
-        return rideCleanedLocationRepository.createAndSaveGeometry(coordinatesJson);
-    }
+		rideEntity.setRideCleanedIncident(cleanedRideLocationSaved);
+		return rideEntityRepository.save(rideEntity);
+	}
 
-    // temporary method to test the functionality
-    public List<RideCleanedLocation> findAllCleanedRides(long id) {
-        return rideCleanedLocationRepository.findAllById(Collections.singleton(id));
-    }
+	/**
+	 * Create a geometry from a list of ride locations.
+	 * @param rideLocationList - A list of ride locations with coordinates
+	 * @return - The entity that encapsulates the geometry
+	 * @throws JsonProcessingException
+	 */
+	public RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList)
+			throws JsonProcessingException {
+		List<Map<String, Double>> coordinatesList = rideLocationList.stream()
+			.filter(coord -> coord.getLng() != 0 && coord.getLat() != 0)
+			.map(rideLocation -> {
+				Map<String, Double> coordMap = new HashMap<>();
+				coordMap.put("lng", rideLocation.getLng());
+				coordMap.put("lat", rideLocation.getLat());
+				return coordMap;
+			})
+			.collect(Collectors.toList());
+
+		String coordinatesJson = _objectMapper.writeValueAsString(coordinatesList);
+		return rideCleanedLocationRepository.createAndSaveGeometry(coordinatesJson);
+	}
+
+	// temporary method to test the functionality
+	public List<RideCleanedLocation> findAllCleanedRides(long id) {
+		return rideCleanedLocationRepository.findAllById(Collections.singleton(id));
+	}
+
 }
