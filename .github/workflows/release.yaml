@@ -33,7 +33,7 @@ jobs:
         with:
           name: simra-${{ github.sha }}
           path: build/libs
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          release-type: java
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
