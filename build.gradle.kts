@@ -12,18 +12,12 @@ plugins {
     id("org.springframework.boot") version "3.3.5"
     id("io.spring.dependency-management") version "1.1.6"
     id("io.spring.javaformat") version "0.0.43"
-    id("org.openrewrite.rewrite") version "6.28.3"
 }
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
-}
-
-rewrite {
-    setCheckstyleConfigFile(file("${rootDir}/config/checkstyle/checkstyle.xml"))
-    activeRecipe("org.openrewrite.staticanalysis.CodeCleanup", "org.openrewrite.java.OrderImports")
 }
 
 allprojects {
@@ -73,6 +67,4 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    rewrite("org.openrewrite.recipe:rewrite-static-analysis:latest.release")
 }
