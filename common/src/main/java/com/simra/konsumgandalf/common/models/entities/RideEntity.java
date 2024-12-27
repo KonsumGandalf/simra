@@ -24,13 +24,11 @@ public class RideEntity {
 	private Long id;
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id") // Add this
-																		// annotation
+	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
 	private List<RideLocation> rideLocation = new ArrayList<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ride_incident_id", referencedColumnName = "id") // Add this
-																		// annotation
+	@JoinColumn(name = "ride_incident_id", referencedColumnName = "id")
 	private List<RideIncident> rideIncidents = new ArrayList<>();
 
 	@OneToOne

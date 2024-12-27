@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import org.geolatte.geom.Geometry;
 
 import java.util.ArrayList;
@@ -25,7 +26,18 @@ public class PlanetOsmLine {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id; // New primary key field
 
+	/**
+	 * The metrics indicating the safety of this street
+	 */
+	@OneToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "safety_metrics_id")
+	private SafetyMetrics safetyMetrics;
+
+	@Column
 	private Geometry way;
+
+	@Column
+	private String highway;
 
 	@ManyToMany(cascade = { CascadeType.DETACH, CascadeType.REFRESH, CascadeType.MERGE }, fetch = FetchType.EAGER)
 	@JoinTable(name = "ride_cleaned_location__planet_osm_line", joinColumns = @JoinColumn(name = "planet_osm_line_id"),
@@ -62,6 +74,14 @@ public class PlanetOsmLine {
 
 	public void setRideCleanedLocations(List<RideCleanedLocation> rideCleanedLocations) {
 		this.rideCleanedLocations = rideCleanedLocations;
+	}
+
+	public String getHighway() {
+		return highway;
+	}
+
+	public void setHighway(String highway) {
+		this.highway = highway;
 	}
 
 }
