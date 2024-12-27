@@ -10,7 +10,7 @@ import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.entities.RideLocation;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
-import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendService;
+import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendMatchService;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
@@ -43,7 +43,7 @@ public class RideEntityService {
 	private PlanetOsmLineRepository planetOsmLineRepository;
 
 	@Autowired
-	private OsmrBackendService osmrBackendService;
+	private OsmrBackendMatchService osmrBackendService;
 
 	@Autowired
 	private CsvUtilService csvUtilService;
