@@ -2,6 +2,7 @@ package com.simra.konsumgandalf.rides.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simra.konsumgandalf.common.models.classes.Coordinate;
 import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
@@ -11,6 +12,8 @@ import com.simra.konsumgandalf.common.models.entities.RideLocation;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
 import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendMatchService;
+import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendNearestService;
+import com.simra.konsumgandalf.common.models.maps.IxFunctionToParticipantTypeMap;
 import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
@@ -18,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,17 +50,23 @@ public class RideEntityService {
 	private OsmrBackendMatchService osmrBackendService;
 
 	@Autowired
+	private OsmrBackendNearestService osmrBackendNearestService;
+
+	@Autowired
 	private CsvUtilService csvUtilService;
 
 	@Autowired
 	private FileReaderService fileReaderService;
+
+	@Autowired
+	private ResourceUrlProvider mvcResourceUrlProvider;
 
 	/**
 	 * Add the CSV data to the ride entity.
 	 * @param rideEntity - The ride entity to enrich
 	 * @return - The enriched ride entity
 	 */
-	public RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
+	protected RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
 		String content = fileReaderService.readFileFromPath(rideEntity.getPath());
 
 		String[] filteredParts = Arrays.stream(content.split("=+"))
@@ -71,6 +81,14 @@ public class RideEntityService {
 		}
 
 		List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
+		rideIncidentList = rideIncidentList.stream().map(incident -> {
+			IxFunctionToParticipantTypeMap.IxFunctionToParticipantType.forEach((key, value) -> {
+				if (key.apply(incident) == 1) {
+					incident.addParticipantsInvolved(value);
+				}
+			});
+			return incident;
+		}).toList();
 		rideEntity.setRideIncidents(rideIncidentList);
 
 		List<RideLocation> rideLocationList = csvUtilService.parseCsvToModel(filteredParts[1], RideLocation.class);
@@ -100,6 +118,21 @@ public class RideEntityService {
 			throw new RuntimeException(e);
 		}
 
+		rideEntity = linkRideIncidentToPlanetOsmLine(rideEntity);
+		RideCleanedLocation cleanedRideLocation = createRideCleanedLocation(rideEntity, createGeometry);
+
+		rideEntity.setRideCleanedIncident(cleanedRideLocation);
+		return rideEntityRepository.save(rideEntity);
+	}
+
+	/**
+	 * Creates a cleaned ride location from a ride entity with the help of OSMR and the
+	 * planet OSM line repository.
+	 * @param rideEntity - The csv enriched ride entity
+	 * @param createGeometry - Whether to create the geometry from the ride locations
+	 * @return - The cleaned ride location
+	 */
+	protected RideCleanedLocation createRideCleanedLocation(RideEntity rideEntity, boolean createGeometry) {
 		RideCleanedLocation cleanedRideLocation;
 
 		if (createGeometry) {
@@ -130,10 +163,30 @@ public class RideEntityService {
 			street.getRideCleanedLocations().add(cleanedRideLocation);
 		}
 		cleanedRideLocation.setPlanetOsmLines(streets);
-		RideCleanedLocation cleanedRideLocationSaved = rideCleanedLocationRepository.save(cleanedRideLocation);
+		return rideCleanedLocationRepository.save(cleanedRideLocation);
+	}
 
-		rideEntity.setRideCleanedIncident(cleanedRideLocationSaved);
-		return rideEntityRepository.save(rideEntity);
+	protected RideEntity linkRideIncidentToPlanetOsmLine(RideEntity rideEntity) {
+		for (RideIncident rideIncident : rideEntity.getRideIncidents()) {
+			Coordinate coordinate = new Coordinate(rideIncident);
+			if (coordinate.getLat() == 0 || coordinate.getLng() == 0) {
+				continue;
+			}
+
+			Long id;
+			try {
+				id = osmrBackendNearestService.getIDNearestStreetToCoordinate(coordinate);
+			}
+			catch (Exception e) {
+				_logger.error("Error finding nearest street segment to incident", e);
+				throw new RuntimeException(e);
+			}
+
+			PlanetOsmLine planetOsmLine = planetOsmLineRepository.findOneByOsmId(id);
+			rideIncident.setPlanetOsmLine(planetOsmLine);
+		}
+
+		return rideEntity;
 	}
 
 	/**
@@ -142,7 +195,7 @@ public class RideEntityService {
 	 * @return - The entity that encapsulates the geometry
 	 * @throws JsonProcessingException
 	 */
-	public RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList)
+	protected RideCleanedLocation createGeometryFromRideLocations(List<RideLocation> rideLocationList)
 			throws JsonProcessingException {
 		List<Map<String, Double>> coordinatesList = rideLocationList.stream()
 			.filter(coord -> coord.getLng() != 0 && coord.getLat() != 0)

@@ -19,4 +19,7 @@ public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Lo
 	@Query("SELECT p FROM PlanetOsmLine p WHERE p.osm_id IN :osmIds")
 	public List<PlanetOsmLine> findAllByOsmId(@Param("osmIds") List<Long> osmIds);
 
+	@Query("SELECT p FROM PlanetOsmLine p WHERE p.osm_id IN :osmId")
+	public PlanetOsmLine findOneByOsmId(@Param("osmId") Long osmId);
+
 }
