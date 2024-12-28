@@ -1,11 +1,26 @@
 package com.simra.konsumgandalf.common.models.entities;
 
 import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvCustomBindByName;
+import com.simra.konsumgandalf.common.models.enums.BikeType;
+import com.simra.konsumgandalf.common.models.enums.IncidentType;
+import com.simra.konsumgandalf.common.models.enums.ParticipantType;
+import com.simra.konsumgandalf.common.models.enums.PhoneLocation;
+import com.simra.konsumgandalf.common.utils.converter.EnumConverter;
+import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class RideIncident {
@@ -13,6 +28,9 @@ public class RideIncident {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	@ManyToOne
+	private PlanetOsmLine planetOsmLine;
 
 	@ManyToOne
 	private RideEntity rideEntity;
@@ -26,8 +44,10 @@ public class RideIncident {
 	@CsvBindByName(column = "ts")
 	private String ts;
 
-	@CsvBindByName(column = "bike")
-	private Integer bike;
+	@CsvCustomBindByName(column = "bike", converter = EnumConverter.class)
+	@Column(length = 20)
+	@Enumerated(EnumType.STRING)
+	private BikeType bike;
 
 	@CsvBindByName(column = "childCheckBox")
 	private Integer childCheckBox;
@@ -35,14 +55,31 @@ public class RideIncident {
 	@CsvBindByName(column = "trailerCheckBox")
 	private Integer trailerCheckBox;
 
-	@CsvBindByName(column = "pLoc")
-	private Integer pLoc;
+	@CsvCustomBindByName(column = "pLoc", converter = EnumConverter.class)
+	@Column(length = 16)
+	@Enumerated(EnumType.STRING)
+	private PhoneLocation phoneLocation;
 
-	@CsvBindByName(column = "incident")
-	private Integer incident;
+	@CsvCustomBindByName(column = "incident", converter = EnumConverter.class)
+	@Column(length = 20)
+	@Enumerated(EnumType.STRING)
+	private IncidentType incidentType;
 
 	@CsvBindByName(column = "desc")
 	private String description;
+
+	@CsvBindByName(column = "scary")
+	private boolean scary;
+
+	@ElementCollection
+	@Enumerated(EnumType.STRING)
+	@Column(length = 16)
+	private List<ParticipantType> participantsInvolved = new ArrayList<>();
+
+	/**
+	 * The following attributes pollute the entity with unnecessary information therefore they are not saved
+	 * @return
+	 */
 
 	public Long getId() {
 		return id;
@@ -84,11 +121,11 @@ public class RideIncident {
 		this.ts = ts;
 	}
 
-	public Integer getBike() {
+	public BikeType getBike() {
 		return bike;
 	}
 
-	public void setBike(Integer bike) {
+	public void setBike(BikeType bike) {
 		this.bike = bike;
 	}
 
@@ -108,20 +145,20 @@ public class RideIncident {
 		this.trailerCheckBox = trailerCheckBox;
 	}
 
-	public Integer getpLoc() {
-		return pLoc;
+	public PhoneLocation getPhoneLocation() {
+		return phoneLocation;
 	}
 
-	public void setpLoc(Integer pLoc) {
-		this.pLoc = pLoc;
+	public void setPhoneLocation(PhoneLocation phoneLocation) {
+		this.phoneLocation = phoneLocation;
 	}
 
-	public Integer getIncident() {
-		return incident;
+	public IncidentType getIncident() {
+		return incidentType;
 	}
 
-	public void setIncident(Integer incident) {
-		this.incident = incident;
+	public void setIncident(IncidentType incidentType) {
+		this.incidentType = incidentType;
 	}
 
 	public String getDescription() {
@@ -132,4 +169,167 @@ public class RideIncident {
 		this.description = desc;
 	}
 
+	public PlanetOsmLine getPlanetOsmLine() {
+		return planetOsmLine;
+	}
+
+	public void setPlanetOsmLine(
+			PlanetOsmLine planetOsmLine) {
+		this.planetOsmLine = planetOsmLine;
+	}
+
+	public IncidentType getIncidentType() {
+		return incidentType;
+	}
+
+	public void setIncidentType(
+			IncidentType incidentType) {
+		this.incidentType = incidentType;
+	}
+
+	public List<ParticipantType> getParticipantsInvolved() {
+		return participantsInvolved;
+	}
+
+	public void setParticipantsInvolved(
+			List<ParticipantType> participantsInvolved) {
+		this.participantsInvolved = participantsInvolved;
+	}
+
+	public void addParticipantsInvolved(
+			ParticipantType participantInvolved) {
+		this.participantsInvolved.add(participantInvolved);
+	}
+
+	@Transient
+	@CsvBindByName(column = "i1")
+	private int i1;
+
+	@Transient
+	@CsvBindByName(column = "i2")
+	private int i2;
+
+	@Transient
+	@CsvBindByName(column = "i3")
+	private int i3;
+
+	@Transient
+	@CsvBindByName(column = "i4")
+	private int i4;
+
+	@Transient
+	@CsvBindByName(column = "i5")
+	private int i5;
+
+	@Transient
+	@CsvBindByName(column = "i6")
+	private int i6;
+
+	@Transient
+	@CsvBindByName(column = "i7")
+	private int i7;
+
+	@Transient
+	@CsvBindByName(column = "i8")
+	private int i8;
+
+	@Transient
+	@CsvBindByName(column = "i9")
+	private int i9;
+
+	@Transient
+	@CsvBindByName(column = "i10")
+	private int i10;
+
+	public int getI1() {
+		return i1;
+	}
+
+	public void setI1(int i1) {
+		this.i1 = i1;
+	}
+
+	public int getI2() {
+		return i2;
+	}
+
+	public void setI2(int i2) {
+		this.i2 = i2;
+	}
+
+	public int getI3() {
+		return i3;
+	}
+
+	public void setI3(int i3) {
+		this.i3 = i3;
+	}
+
+	public int getI4() {
+		return i4;
+	}
+
+	public void setI4(int i4) {
+		this.i4 = i4;
+	}
+
+	public int getI5() {
+		return i5;
+	}
+
+	public void setI5(int i5) {
+		this.i5 = i5;
+	}
+
+	public int getI6() {
+		return i6;
+	}
+
+	public void setI6(int i6) {
+		this.i6 = i6;
+	}
+
+	public int getI7() {
+		return i7;
+	}
+
+	public void setI7(int i7) {
+		this.i7 = i7;
+	}
+
+	public int getI8() {
+		return i8;
+	}
+
+	public void setI8(int i8) {
+		this.i8 = i8;
+	}
+
+	public int getI9() {
+		return i9;
+	}
+
+	public void setI9(int i9) {
+		this.i9 = i9;
+	}
+
+	public int getI10() {
+		return i10;
+	}
+
+	public void setI10(int i10) {
+		this.i10 = i10;
+	}
+
+	public boolean isScary() {
+		return scary;
+	}
+
+	public void setScary(boolean scary) {
+		this.scary = scary;
+	}
+
+	public void setScary(int scary) {
+		this.scary = scary == 1;
+	}
 }

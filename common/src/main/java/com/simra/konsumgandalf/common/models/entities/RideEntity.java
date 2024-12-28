@@ -28,11 +28,11 @@ public class RideEntity {
 	private List<RideLocation> rideLocation = new ArrayList<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ride_incident_id", referencedColumnName = "id")
+	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
 	private List<RideIncident> rideIncidents = new ArrayList<>();
 
 	@OneToOne
-	@JoinColumn(name = "ride_cleaned_incident", referencedColumnName = "id")
+	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
 	private RideCleanedLocation rideCleanedLocation;
 
 	@Column(unique = true)
