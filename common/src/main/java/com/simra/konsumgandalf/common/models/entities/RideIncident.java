@@ -77,7 +77,8 @@ public class RideIncident {
 	private List<ParticipantType> participantsInvolved = new ArrayList<>();
 
 	/**
-	 * The following attributes pollute the entity with unnecessary information therefore they are not saved
+	 * The following attributes pollute the entity with unnecessary information therefore
+	 * they are not saved
 	 * @return
 	 */
 
@@ -173,8 +174,7 @@ public class RideIncident {
 		return planetOsmLine;
 	}
 
-	public void setPlanetOsmLine(
-			PlanetOsmLine planetOsmLine) {
+	public void setPlanetOsmLine(PlanetOsmLine planetOsmLine) {
 		this.planetOsmLine = planetOsmLine;
 	}
 
@@ -182,8 +182,7 @@ public class RideIncident {
 		return incidentType;
 	}
 
-	public void setIncidentType(
-			IncidentType incidentType) {
+	public void setIncidentType(IncidentType incidentType) {
 		this.incidentType = incidentType;
 	}
 
@@ -191,13 +190,11 @@ public class RideIncident {
 		return participantsInvolved;
 	}
 
-	public void setParticipantsInvolved(
-			List<ParticipantType> participantsInvolved) {
+	public void setParticipantsInvolved(List<ParticipantType> participantsInvolved) {
 		this.participantsInvolved = participantsInvolved;
 	}
 
-	public void addParticipantsInvolved(
-			ParticipantType participantInvolved) {
+	public void addParticipantsInvolved(ParticipantType participantInvolved) {
 		this.participantsInvolved.add(participantInvolved);
 	}
 
@@ -332,4 +329,5 @@ public class RideIncident {
 	public void setScary(int scary) {
 		this.scary = scary == 1;
 	}
+
 }

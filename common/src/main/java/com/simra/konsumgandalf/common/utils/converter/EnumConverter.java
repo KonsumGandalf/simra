@@ -10,8 +10,7 @@ import java.lang.reflect.Field;
  * Basic Converter for Enums which translates int like (f.e. "1") values to Enum values.
  */
 @NoArgsConstructor
-public class EnumConverter<T extends Enum<T> & EnumTranslatable> extends
-		AbstractBeanField<T, String> {
+public class EnumConverter<T extends Enum<T> & EnumTranslatable> extends AbstractBeanField<T, String> {
 
 	private Class<T> enumType;
 
@@ -30,4 +29,5 @@ public class EnumConverter<T extends Enum<T> & EnumTranslatable> extends
 		super.setField(field);
 		this.enumType = (Class<T>) field.getType();
 	}
+
 }
