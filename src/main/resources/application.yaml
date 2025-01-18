@@ -28,7 +28,6 @@ spring:
       ddl-auto: update # not delete existing columns which is important for the osm tables
       show-sql: true
       database: postgresql
-    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
     properties:
       hibernate:
         jdbc:

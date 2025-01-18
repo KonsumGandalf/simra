@@ -1,5 +1,6 @@
 ### Custom ###
 *.env
+bloomfilter.bin
 
 HELP.md
 .gradle
