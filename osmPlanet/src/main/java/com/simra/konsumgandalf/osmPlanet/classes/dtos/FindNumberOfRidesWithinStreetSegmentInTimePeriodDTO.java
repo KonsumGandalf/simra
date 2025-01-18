@@ -1,0 +1,38 @@
+package com.simra.konsumgandalf.osmPlanet.classes.dtos;
+
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.common.models.maps.TrafficTimesMapper;
+import com.simra.konsumgandalf.osmPlanet.classes.keys.TrafficTimeWeekDayKey;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
+import jakarta.persistence.SqlResultSetMapping;
+
+public class FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO extends TrafficTimeWeekDayKey {
+
+	private int numberOfRides;
+
+	public FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(Object[] row) {
+		super(TrafficTimes.valueOf((String) row[1]), WeekDays.valueOf((String) row[0]));
+		this.numberOfRides = ((Number) row[2]).intValue();
+	}
+
+	public FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(WeekDays weekDay, TrafficTimes trafficTime,
+			long numberOfRides) {
+		super(trafficTime, weekDay);
+		this.numberOfRides = (int) numberOfRides;
+	}
+
+	public int getNumberOfRides() {
+		return numberOfRides;
+	}
+
+	public void setNumberOfRides(int numberOfRides) {
+		this.numberOfRides = numberOfRides;
+	}
+
+	public TrafficTimeWeekDayKey getTrafficTimeWeekDayKey() {
+		return new TrafficTimeWeekDayKey(this.trafficTime, this.weekDay);
+	}
+
+}
