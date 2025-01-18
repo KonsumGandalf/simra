@@ -39,7 +39,7 @@ public class OsmrBackendMatchServiceTest {
 	}
 
 	@Test
-	public void testCalculateStreetSegmentOsmIdsOfRoute() {
+	public void testCalculateStreetSegmentIdsOfRoute() {
 		ArrayList<OsmrMatchInformation> coordinates = new ArrayList<>();
 		for (int i = 0; i <= 301; i++) {
 			coordinates.add(new OsmrMatchInformation(52.520007, 13.404954, 1693842834, 12));
@@ -48,7 +48,7 @@ public class OsmrBackendMatchServiceTest {
 		Mono<List<Long>> mockIds = Mono.just(Collections.singletonList(1L));
 		doReturn(mockIds).when(osmrBackendSpy).fetchStepsFromChunk(anyList());
 
-		List<Long> ids = osmrBackendSpy.calculateStreetSegmentOsmIdsOfRoute(coordinates);
+		List<Long> ids = osmrBackendSpy.calculateStreetSegmentIdsOfRoute(coordinates);
 
 		verify(osmrBackendSpy, times(2)).fetchStepsFromChunk(anyList());
 		verify(osmrBackendSpy, times(1)).combineStepChunks(anyList());

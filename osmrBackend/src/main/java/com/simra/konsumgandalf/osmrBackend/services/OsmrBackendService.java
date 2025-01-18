@@ -6,6 +6,8 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
+
 /**
  * This class is the base class for all services that interact with the OSMR backend.
  */
@@ -20,7 +22,8 @@ public abstract class OsmrBackendService {
 	OsmrBackendService(String osmrEndpoint, int partitionSize, int maxInMemorySize) {
 		webClient = WebClient.builder()
 			.baseUrl(osmrEndpoint)
-			.clientConnector(new ReactorClientHttpConnector(HttpClient.create()))
+			.clientConnector(
+					new ReactorClientHttpConnector(HttpClient.create().responseTimeout(Duration.ofSeconds(60))))
 			.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySize))
 			.build();
 

@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -50,7 +51,7 @@ public class OsmrBackendMatchService extends OsmrBackendService {
 	 * @param coordinates - The list of coordinates of a route
 	 * @return - The id of the street segments of the route
 	 */
-	public List<Long> calculateStreetSegmentOsmIdsOfRoute(List<OsmrMatchInformation> coordinates) {
+	public List<Long> calculateStreetSegmentIdsOfRoute(List<OsmrMatchInformation> coordinates) {
 		List<List<OsmrMatchInformation>> partitions = Lists.partition(coordinates, DEFAULT_PARTITION_SIZE);
 
 		return Flux.fromIterable(partitions)
@@ -106,6 +107,7 @@ public class OsmrBackendMatchService extends OsmrBackendService {
 		List<List<OsmrMatchInformation>> subPartitions = Lists.partition(chunk, partitionSize / 2);
 		return Flux.fromIterable(subPartitions)
 			.flatMap(this::fetchStepsFromChunk)
+			.delayElements(Duration.ofMillis(200))
 			.collectList()
 			.map(this::combineStepChunks)
 			.onErrorResume(WebClientResponseException.class, ex -> {
