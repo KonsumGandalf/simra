@@ -1,39 +1,67 @@
 package com.simra.konsumgandalf.common.models.entities;
 
+import com.simra.konsumgandalf.common.models.classes.RideLocation;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.common.models.maps.TrafficTimesMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import org.geolatte.geom.Geometry;
+import org.springframework.data.annotation.Transient;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
  * This class is the root entity for all OSM objects.
  */
 @Entity
-public class RideEntity {
+public class RideEntity extends TimeBaseClass {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
-	private List<RideLocation> rideLocation = new ArrayList<>();
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date rideStart;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date rideEnd;
+
+	@Column(nullable = true)
+	private Geometry way;
+
+	@Transient
+	@ElementCollection
+	private List<RideLocation> rideLocations = new ArrayList<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
 	private List<RideIncident> rideIncidents = new ArrayList<>();
 
-	@OneToOne
-	@JoinColumn(name = "ride_entity_id", referencedColumnName = "id")
-	private RideCleanedLocation rideCleanedLocation;
+	@ManyToMany(cascade = { CascadeType.DETACH, CascadeType.REFRESH, CascadeType.MERGE }, fetch = FetchType.EAGER)
+	@JoinTable(name = "ride_entity__planet_osm_line")
+	private List<PlanetOsmLine> planetOsmLines = new ArrayList<>();
+
+	@Column(columnDefinition = "text")
+	private String coordinates;
 
 	@Column(unique = true)
 	private String path;
@@ -46,28 +74,12 @@ public class RideEntity {
 		this.path = path;
 	}
 
-	public RideCleanedLocation getRideCleanedIncident() {
-		return rideCleanedLocation;
-	}
-
-	public void setRideCleanedIncident(RideCleanedLocation rideCleanedLocation) {
-		this.rideCleanedLocation = rideCleanedLocation;
-	}
-
 	public Long getId() {
 		return id;
 	}
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public List<RideLocation> getRideLocation() {
-		return rideLocation;
-	}
-
-	public void setRideLocation(List<RideLocation> rideLocation) {
-		this.rideLocation = rideLocation;
 	}
 
 	public List<RideIncident> getRideIncidents() {
@@ -78,20 +90,77 @@ public class RideEntity {
 		this.rideIncidents = rideManualDescription;
 	}
 
-	public RideCleanedLocation getRideCleanedLocation() {
-		return rideCleanedLocation;
-	}
-
-	public void setRideCleanedLocation(RideCleanedLocation rideCleanedLocation) {
-		this.rideCleanedLocation = rideCleanedLocation;
-	}
-
 	public String getPath() {
 		return path;
 	}
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public Date getRideStart() {
+		return rideStart;
+	}
+
+	public void setRideStart(Date rideStart) {
+		this.rideStart = rideStart;
+	}
+
+	public Date getRideEnd() {
+		return rideEnd;
+	}
+
+	public void setRideEnd(Date rideEnd) {
+		this.rideEnd = rideEnd;
+	}
+
+	public List<PlanetOsmLine> getPlanetOsmLines() {
+		return planetOsmLines;
+	}
+
+	public void setPlanetOsmLines(List<PlanetOsmLine> planetOsmLines) {
+		this.planetOsmLines = planetOsmLines;
+	}
+
+	public String getCoordinates() {
+		return coordinates;
+	}
+
+	public void setCoordinates(String coordinates) {
+		this.coordinates = coordinates;
+	}
+
+	public List<RideLocation> getRideLocations() {
+		return rideLocations;
+	}
+
+	public void setRideLocations(List<RideLocation> rideLocation) {
+		this.rideLocations = rideLocation;
+	}
+
+	public Geometry getWay() {
+		return way;
+	}
+
+	public void setWay(Geometry way) {
+		this.way = way;
+	}
+
+	@PrePersist
+	private void calculateTrafficTimesAndWeekDays() {
+		if (rideStart == null || rideEnd == null) {
+			return;
+		}
+
+		Date rideMedianDate = new Date((rideStart.getTime() + rideEnd.getTime()) / 2);
+		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(rideMedianDate);
+
+		int dayOfWeek = rideMedianDate.getDay();
+
+		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
+
+		super.setWeekDay(weekDay);
+		super.setTrafficTime(trafficTime);
 	}
 
 }

@@ -6,12 +6,16 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 @Aspect
 @Component
@@ -22,6 +26,9 @@ public class LoggingAspect {
 	private final ConcurrentMap<String, StopWatch> stopWatches = new ConcurrentHashMap<>();
 
 	private final ConcurrentMap<String, Long> totalTimes = new ConcurrentHashMap<>();
+
+	@Autowired
+	private ThreadPoolTaskExecutor taskExecutor;
 
 	@Around("@annotation(com.simra.konsumgandalf.common.logging.LogExecutionTime)")
 	public Object methodTimeLogger(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
@@ -40,7 +47,7 @@ public class LoggingAspect {
 		return result;
 	}
 
-	@Scheduled(cron = "5 * * * * *")
+	@Scheduled(cron = "0 * * * * *")
 	public void printAllStopWatches() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("------------------------------------------------------------------------\n");
@@ -55,6 +62,11 @@ public class LoggingAspect {
 			int percentage = (int) ((time * 100.0) / totalTime);
 			sb.append(String.format("%-13.4f %-8d %-30s\n", timeSeconds, percentage, key));
 		});
+
+		sb.append("------------------------------------------------------------------------\n");
+		sb.append(String.format("Active Tasks: %d\n", taskExecutor.getActiveCount()));
+		sb.append(String.format("Number of Queue items: %d\n", taskExecutor.getQueueSize()));
+		sb.append("------------------------------------------------------------------------\n");
 
 		if (logger.isInfoEnabled()) {
 			logger.info(sb.toString());

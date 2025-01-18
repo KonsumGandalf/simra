@@ -12,6 +12,7 @@ repositories {
 dependencies {
     compileOnly("org.projectlombok:lombok:1.18.36")
 
+    implementation("com.google.guava:guava:33.3.1-jre")
     implementation("org.springframework.boot:spring-boot-starter-webflux:3.4.0")
     implementation("org.springframework.boot:spring-boot-starter-aop:3.4.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

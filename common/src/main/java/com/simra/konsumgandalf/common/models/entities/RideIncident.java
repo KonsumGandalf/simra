@@ -6,8 +6,10 @@ import com.simra.konsumgandalf.common.models.enums.BikeType;
 import com.simra.konsumgandalf.common.models.enums.IncidentType;
 import com.simra.konsumgandalf.common.models.enums.ParticipantType;
 import com.simra.konsumgandalf.common.models.enums.PhoneLocation;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.common.models.maps.TrafficTimesMapper;
 import com.simra.konsumgandalf.common.utils.converter.EnumConverter;
-import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -17,13 +19,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
-public class RideIncident {
+public class RideIncident extends TimeBaseClass {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,9 +48,6 @@ public class RideIncident {
 	@CsvBindByName(column = "lon")
 	private double lng;
 
-	@CsvBindByName(column = "ts")
-	private String ts;
-
 	@CsvCustomBindByName(column = "bike", converter = EnumConverter.class)
 	@Column(length = 20)
 	@Enumerated(EnumType.STRING)
@@ -58,14 +62,15 @@ public class RideIncident {
 	@CsvCustomBindByName(column = "pLoc", converter = EnumConverter.class)
 	@Column(length = 16)
 	@Enumerated(EnumType.STRING)
-	private PhoneLocation phoneLocation;
+	private PhoneLocation phoneLocation = PhoneLocation.OTHER;
 
 	@CsvCustomBindByName(column = "incident", converter = EnumConverter.class)
 	@Column(length = 20)
 	@Enumerated(EnumType.STRING)
-	private IncidentType incidentType;
+	private IncidentType incidentType = IncidentType.OTHER;
 
 	@CsvBindByName(column = "desc")
+	@Column(columnDefinition = "text")
 	private String description;
 
 	@CsvBindByName(column = "scary")
@@ -75,6 +80,47 @@ public class RideIncident {
 	@Enumerated(EnumType.STRING)
 	@Column(length = 16)
 	private List<ParticipantType> participantsInvolved = new ArrayList<>();
+
+	@CsvBindByName(column = "ts")
+	@Transient
+	private long ts;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private java.util.Date timeStamp;
+
+	public RideIncident() {
+	}
+
+	public RideIncident(double lat, double lng, long ts, BikeType bike, Integer childCheckBox, Integer trailerCheckBox,
+			PhoneLocation phoneLocation, IncidentType incidentType, String description, boolean scary, long timeStamp) {
+		this.lat = lat;
+		this.lng = lng;
+		this.ts = ts;
+		this.bike = bike;
+		this.childCheckBox = childCheckBox;
+		this.trailerCheckBox = trailerCheckBox;
+		this.phoneLocation = phoneLocation;
+		this.incidentType = incidentType;
+		this.description = description;
+		this.scary = scary;
+		this.ts = timeStamp;
+	}
+
+	@PrePersist
+	private void calculateTrafficTimesAndWeekDays() {
+		if (timeStamp == null) {
+			return;
+		}
+
+		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(timeStamp);
+
+		int dayOfWeek = timeStamp.getDay();
+
+		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
+
+		super.setWeekDay(weekDay);
+		super.setTrafficTime(trafficTime);
+	}
 
 	/**
 	 * The following attributes pollute the entity with unnecessary information therefore
@@ -112,14 +158,6 @@ public class RideIncident {
 
 	public void setLng(double lon) {
 		this.lng = lon;
-	}
-
-	public String getTs() {
-		return ts;
-	}
-
-	public void setTs(String ts) {
-		this.ts = ts;
 	}
 
 	public BikeType getBike() {
@@ -328,6 +366,22 @@ public class RideIncident {
 
 	public void setScary(int scary) {
 		this.scary = scary == 1;
+	}
+
+	public long getTs() {
+		return ts;
+	}
+
+	public void setTs(long ts) {
+		this.ts = ts;
+	}
+
+	public Date getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(Date timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 
 }
