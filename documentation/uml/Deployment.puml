@@ -1,0 +1,28 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor "User" as User
+database "Static CSV Files" as CSV
+
+node "Docker Host" as DockerHost {
+    frame "Containerized Environment" {
+        node "NGINX Container" as Nginx {
+            [Angular Application]  as Angular
+        }
+
+        node "Backend Container" as Backend {
+            [Spring Application]
+        }
+
+        database "Postgres DB" as DB
+    }
+}
+
+User -right-> Nginx: HTTPS Request
+Nginx --> Backend: GET API Calls
+Backend --> DB: Query Data
+Backend --> CSV: Read
+
+note "With optional SSR support" as ssr_note
+Angular .. ssr_note
+@enduml
