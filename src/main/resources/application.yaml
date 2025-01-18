@@ -19,6 +19,8 @@ spring:
     username: ${POSTGIS_DB_USER}
     password: ${POSTGIS_DB_PASSWORD}
     hikari:
+      maximum-pool-size: 32
+      minimum-idle: 2
       connection-timeout: 600000
 
   jpa:
@@ -26,20 +28,24 @@ spring:
       ddl-auto: update # not delete existing columns which is important for the osm tables
       show-sql: true
       database: postgresql
-    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
     properties:
       hibernate:
         jdbc:
           lob:
             non_contextual_creation: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
 
 management:
   endpoints:
     web:
       exposure:
         include: "*"
-
 # logging:
-#    level:
+ #  level:
+ #   ROOT: DEBUG
 #        org.springframework.web.reactive.function.client.WebClientResponseException: OFF
 #        reactor.core.publisher: OFF

@@ -1,5 +1,7 @@
 package com.simra.konsumgandalf.common.models.classes;
 
+import com.simra.konsumgandalf.common.models.entities.RideIncident;
+
 import java.io.Serializable;
 
 public class Coordinate implements Serializable {
@@ -11,6 +13,11 @@ public class Coordinate implements Serializable {
 	public Coordinate(double lng, double lat) {
 		this.lng = lng;
 		this.lat = lat;
+	}
+
+	public Coordinate(RideIncident rideIncident) {
+		this.lng = rideIncident.getLng();
+		this.lat = rideIncident.getLat();
 	}
 
 	public Coordinate() {

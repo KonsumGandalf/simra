@@ -1,21 +1,10 @@
-package com.simra.konsumgandalf.common.models.entities;
+package com.simra.konsumgandalf.common.models.classes;
 
 import com.opencsv.bean.CsvBindByName;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Embeddable;
 
-@Entity
+@Embeddable
 public class RideLocation {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@ManyToOne
-	private RideEntity rideEntity;
 
 	@CsvBindByName(column = "lat")
 	private double lat;
@@ -82,22 +71,6 @@ public class RideLocation {
 
 	@CsvBindByName(column = "RC")
 	private double RC;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public RideEntity getRideEntity() {
-		return rideEntity;
-	}
-
-	public void setRideEntity(RideEntity rideEntity) {
-		this.rideEntity = rideEntity;
-	}
 
 	public double getLat() {
 		return lat;

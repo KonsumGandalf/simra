@@ -1,0 +1,43 @@
+services:
+    init-postgis:
+        image: codinggandalf/postgis:arm64-init-postgis
+        command: ["sh", "-c", "export PGPASSWORD=${POSTGRES_PASSWORD} && osm2pgsql -d ${POSTGRES_DB} -U ${POSTGRES_USER} -H ${POSTGRES_HOST} -C 4096 --number-processes=4 --hstore /tmp/${OSM_MAP_SOURCE}"]
+        depends_on:
+            postgis:
+                condition: service_healthy
+        volumes:
+            - ./data/${OSM_MAP_SOURCE}:/tmp/${OSM_MAP_SOURCE}
+        env_file:
+            - ./.env
+        networks:
+            - simra-network
+
+    postgis:
+        container_name: postgis
+        image: codinggandalf/postgis:arm64
+        platform: linux/arm64
+        restart: always
+        env_file:
+            - ./.env
+        ports:
+            - 25432:5432
+        volumes:
+            - postgis-data:/var/lib/postgresql/data
+            - ./10_postgis.sh:/docker-entrypoint-initdb.d/10_postgis.sh
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}", "-h", "localhost"]
+            interval: 10s
+            retries: 5
+            start_period: 10s
+            timeout: 5s
+        networks:
+            - simra-network
+
+
+volumes:
+    postgis-data:
+    postgis-data-temp:
+
+networks:
+    simra-network:
+        driver: bridge

@@ -1,5 +1,8 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.enums.RoadTypes;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
@@ -20,12 +23,14 @@ public class OsmHighwayService {
 	@Autowired
 	private OsmHighwayRepository osmHighwayRepository;
 
-	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom) {
+	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom, TrafficTimes trafficTime,
+			WeekDays weekDay) {
 		Integer distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
 
-		List<Map<String, Object>> result = osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.01);
-		return result;
+		List<Map<String, Object>> result = osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.01,
+				trafficTime.name(), weekDay.name());
+		return result.stream().filter(ele -> ele.get("dangerous_color") != null).toList();
 	}
 
 }

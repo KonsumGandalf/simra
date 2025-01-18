@@ -56,7 +56,10 @@ dependencies {
     implementation(project(":rides"))
     implementation(project(":common"))
     implementation(project(":osmPlanet"))
+
+    implementation("com.opencsv:opencsv:5.9")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.hibernate.orm:hibernate-spatial:6.6.4.Final")
     implementation("org.springframework.boot:spring-boot-starter-data-rest")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("io.github.cdimascio:dotenv-java:3.0.0")

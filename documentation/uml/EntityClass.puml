@@ -1,0 +1,137 @@
+@startuml
+
+class PlanetOsmLine {
+  +long id
+  +List<SafetyMetrics> safetyMetrics
+  +List<RideIncident> rideIncident
+  +Geometry way
+  +String highway
+  +List<RideCleanedLocation> rideCleanedLocations
+}
+
+class RideEntity {
+  +Long id
+  +List<RideLocation> rideLocation
+  +Date rideStart
+  +Date rideEnd
+  +List<RideIncident> rideIncidents
+  +RideCleanedLocation rideCleanedLocation
+  +String path
+}
+
+class RideIncident {
+  +Long id
+  +PlanetOsmLine planetOsmLine
+  +RideEntity rideEntity
+  +double lat
+  +double lng
+  +String ts
+  +BikeType bike
+  +Integer childCheckBox
+  +Integer trailerCheckBox
+  +PhoneLocation phoneLocation
+  +IncidentType incidentType
+  +String description
+  +boolean scary
+  +List<ParticipantType> participantsInvolved
+  +Date timeStamp
+}
+
+class SafetyMetrics {
+  +Long id
+  +TrafficTimes trafficTime
+  +WeekDays weekDays
+  +String dangerousColor
+  +PlanetOsmLine planetOsmLine
+  +int numberOfRides
+  +int numberOfIncidents
+  +int numberOfScaryIncidents
+  +float dangerousScore
+  +int numberOfClosePasses
+  +int numberOfPullInOuts
+  +int numberOfNearLeftRightHooks
+  +int numberOfHeadOnApproaches
+  +int numberOfTailgating
+  +int numberOfNearDoorings
+  +int numberOfObstacleDodges
+}
+
+enum WeekDays {
+    WEEK
+    WEEKEND
+    ALL_WEEK
+}
+
+enum TrafficTimes {
+  ALL_DAY,
+  EARLY_RUSH_HOUR,
+  MID_DAY,
+  LATE_RUSH_HOUR,
+  EVENING_NIGHT_MORNING,
+}
+
+enum IncidentType {
+  DUMMY_INCIDENT
+  NOTHING
+  CLOSE_PASS
+  PULLING_IN_OUT
+  NEAR_LEFT_RIGHT_HOOK
+  HEAD_ON_APPROACH
+  TAILGATING
+  NEAR_DOORING
+  DODGING_OBSTACLE
+  OTHER
+}
+
+enum BikeType {
+  NOT_CHOSEN
+  CITY_TREKKING_BIKE
+  ROAD_RACING_BIKE
+  E_BIKE
+  RECUMBENT_BICYCLE
+  FREIGHT_BICYCLE
+  TANDEM_BICYCLE
+  MOUNTAIN_BIKE
+  OTHER
+}
+
+enum ParticipantType {
+  BUS_COACH
+  CYCLIST
+  PEDESTRIAN
+  DELIVERY_VAN
+  LORRY_TRUCK
+  MOTORCYCLIST
+  CAR
+  TAXI_CAB
+  OTHER
+  ELECTRIC_SCOOTER
+}
+
+enum PhoneLocation {
+  POCKET
+  HANDLEBAR
+  JACKET_POCKET
+  HAND
+  BASKET_PANNIER
+  BACKPACK_BAG
+  OTHER
+}
+
+
+PlanetOsmLine "1" -- "0..*" SafetyMetrics
+PlanetOsmLine "1" -- "0..*" RideIncident
+PlanetOsmLine "1" -- "0..*" RideEntity
+RideEntity "0..*" -- "0..*" RideIncident
+
+RideIncident -- WeekDays
+RideIncident -- TrafficTimes
+RideIncident -- IncidentType
+RideIncident -- BikeType
+RideIncident -- ParticipantType
+RideIncident -- PhoneLocation
+
+RideEntity -- WeekDays
+RideEntity -- TrafficTimes
+
+@enduml
