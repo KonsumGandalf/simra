@@ -1,7 +1,9 @@
 package com.simra.konsumgandalf.rides.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doReturn;
@@ -13,16 +15,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.simra.konsumgandalf.common.models.entities.RideCleanedLocation;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
-import com.simra.konsumgandalf.common.models.entities.RideLocation;
+import com.simra.konsumgandalf.common.models.classes.RideLocation;
+import com.simra.konsumgandalf.common.models.enums.BikeType;
+import com.simra.konsumgandalf.common.models.enums.ParticipantType;
+import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
 import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendMatchService;
-import com.simra.konsumgandalf.rides.repositories.PlanetOsmLineRepository;
-import com.simra.konsumgandalf.rides.repositories.RideCleanedLocationRepository;
+import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
+import jakarta.servlet.http.Part;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,10 +34,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,13 +49,13 @@ public class RideEntityServiceTest {
 	private RideEntityRepository rideEntityRepository;
 
 	@Mock
-	private RideCleanedLocationRepository rideCleanedLocationRepository;
-
-	@Mock
 	private PlanetOsmLineRepository planetOsmLineRepository;
 
 	@Mock
 	private OsmrBackendMatchService osmrBackendService;
+
+	@Mock
+	private OsmrBackendMatchService osmrBackendMatchService;
 
 	@Mock
 	private FileReaderService fileReaderService;
@@ -64,6 +70,7 @@ public class RideEntityServiceTest {
 
 	@BeforeEach
 	public void setUp() {
+		MockitoAnnotations.initMocks(this);
 		rideEntityServiceSpy = spy(rideEntityService);
 	}
 
@@ -74,20 +81,104 @@ public class RideEntityServiceTest {
 
 		@Test
 		public void testEnrichRideEntityWithCsv_ValidFile() throws Exception {
-			mockRideEntity = new RideEntity("valid.csv");
+
 			when(fileReaderService.readFileFromPath("valid.csv"))
-				.thenReturn("bike,incident\n1,3\n====\nlat,lng\n1.0,4.0");
+				.thenReturn("bike,incident\n1,3\n====\nlat,lng,timeStamp\n1.0,4.0,1000");
+
+			RideIncident mockRideIncident = new RideIncident();
+			mockRideIncident.setLat(1.0);
+			mockRideIncident.setLng(4.0);
+			mockRideIncident.setI1(1);
+			mockRideIncident.setTs(2000);
+			mockRideIncident.setParticipantsInvolved(new ArrayList<>());
 			when(csvUtilService.parseCsvToModel("bike,incident\n1,3", RideIncident.class))
-				.thenReturn(new ArrayList<>());
-			when(csvUtilService.parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class)).thenReturn(new ArrayList<>());
+				.thenReturn(Collections.singletonList(mockRideIncident));
+
+			RideLocation mockRideLocationValid = new RideLocation();
+			mockRideLocationValid.setLat(1.0);
+			mockRideLocationValid.setLng(4.0);
+			mockRideLocationValid.setTimeStamp(1000);
+			RideLocation mockInvalidRideLocation = new RideLocation();
+			mockInvalidRideLocation.setLat(1.0);
+			mockInvalidRideLocation.setLng(4.0);
+			when(csvUtilService.parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class))
+				.thenReturn(List.of(mockRideLocationValid, mockInvalidRideLocation));
+
+			mockRideEntity = new RideEntity("valid.csv");
+			mockRideEntity.setRideIncidents(Collections.singletonList(mockRideIncident));
+			mockRideEntity.setRideLocations(List.of(mockRideLocationValid));
 
 			RideEntity result = rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
 
 			InOrder inOrder = inOrder(csvUtilService);
+			inOrder.verify(csvUtilService).parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class);
 			inOrder.verify(csvUtilService).parseCsvToModel("bike,incident\n1,3", RideIncident.class);
-			inOrder.verify(csvUtilService).parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class);
 
-			assertEquals(result, mockRideEntity);
+			RideIncident resultRideIncident = result.getRideIncidents().get(0);
+			assertEquals(resultRideIncident.getParticipantsInvolved(),
+					Collections.singletonList(ParticipantType.BUS_COACH));
+			assertEquals(resultRideIncident.getTimeStamp(), new Date(2000));
+
+			assertEquals(result.getRideStart(), new Date(1000));
+			assertEquals(result.getRideEnd(), new Date(1000));
+			assertEquals(result.getRideLocations(), List.of(mockRideLocationValid));
+		}
+
+		@Nested
+		class ValidateRideLocation {
+
+			RideLocation mockRideLocation;
+
+			@BeforeEach
+			public void setUp() {
+				mockRideLocation = new RideLocation();
+				mockRideLocation.setLat(1.0);
+				mockRideLocation.setLng(2.0);
+			}
+
+			@Test
+			public void testValidateRideLocation_Valid() {
+				mockRideLocation.setTimeStamp(1000);
+
+				boolean result = rideEntityService.validateRideLocation(mockRideLocation);
+				assertTrue(result);
+			}
+
+			@Test
+			public void testValidateRideLocation_Invalid() {
+				boolean result = rideEntityService.validateRideLocation(mockRideLocation);
+
+				assertFalse(result);
+			}
+
+		}
+
+		@Nested
+		class ValidateRideIncident {
+
+			RideIncident mockRideIncident;
+
+			@BeforeEach
+			public void setUp() {
+				mockRideIncident = new RideIncident();
+				mockRideIncident.setLat(1.0);
+			}
+
+			@Test
+			public void testValidateRideIncident_Valid() {
+				mockRideIncident.setLng(1.2);
+
+				boolean result = rideEntityService.validateRideIncident(mockRideIncident);
+				assertTrue(result);
+			}
+
+			@Test
+			public void testValidateRideIncident_Invalid() {
+				boolean result = rideEntityService.validateRideIncident(mockRideIncident);
+
+				assertFalse(result);
+			}
+
 		}
 
 		@Test
@@ -113,25 +204,24 @@ public class RideEntityServiceTest {
 			RideLocation mockRideLocation1 = new RideLocation();
 			mockRideLocation1.setLat(1.0);
 			mockRideLocation1.setLng(2.0);
-			mockRideEntity.setRideLocation(Collections.singletonList(mockRideLocation1));
+			List<RideLocation> mockRideLocationList = Collections.singletonList(mockRideLocation1);
+			mockRideEntity.setRideLocations(mockRideLocationList);
 
 			doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
-
-			RideCleanedLocation mockRideCleanedLocation = new RideCleanedLocation();
-			mockRideCleanedLocation.setId(1L);
-			doReturn(mockRideCleanedLocation).when(rideEntityServiceSpy)
-				.createRideCleanedLocation(any(RideEntity.class), any(Boolean.class));
+			doReturn("[]").when(rideEntityServiceSpy).generateCoordinateString(mockRideLocationList);
+			doReturn(mockRideEntity).when(rideEntityServiceSpy).linkRideIncidentToPlanetOsmLine(any(RideEntity.class));
+			doReturn(mockRideEntity).when(rideEntityServiceSpy).linkToPlanetOsmLine(any(RideEntity.class));
 
 			when(rideEntityRepository.save(any(RideEntity.class))).thenAnswer(i -> i.getArgument(0));
-
-			mockRideEntity.setRideCleanedIncident(mockRideCleanedLocation);
 
 			RideEntity result = rideEntityServiceSpy.generateNewRideEntity("valid.csv");
 
 			assertEquals(mockRideEntity, result);
 
 			verify(rideEntityServiceSpy, times(1)).enrichRideEntityWithCsv(any(RideEntity.class));
-			verify(rideEntityServiceSpy, times(1)).createRideCleanedLocation(any(RideEntity.class), any(Boolean.class));
+			verify(rideEntityServiceSpy, times(1)).generateCoordinateString(mockRideLocationList);
+			verify(rideEntityServiceSpy, times(1)).linkToPlanetOsmLine(any(RideEntity.class));
+			verify(rideEntityServiceSpy, times(1)).linkRideIncidentToPlanetOsmLine(any(RideEntity.class));
 			verify(rideEntityRepository, times(1)).save(mockRideEntity);
 		}
 
@@ -149,8 +239,7 @@ public class RideEntityServiceTest {
 		public void testGenerateNewRideEntity_JsonProcessingException() throws Exception {
 			RideEntity mockRideEntity = new RideEntity("valid.csv");
 			doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
-			doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy)
-				.createGeometryFromRideLocations(anyList());
+			doThrow(new IllegalArgumentException()).when(rideEntityServiceSpy).generateCoordinateString(anyList());
 
 			assertThrows(RuntimeException.class, () -> {
 				rideEntityServiceSpy.generateNewRideEntity(mockRideEntity.getPath());
@@ -160,42 +249,10 @@ public class RideEntityServiceTest {
 	}
 
 	@Nested
-	class CreateRideCleanedLocation {
-
-		@Test
-		public void testCreateRideCleanedLocation() throws Exception {
-			RideEntity mockRideEntity = new RideEntity("valid.csv");
-			RideLocation mockRideLocation1 = new RideLocation();
-			mockRideLocation1.setLat(1.0);
-			mockRideLocation1.setLng(2.0);
-			mockRideEntity.setRideLocation(Collections.singletonList(mockRideLocation1));
-
-			RideCleanedLocation mockRideCleanedLocation = new RideCleanedLocation();
-			mockRideCleanedLocation.setId(1L);
-			doReturn(mockRideCleanedLocation).when(rideEntityServiceSpy).createGeometryFromRideLocations(anyList());
-
-			when(osmrBackendService.calculateStreetSegmentOsmIdsOfRoute(anyList()))
-				.thenReturn(Collections.singletonList(1L));
-			when(planetOsmLineRepository.findAllByOsmId(anyList())).thenReturn(new ArrayList<>());
-			when(rideCleanedLocationRepository.save(any(RideCleanedLocation.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
-
-			RideCleanedLocation result = rideEntityServiceSpy.createRideCleanedLocation(mockRideEntity, true);
-
-			assertEquals(mockRideCleanedLocation, result);
-
-			verify(osmrBackendService, times(1)).calculateStreetSegmentOsmIdsOfRoute(anyList());
-			verify(planetOsmLineRepository, times(1)).findAllByOsmId(anyList());
-			verify(rideCleanedLocationRepository, times(1)).save(any(RideCleanedLocation.class));
-		}
-
-	}
-
-	@Nested
 	class CreateGeometryFromRideLocations {
 
 		@Test
-		public void testCreateGeometryFromRideLocations() throws Exception {
+		public void testGenerateCoordinateString() throws Exception {
 			List<RideLocation> rideLocationList = new ArrayList<>();
 
 			RideLocation mockRideLocation1 = new RideLocation();
@@ -208,12 +265,11 @@ public class RideEntityServiceTest {
 			mockRideLocation2.setLng(4.0);
 			rideLocationList.add(mockRideLocation2);
 
-			String expectedGeometry = "[{\"lng\":2.0,\"lat\":1.0},{\"lng\":4.0,\"lat\":3.0}]";
+			String expectedString = "[{\"lng\":2.0,\"lat\":1.0},{\"lng\":4.0,\"lat\":3.0}]";
 
-			rideEntityService.createGeometryFromRideLocations(rideLocationList);
+			String result = rideEntityService.generateCoordinateString(rideLocationList);
 
-			// Verify that the repository save method was called
-			verify(rideCleanedLocationRepository, times(1)).createAndSaveGeometry(expectedGeometry);
+			assertEquals(expectedString, result);
 		}
 
 	}
