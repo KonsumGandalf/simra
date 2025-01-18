@@ -16,6 +16,10 @@ public class EnumConverter<T extends Enum<T> & EnumTranslatable> extends Abstrac
 
 	@Override
 	protected T convert(String value) {
+		if (value == null || value.trim().isEmpty()) {
+			return null;
+		}
+
 		for (T type : enumType.getEnumConstants()) {
 			if (type.getValue() == Integer.parseInt(value)) {
 				return type;
