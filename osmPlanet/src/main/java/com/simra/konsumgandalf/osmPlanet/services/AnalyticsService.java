@@ -181,8 +181,7 @@ public class AnalyticsService {
 		return trafficTimesSafetyMetricsHashBiMap;
 	}
 
-	void calculateAllDayValues(
-			HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> trafficTimesSafetyMetricsHashBiMap) {
+	void calculateAllDayValues(HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> trafficTimesSafetyMetricsHashBiMap) {
 		TrafficTimeWeekDayKey allWeekKey = new TrafficTimeWeekDayKey(TrafficTimes.ALL_DAY, WeekDays.WEEK);
 		SafetyMetrics allWeekSM = new SafetyMetrics();
 
@@ -212,8 +211,7 @@ public class AnalyticsService {
 		trafficTimesSafetyMetricsHashBiMap.put(allWeekAllDayKey, allWeekAllDaySM);
 	}
 
-	void calculateAllWeekValues(
-			HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> trafficTimesSafetyMetricsHashBiMap) {
+	void calculateAllWeekValues(HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> trafficTimesSafetyMetricsHashBiMap) {
 		SafetyMetrics allEarlyRushHour = new SafetyMetrics();
 		SafetyMetrics allMidDay = new SafetyMetrics();
 		SafetyMetrics allLateRushHour = new SafetyMetrics();
