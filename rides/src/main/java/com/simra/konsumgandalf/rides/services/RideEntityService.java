@@ -69,6 +69,7 @@ public class RideEntityService {
 	private BloomFilterService bloomFilterService;
 
 	RideEntityService(@Value("${SIMRA_RIDE_FILE_PATH}") String filePath) {
+		System.out.println(filePath);
 		if (filePath == null) {
 			new RideEntityService();
 		}
@@ -78,7 +79,7 @@ public class RideEntityService {
 	}
 
 	RideEntityService() {
-		dataPath = Paths.get("").toAbsolutePath().getParent().getParent().resolve("/data").normalize();
+		dataPath = Paths.get("").toAbsolutePath().resolve("/data").normalize();
 	}
 
 	@Async

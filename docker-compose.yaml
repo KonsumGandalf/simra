@@ -33,6 +33,21 @@ services:
         networks:
             - simra-network
 
+    backend:
+        container_name: spring-backend
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: production
+        platform: linux/arm64
+        restart: always
+        env_file:
+            -   .env
+        ports:
+            - 8081:8080
+        volumes:
+            - /Users/davidschmidt/Programmierung/Master/data/dataset-master:/data
+
 
 volumes:
     postgis-data:
