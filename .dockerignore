@@ -1,0 +1,9 @@
+### Custom ###
+*.git
+**/test
+./build
+**/build
+.github
+.idea
+documentation
+*.md
