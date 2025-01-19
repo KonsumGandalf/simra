@@ -3,7 +3,7 @@ FROM gradle:jdk23-alpine AS builder
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 
-RUN gradle build --no-daemon -x test -x lint
+RUN gradle build --no-daemon -x test
 
 FROM eclipse-temurin:23-jre-alpine AS production
 
