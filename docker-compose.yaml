@@ -35,6 +35,7 @@ services:
 
     backend:
         container_name: spring-backend
+        image: codinggandalf/simra-backend:latest
         build:
             context: .
             dockerfile: Dockerfile
