@@ -47,11 +47,12 @@ services:
             - 8081:8080
         volumes:
             - /Users/davidschmidt/Programmierung/Master/data/dataset-master:/data
-
+            - bloomfilter:/bloomfilter
 
 volumes:
     postgis-data:
     postgis-data-temp:
+    bloomfilter:
 
 networks:
     simra-network:

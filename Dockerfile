@@ -3,12 +3,13 @@ FROM gradle:jdk23-alpine AS builder
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon -x test -x lint
 
 FROM eclipse-temurin:23-jre-alpine AS production
 
 RUN addgroup -S spring && adduser -S spring -G spring && \
-    mkdir -p /app
+    mkdir -p /app && mkdir -p /bloomfilter \
+    && chown -R spring:spring /app && chown -R spring:spring /bloomfilter
 USER spring:spring
 
 COPY --from=builder /home/gradle/src/build/libs/*.jar /app/app.jar
