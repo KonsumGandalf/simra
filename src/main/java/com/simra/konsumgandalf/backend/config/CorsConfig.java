@@ -20,8 +20,9 @@ public class CorsConfig {
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
 		config.addAllowedOrigin("http://localhost:4200");
-		config.addAllowedHeader("*");
-		config.addAllowedMethod("*");
+		config.addAllowedOrigin("http://spring:8080");
+		config.addAllowedHeader(CorsConfiguration.ALL);
+		config.addAllowedMethod(CorsConfiguration.ALL);
 		source.registerCorsConfiguration("/**", config);
 		return new CorsFilter(source);
 	}
