@@ -123,6 +123,7 @@ public class RideEntityService {
 			Optional<RideEntity> rideEntity = rideEntityRepository.findOneByPath(path);
 			if (rideEntity.isPresent()) {
 				_logger.info("[Database]: Ride entity with path {} already exists", path);
+				bloomFilterService.add(path);
 				return false;
 			}
 			else {
