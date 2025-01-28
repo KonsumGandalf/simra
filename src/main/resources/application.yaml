@@ -40,10 +40,15 @@ spring:
 
 
 management:
+  endpoint:
+    health:
+      show-details: always
+      enabled: true
   endpoints:
     web:
       exposure:
         include: "*"
+
 # logging:
  #  level:
  #   ROOT: DEBUG

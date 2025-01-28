@@ -16,5 +16,5 @@ COPY --from=builder /home/gradle/src/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-jar","/app/app.jar"]
+CMD ["java", "-XX:+UseContainerSupport", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-jar","/app/app.jar"]
 

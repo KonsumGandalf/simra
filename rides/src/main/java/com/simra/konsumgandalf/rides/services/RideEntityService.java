@@ -86,7 +86,7 @@ public class RideEntityService {
 	public void loadAllPreviousRides() throws Exception {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-		Files.walk(dataPath, 2)
+		Files.walk(dataPath, 4)
 			.filter(Files::isRegularFile)
 			.filter(this::isEntityFile)
 			.map(Path::toString)
