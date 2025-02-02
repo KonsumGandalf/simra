@@ -23,14 +23,14 @@ public abstract class ValhallaService {
 
 	ValhallaService(String osmrEndpoint, int partitionSize, int maxInMemorySize) {
 		ConnectionProvider connectionProvider = ConnectionProvider.builder("custom")
-				.maxConnections(24)
-				.disposeTimeout(Duration.ofMinutes(2))
-				.build();
+			.maxConnections(24)
+			.disposeTimeout(Duration.ofMinutes(2))
+			.build();
 
 		webClient = WebClient.builder()
 			.baseUrl(osmrEndpoint)
-			.clientConnector(
-					new ReactorClientHttpConnector(HttpClient.create(connectionProvider).responseTimeout(Duration.ofSeconds(60))))
+			.clientConnector(new ReactorClientHttpConnector(
+					HttpClient.create(connectionProvider).responseTimeout(Duration.ofSeconds(60))))
 			.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySize))
 			.build();
 

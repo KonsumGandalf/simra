@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This service is dedicated to deal with the endpoint /trace_attributes, which is used to match street segments
+ * This service is dedicated to deal with the endpoint /trace_attributes, which is used to
+ * match street segments
  */
 @Service
 public class ValhallaTraceAttributesService extends ValhallaService {

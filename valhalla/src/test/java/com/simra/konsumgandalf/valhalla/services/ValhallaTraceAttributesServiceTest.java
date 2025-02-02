@@ -77,7 +77,7 @@ public class ValhallaTraceAttributesServiceTest {
 		}
 
 		@Test
-		public void use2Chunks(){
+		public void use2Chunks() {
 			ArrayList<OsmrMatchInformation> coordinates = new ArrayList<>();
 			for (int i = 0; i <= 501; i++) {
 				coordinates.add(new OsmrMatchInformation(52.520007, 13.404954, i * 4));
@@ -93,8 +93,8 @@ public class ValhallaTraceAttributesServiceTest {
 			// Its 1 because distinct() in combineStepChunks
 			assertEquals(1, ids.size());
 		}
-	}
 
+	}
 
 	@Test
 	public void testCombineStepChunks() {
@@ -132,8 +132,7 @@ public class ValhallaTraceAttributesServiceTest {
 		}
 
 		@Test
-		public void testFetchStepsFromChunk_ChunkSizing()
-				throws InterruptedException, JsonProcessingException {
+		public void testFetchStepsFromChunk_ChunkSizing() throws InterruptedException, JsonProcessingException {
 			ArrayList<OsmrMatchInformation> chunk = new ArrayList<>();
 			chunk.add(new OsmrMatchInformation(52.520007, 13.404954, 1693842834));
 			chunk.add(new OsmrMatchInformation(42.520007, 23.404954, 1693842835));
@@ -148,7 +147,8 @@ public class ValhallaTraceAttributesServiceTest {
 			assertEquals("/trace_attributes", request.getPath());
 			assertEquals("POST", request.getMethod());
 
-			JsonNode expectedNode = objectMapper.readTree("{\"costing\":\"bicycle\",\"filters\":{\"attributes\":[\"edge.way_id\"],\"action\":\"include\"},\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"timestamp\":1693842834,\"lon\":52.520007},{\"lat\":23.404954,\"timestamp\":1693842835,\"lon\":42.520007}],\"snap_prevention\":[\"motorway\",\"trunk\",\"primary\"]}");
+			JsonNode expectedNode = objectMapper.readTree(
+					"{\"costing\":\"bicycle\",\"filters\":{\"attributes\":[\"edge.way_id\"],\"action\":\"include\"},\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"timestamp\":1693842834,\"lon\":52.520007},{\"lat\":23.404954,\"timestamp\":1693842835,\"lon\":42.520007}],\"snap_prevention\":[\"motorway\",\"trunk\",\"primary\"]}");
 			JsonNode actualNode = objectMapper.readTree(request.getBody().readUtf8());
 			assertEquals(expectedNode, actualNode);
 			assertEquals(List.of(1L, 2L), ids);
@@ -158,31 +158,28 @@ public class ValhallaTraceAttributesServiceTest {
 
 	@Nested
 	class TestIsNotFoundStreetSegmentError {
+
 		@Test
 		void isTrue_NoSuitableEdges() {
-			WebClientResponseException ex = WebClientResponseException.create(
-					HttpStatus.BAD_REQUEST.value(),
-					"Bad Request",
-					null,
-					"No suitable edges near location".getBytes(),
-					null
-			);
+			WebClientResponseException ex = WebClientResponseException.create(HttpStatus.BAD_REQUEST.value(),
+					"Bad Request", null, "No suitable edges near location".getBytes(), null);
 
 			boolean result = service.isNotFoundStreetSegmentError(ex);
 			assertTrue(result);
 		}
+
 		@Test
 		void isTrue_MapMatchAlgorithm() {
-			WebClientResponseException ex = WebClientResponseException.create(
-					HttpStatus.BAD_REQUEST.value(),
-					"Bad Request",
-					null,
-					"Map Match algorithm failed to find path: map_snap algorithm failed to snap the shape points to the correct shape.".getBytes(),
-					null
-			);
+			WebClientResponseException ex = WebClientResponseException.create(HttpStatus.BAD_REQUEST.value(),
+					"Bad Request", null,
+					"Map Match algorithm failed to find path: map_snap algorithm failed to snap the shape points to the correct shape."
+						.getBytes(),
+					null);
 
 			boolean result = service.isNotFoundStreetSegmentError(ex);
 			assertTrue(result);
 		}
+
 	}
+
 }
