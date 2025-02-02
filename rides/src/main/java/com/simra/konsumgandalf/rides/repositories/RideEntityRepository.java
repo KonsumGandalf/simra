@@ -1,11 +1,13 @@
 package com.simra.konsumgandalf.rides.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -13,5 +15,21 @@ public interface RideEntityRepository extends JpaRepository<RideEntity, Long> {
 
 	@Query("SELECT r FROM RideEntity r WHERE r.path = :rideId")
 	public Optional<RideEntity> findOneByPath(String rideId);
+
+	@Query(value = """
+				SELECT
+					 array_agg(DISTINCT ST_AsGeoJSON(st_transform(r.way, 4326))) as visited_way,
+			           array_agg(DISTINCT ST_AsGeoJSON(st_transform(pl.way, 4326))) AS assigned_ways,
+			           array_agg(DISTINCT ST_AsGeoJSON(st_transform(pi.way, 4326))) AS incident_ways,
+			           array_agg(DISTINCT ST_AsGeoJSON(ST_SetSRID(ST_Point(ri.lng, ri.lat), 4326))) AS incident_locations
+			      FROM ride_entity r
+			      JOIN ride_entity__planet_osm_line repol ON r.id = repol.ride_entities_id
+			      JOIN planet_osm_line pl ON repol.planet_osm_lines_osm_id = pl.osm_id
+			      LEFT JOIN ride_incident ri ON ri.ride_entity_id = r.id
+			      LEFT JOIN planet_osm_line pi ON ri.planet_osm_line_osm_id = pi.osm_id
+			      WHERE r.id = :rideId;
+			""",
+			nativeQuery = true)
+	public Map<String, String[]> findRideGeometries(long rideId);
 
 }

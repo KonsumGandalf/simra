@@ -3,7 +3,6 @@ package com.simra.konsumgandalf.osmPlanet.services;
 import com.google.common.collect.HashBiMap;
 import com.simra.konsumgandalf.common.constants.CronExpressions;
 import com.simra.konsumgandalf.common.logging.LogExecutionTime;
-import com.simra.konsumgandalf.common.models.classes.SafetyMetricsKey;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetrics;
@@ -49,7 +48,7 @@ public class AnalyticsService {
 
 	private static final Logger _logger = LoggerFactory.getLogger(AnalyticsService.class);
 
-	@Scheduled(cron = CronExpressions.EVERY_DAY)
+	// @Scheduled(cron = CronExpressions.EVERY_DAY)
 	@Async
 	@LogExecutionTime
 	public void updateHighwayInformation() {
@@ -217,7 +216,8 @@ public class AnalyticsService {
 		SafetyMetrics allLateRushHour = new SafetyMetrics();
 		SafetyMetrics allNight = new SafetyMetrics();
 		for (WeekDays weekDays : WeekDays.values()) {
-			TrafficTimeWeekDayKey earlyRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, weekDays);
+			TrafficTimeWeekDayKey earlyRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR,
+					weekDays);
 			if (trafficTimesSafetyMetricsHashBiMap.containsKey(earlyRushHourKey)) {
 				allEarlyRushHour.addUpSafetyMetric(trafficTimesSafetyMetricsHashBiMap.get(earlyRushHourKey));
 			}
@@ -227,7 +227,7 @@ public class AnalyticsService {
 				allMidDay.addUpSafetyMetric(trafficTimesSafetyMetricsHashBiMap.get(midDayKey));
 			}
 
-			TrafficTimeWeekDayKey lateRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.LATE_RUSH_HOUR, weekDays);
+			TrafficTimeWeekDayKey lateRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.EVENING_RUSH_HOUR, weekDays);
 			if (trafficTimesSafetyMetricsHashBiMap.containsKey(lateRushHourKey)) {
 				allLateRushHour.addUpSafetyMetric(trafficTimesSafetyMetricsHashBiMap.get(lateRushHourKey));
 			}
@@ -239,11 +239,11 @@ public class AnalyticsService {
 		}
 
 		trafficTimesSafetyMetricsHashBiMap
-			.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.ALL_WEEK), allEarlyRushHour);
+			.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.ALL_WEEK), allEarlyRushHour);
 		trafficTimesSafetyMetricsHashBiMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MID_DAY, WeekDays.ALL_WEEK),
 				allMidDay);
 		trafficTimesSafetyMetricsHashBiMap
-			.put(new TrafficTimeWeekDayKey(TrafficTimes.LATE_RUSH_HOUR, WeekDays.ALL_WEEK), allLateRushHour);
+			.put(new TrafficTimeWeekDayKey(TrafficTimes.EVENING_RUSH_HOUR, WeekDays.ALL_WEEK), allLateRushHour);
 		trafficTimesSafetyMetricsHashBiMap
 			.put(new TrafficTimeWeekDayKey(TrafficTimes.EVENING_NIGHT_MORNING, WeekDays.ALL_WEEK), allNight);
 	}

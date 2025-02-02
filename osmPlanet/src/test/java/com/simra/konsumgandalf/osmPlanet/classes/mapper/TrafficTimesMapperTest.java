@@ -53,7 +53,7 @@ public class TrafficTimesMapperTest {
 
 	@Test
 	public void testEarlyRushHour() {
-		TrafficTimes expected = TrafficTimes.EARLY_RUSH_HOUR;
+		TrafficTimes expected = TrafficTimes.MORNING_RUSH_HOUR;
 
 		Date date = createTime(7, 30);
 
@@ -75,7 +75,7 @@ public class TrafficTimesMapperTest {
 
 	@Test
 	public void testLateRushHour() {
-		TrafficTimes expected = TrafficTimes.LATE_RUSH_HOUR;
+		TrafficTimes expected = TrafficTimes.EVENING_RUSH_HOUR;
 
 		Date date = createTime(15, 30);
 

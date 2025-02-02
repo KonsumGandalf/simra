@@ -1,11 +1,13 @@
 package com.simra.konsumgandalf.common.models.classes;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 
 import java.io.Serializable;
 
 public class Coordinate implements Serializable {
 
+	@JsonProperty("lon")
 	private double lng;
 
 	private double lat;

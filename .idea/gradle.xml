@@ -10,8 +10,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/osmPlanet" />
-            <option value="$PROJECT_DIR$/osmrBackend" />
             <option value="$PROJECT_DIR$/rides" />
+            <option value="$PROJECT_DIR$/valhalla" />
           </set>
         </option>
       </GradleProjectSettings>

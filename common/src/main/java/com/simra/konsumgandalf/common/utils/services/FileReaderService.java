@@ -36,30 +36,4 @@ public class FileReaderService {
 		}
 	}
 
-	/**
-	 * Process all files in a specified directory
-	 * @param dirPath - Path to the unzipped directory
-	 */
-	public void processFilesFromDirectory(String dirPath) {
-		try {
-			Path directory = Paths.get(dirPath);
-			if (!Files.isDirectory(directory)) {
-				throw new IllegalArgumentException("Provided path is not a directory: " + dirPath);
-			}
-
-			// Traverse and process each file in the directory
-			Files.walk(directory).filter(Files::isRegularFile).forEach(filePath -> {
-				String fileContent = readFileFromPath(filePath.toString());
-				// Process each file as needed
-				System.out.println("Processing file: " + filePath);
-				System.out.println("Content:\n" + fileContent);
-				// Call your custom processing method here if needed
-			});
-
-		}
-		catch (IOException e) {
-			throw new RuntimeException("Error processing directory", e);
-		}
-	}
-
 }

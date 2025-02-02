@@ -64,9 +64,9 @@ enum WeekDays {
 
 enum TrafficTimes {
   ALL_DAY,
-  EARLY_RUSH_HOUR,
+  MORNING_RUSH_HOUR,
   MID_DAY,
-  LATE_RUSH_HOUR,
+  EVENING_RUSH_HOUR,
   EVENING_NIGHT_MORNING,
 }
 
