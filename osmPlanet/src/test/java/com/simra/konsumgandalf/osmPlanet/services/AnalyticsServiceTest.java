@@ -2,7 +2,6 @@ package com.simra.konsumgandalf.osmPlanet.services;
 
 import com.google.common.collect.HashBiMap;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
-import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetrics;
 import com.simra.konsumgandalf.common.models.enums.IncidentType;
@@ -20,16 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +58,7 @@ public class AnalyticsServiceTest {
 		PlanetOsmLine mockLine = new PlanetOsmLine();
 
 		FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO morningRushHourRideDTO = new FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(
-				WeekDays.WEEKEND, TrafficTimes.EARLY_RUSH_HOUR, 1);
+				WeekDays.WEEKEND, TrafficTimes.MORNING_RUSH_HOUR, 1);
 		morningRushHourRideDTO.setNumberOfRides(10);
 		when(osmHighwayRepository.findNumberOfRidesWithinStreetSegmentInTimePeriod(any(Long.class)))
 			.thenReturn(Collections.singletonList(morningRushHourRideDTO));
@@ -74,13 +67,13 @@ public class AnalyticsServiceTest {
 		eveningIncident.setScary(true);
 		eveningIncident.setTrafficTime(TrafficTimes.EVENING_NIGHT_MORNING);
 		eveningIncident.setWeekDay(WeekDays.WEEK);
-		eveningIncident.setIncident(IncidentType.PULLING_IN_OUT);
+		eveningIncident.setIncidentType(IncidentType.PULLING_IN_OUT);
 
 		RideIncident rushHourIncident = new RideIncident();
 		rushHourIncident.setScary(false);
-		rushHourIncident.setTrafficTime(TrafficTimes.EARLY_RUSH_HOUR);
+		rushHourIncident.setTrafficTime(TrafficTimes.MORNING_RUSH_HOUR);
 		rushHourIncident.setWeekDay(WeekDays.WEEKEND);
-		rushHourIncident.setIncident(IncidentType.CLOSE_PASS);
+		rushHourIncident.setIncidentType(IncidentType.CLOSE_PASS);
 
 		mockLine.setRideIncident(Arrays.asList(eveningIncident, rushHourIncident));
 
@@ -107,7 +100,7 @@ public class AnalyticsServiceTest {
 
 		assertEquals(4.4f, resultMetrics.get(eveningKey).getDangerousScore(), 0.01);
 
-		TrafficTimeWeekDayKey morningRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR,
+		TrafficTimeWeekDayKey morningRushHourKey = new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR,
 				WeekDays.WEEKEND);
 
 		assertEquals(0, resultMetrics.get(morningRushHourKey).getNumberOfNearLeftRightHooks());
@@ -153,7 +146,7 @@ public class AnalyticsServiceTest {
 
 		SafetyMetrics mockSafetyMetrics = new SafetyMetrics();
 		HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> safetyMetricsMap = HashBiMap.create();
-		safetyMetricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.ALL_WEEK),
+		safetyMetricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.ALL_WEEK),
 				mockSafetyMetrics);
 
 		doReturn(safetyMetricsMap).when(analyticsServiceSpy).calculateSafetyMetrics(mockStreet);
@@ -168,11 +161,11 @@ public class AnalyticsServiceTest {
 		HashBiMap<TrafficTimeWeekDayKey, SafetyMetrics> metricsMap = HashBiMap.create();
 		SafetyMetrics weekMetric = new SafetyMetrics();
 		weekMetric.setNumberOfRides(10);
-		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEK), weekMetric);
+		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEK), weekMetric);
 
 		SafetyMetrics weekendMetric = new SafetyMetrics();
 		weekendMetric.setNumberOfRides(5);
-		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEKEND), weekendMetric);
+		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEKEND), weekendMetric);
 
 		analyticsService.calculateAllDayValues(metricsMap);
 
@@ -193,17 +186,17 @@ public class AnalyticsServiceTest {
 		SafetyMetrics weekendMetric = new SafetyMetrics();
 		weekendMetric.setNumberOfRides(5);
 
-		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEK), weekMetric);
-		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEKEND), weekendMetric);
+		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEK), weekMetric);
+		metricsMap.put(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEKEND), weekendMetric);
 
 		analyticsService.calculateAllWeekValues(metricsMap);
 
 		assertEquals(6, metricsMap.size());
-		assertEquals(10, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEK))
+		assertEquals(10, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEK))
 			.getNumberOfRides());
-		assertEquals(5, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.WEEKEND))
+		assertEquals(5, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.WEEKEND))
 			.getNumberOfRides());
-		assertEquals(15, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.EARLY_RUSH_HOUR, WeekDays.ALL_WEEK))
+		assertEquals(15, metricsMap.get(new TrafficTimeWeekDayKey(TrafficTimes.MORNING_RUSH_HOUR, WeekDays.ALL_WEEK))
 			.getNumberOfRides());
 	}
 
