@@ -39,23 +39,20 @@ public class CsvUtilService {
 			CsvToBean<T> csvToBean = new CsvToBeanBuilder<T>(reader).withType(clazz)
 				.withIgnoreLeadingWhiteSpace(true)
 				.withIgnoreEmptyLine(true)
-				// @TODO: slow down the parsing process but ensures no
-				.withOrderedResults(true)
+				.withThrowExceptions(false)
 				.build();
 
-			return csvToBean.parse();
-		}
-		catch (RuntimeException e) {
-			if (e.getCause() instanceof CsvRequiredFieldEmptyException) {
-				if (retrying) {
-					_logger.error("Error reading CSV content after cleanup", e);
-				}
+			List<T> result = csvToBean.parse();
 
+			if (!retrying && !csvToBean.getCapturedExceptions().isEmpty()) {
+				_logger.debug("Captured exceptions during CSV parsing: {}", csvToBean.getCapturedExceptions());
 				String cleanedCsv = cleanCsvContent(csvContent);
 				return parseCsvToModel(cleanedCsv, clazz, true);
 			}
+			return result;
+		} catch (RuntimeException e) {
+			throw e;
 		}
-		return List.of();
 	}
 
 	/**
@@ -67,34 +64,23 @@ public class CsvUtilService {
 		long expectedCommas = getExpectedCommasFromHeader(csvContent);
 
 		return csvContent.lines().map(line -> {
-			// Check if the line ends with a comma and add another one if true
 			if (line.endsWith(",")) {
-				return line + ","; // Add a trailing comma
+				return line + ",";
 			}
-			return line; // No change if there's no trailing comma
-		}).filter(line -> isValidCsvLine(line, expectedCommas)).reduce((l1, l2) -> l1 + "\n" + l2).orElse(""); // Return
-																												// an
-																												// empty
-																												// string
-																												// if
-																												// there's
-																												// no
-																												// content
+			return line;
+		}).filter(line -> isValidCsvLine(line, expectedCommas)).reduce((l1, l2) -> l1 + "\n" + l2).orElse("");
 	}
 
 	private long getExpectedCommasFromHeader(String csvContent) {
-		// Get the first line (header) of the CSV content
+
 		String headerLine = csvContent.lines().findFirst().orElse("");
 
-		// Count the number of commas in the header line to determine the number of fields
 		return headerLine.chars().filter(ch -> ch == ',').count();
 	}
 
 	private boolean isValidCsvLine(String line, long expectedCommas) {
-		// Count the number of commas in the line
 		long commaCount = line.chars().filter(ch -> ch == ',').count();
 
-		// Return true if the number of commas matches the expected number
 		return commaCount == expectedCommas;
 	}
 
