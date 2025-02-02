@@ -21,6 +21,7 @@ public class CorsConfig {
 		config.setAllowCredentials(true);
 		config.addAllowedOrigin("http://localhost:4200");
 		config.addAllowedOrigin("http://spring:8080");
+		config.addAllowedOriginPattern(CorsConfiguration.ALL);
 		config.addAllowedHeader(CorsConfiguration.ALL);
 		config.addAllowedMethod(CorsConfiguration.ALL);
 		source.registerCorsConfiguration("/**", config);

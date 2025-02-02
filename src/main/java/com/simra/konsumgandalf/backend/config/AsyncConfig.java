@@ -23,8 +23,8 @@ public class AsyncConfig {
 	public ThreadPoolTaskExecutor taskExecutor() {
 		_logger.info("Creating Background Async Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(8);
-		executor.setMaxPoolSize(16);
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(4);
 		executor.setThreadNamePrefix("Async-");
 		executor.initialize();
 		return executor;
