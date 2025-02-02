@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Long> {
+
 	@Query(value = """
 				SELECT *
 					FROM planet_osm_line

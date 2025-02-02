@@ -50,7 +50,8 @@ public class CsvUtilService {
 				return parseCsvToModel(cleanedCsv, clazz, true);
 			}
 			return result;
-		} catch (RuntimeException e) {
+		}
+		catch (RuntimeException e) {
 			throw e;
 		}
 	}
