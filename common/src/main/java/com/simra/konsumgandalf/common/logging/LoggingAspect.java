@@ -1,5 +1,6 @@
 package com.simra.konsumgandalf.common.logging;
 
+import com.simra.konsumgandalf.common.constants.CronExpressions;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -47,7 +48,7 @@ public class LoggingAspect {
 		return result;
 	}
 
-	@Scheduled(cron = "0 * * * * *")
+	@Scheduled(cron = CronExpressions.EVERY_HOUR)
 	public void printAllStopWatches() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("------------------------------------------------------------------------\n");

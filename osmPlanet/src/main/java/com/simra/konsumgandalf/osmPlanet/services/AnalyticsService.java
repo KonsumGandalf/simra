@@ -48,7 +48,7 @@ public class AnalyticsService {
 
 	private static final Logger _logger = LoggerFactory.getLogger(AnalyticsService.class);
 
-	@Scheduled(cron = CronExpressions.EVERY_DAY)
+	// @Scheduled(cron = CronExpressions.EVERY_DAY)
 	@Async
 	@LogExecutionTime
 	public void updateHighwayInformation() {
