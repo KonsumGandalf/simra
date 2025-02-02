@@ -15,8 +15,8 @@ public class TrafficTimesMapper {
 
 	private static final ImmutableSortedMap<LocalTime, TrafficTimes> TRAFFIC_TIME_MAP = ImmutableSortedMap.of(
 			LocalTime.of(7, 29, 59), TrafficTimes.EVENING_NIGHT_MORNING, LocalTime.of(9, 59, 59),
-			TrafficTimes.EARLY_RUSH_HOUR, LocalTime.of(15, 29, 59), TrafficTimes.MID_DAY, LocalTime.of(18, 59, 59),
-			TrafficTimes.LATE_RUSH_HOUR);
+			TrafficTimes.MORNING_RUSH_HOUR, LocalTime.of(15, 29, 59), TrafficTimes.MID_DAY, LocalTime.of(18, 59, 59),
+			TrafficTimes.EVENING_RUSH_HOUR);
 
 	public static TrafficTimes getTrafficTime(Date date) {
 		LocalTime localTime = LocalTime.ofInstant(date.toInstant(), BERLIN_ZONE);
