@@ -12,26 +12,12 @@ public class OsmrMatchInformation extends Coordinate implements Serializable {
 	 */
 	private long timestamp;
 
-	/**
-	 * The accuracy of the matched point
-	 */
-	private double accuracy;
-
-	public OsmrMatchInformation(double lng, double lat, long time, double accuracy) {
+	public OsmrMatchInformation(double lng, double lat, long time) {
 		super(lng, lat);
 		this.timestamp = time;
-		this.accuracy = accuracy;
 	}
 
 	public OsmrMatchInformation() {
-	}
-
-	public double getAccuracy() {
-		return accuracy;
-	}
-
-	public void setAccuracy(double accuracy) {
-		this.accuracy = accuracy;
 	}
 
 	public long getTimestamp() {

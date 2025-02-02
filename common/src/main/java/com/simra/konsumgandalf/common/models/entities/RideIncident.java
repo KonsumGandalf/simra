@@ -1,5 +1,7 @@
 package com.simra.konsumgandalf.common.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import com.simra.konsumgandalf.common.models.enums.BikeType;
@@ -15,14 +17,19 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+import org.hibernate.annotations.Formula;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -30,16 +37,21 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@Table(indexes = { @Index(columnList = "planet_osm_line_osm_id") })
+@JsonIgnoreProperties({ "i1", "i2", "i3", "i4", "i5", "i6", "i7", "i8", "i9", "i10", "ts" })
 public class RideIncident extends TimeBaseClass {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "planet_osm_line_osm_id")
+	@JsonIgnore
 	private PlanetOsmLine planetOsmLine;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
 	private RideEntity rideEntity;
 
 	@CsvBindByName(column = "lat")
@@ -54,10 +66,10 @@ public class RideIncident extends TimeBaseClass {
 	private BikeType bike;
 
 	@CsvBindByName(column = "childCheckBox")
-	private Integer childCheckBox;
+	private boolean childCheckBox;
 
 	@CsvBindByName(column = "trailerCheckBox")
-	private Integer trailerCheckBox;
+	private boolean trailerCheckBox;
 
 	@CsvCustomBindByName(column = "pLoc", converter = EnumConverter.class)
 	@Column(length = 16)
@@ -76,7 +88,7 @@ public class RideIncident extends TimeBaseClass {
 	@CsvBindByName(column = "scary")
 	private boolean scary;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	@Column(length = 16)
 	private List<ParticipantType> participantsInvolved = new ArrayList<>();
@@ -91,7 +103,7 @@ public class RideIncident extends TimeBaseClass {
 	public RideIncident() {
 	}
 
-	public RideIncident(double lat, double lng, long ts, BikeType bike, Integer childCheckBox, Integer trailerCheckBox,
+	public RideIncident(double lat, double lng, long ts, BikeType bike, boolean childCheckBox, boolean trailerCheckBox,
 			PhoneLocation phoneLocation, IncidentType incidentType, String description, boolean scary, long timeStamp) {
 		this.lat = lat;
 		this.lng = lng;
@@ -168,19 +180,19 @@ public class RideIncident extends TimeBaseClass {
 		this.bike = bike;
 	}
 
-	public Integer getChildCheckBox() {
+	public boolean getChildCheckBox() {
 		return childCheckBox;
 	}
 
-	public void setChildCheckBox(Integer childCheckBox) {
+	public void setChildCheckBox(boolean childCheckBox) {
 		this.childCheckBox = childCheckBox;
 	}
 
-	public Integer getTrailerCheckBox() {
+	public boolean getTrailerCheckBox() {
 		return trailerCheckBox;
 	}
 
-	public void setTrailerCheckBox(Integer trailerCheckBox) {
+	public void setTrailerCheckBox(boolean trailerCheckBox) {
 		this.trailerCheckBox = trailerCheckBox;
 	}
 
@@ -190,14 +202,6 @@ public class RideIncident extends TimeBaseClass {
 
 	public void setPhoneLocation(PhoneLocation phoneLocation) {
 		this.phoneLocation = phoneLocation;
-	}
-
-	public IncidentType getIncident() {
-		return incidentType;
-	}
-
-	public void setIncident(IncidentType incidentType) {
-		this.incidentType = incidentType;
 	}
 
 	public String getDescription() {
