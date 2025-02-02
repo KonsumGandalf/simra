@@ -18,15 +18,12 @@ import static org.mockito.Mockito.when;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.classes.RideLocation;
-import com.simra.konsumgandalf.common.models.enums.BikeType;
 import com.simra.konsumgandalf.common.models.enums.ParticipantType;
-import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
-import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendMatchService;
 import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
-import jakarta.servlet.http.Part;
+import com.simra.konsumgandalf.valhalla.services.ValhallaTraceAttributesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,6 +33,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,10 +50,7 @@ public class RideEntityServiceTest {
 	private PlanetOsmLineRepository planetOsmLineRepository;
 
 	@Mock
-	private OsmrBackendMatchService osmrBackendService;
-
-	@Mock
-	private OsmrBackendMatchService osmrBackendMatchService;
+	private ValhallaTraceAttributesService valhallaTraceAttributesService;
 
 	@Mock
 	private FileReaderService fileReaderService;
@@ -64,13 +59,12 @@ public class RideEntityServiceTest {
 	private CsvUtilService csvUtilService;
 
 	@InjectMocks
-	private RideEntityService rideEntityService;
+	private RideEntityService rideEntityService = new RideEntityService("./");
 
 	RideEntityService rideEntityServiceSpy;
 
 	@BeforeEach
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
 		rideEntityServiceSpy = spy(rideEntityService);
 	}
 
@@ -209,7 +203,6 @@ public class RideEntityServiceTest {
 
 			doReturn(mockRideEntity).when(rideEntityServiceSpy).enrichRideEntityWithCsv(any(RideEntity.class));
 			doReturn("[]").when(rideEntityServiceSpy).generateCoordinateString(mockRideLocationList);
-			doReturn(mockRideEntity).when(rideEntityServiceSpy).linkRideIncidentToPlanetOsmLine(any(RideEntity.class));
 			doReturn(mockRideEntity).when(rideEntityServiceSpy).linkToPlanetOsmLine(any(RideEntity.class));
 
 			when(rideEntityRepository.save(any(RideEntity.class))).thenAnswer(i -> i.getArgument(0));
@@ -221,7 +214,6 @@ public class RideEntityServiceTest {
 			verify(rideEntityServiceSpy, times(1)).enrichRideEntityWithCsv(any(RideEntity.class));
 			verify(rideEntityServiceSpy, times(1)).generateCoordinateString(mockRideLocationList);
 			verify(rideEntityServiceSpy, times(1)).linkToPlanetOsmLine(any(RideEntity.class));
-			verify(rideEntityServiceSpy, times(1)).linkRideIncidentToPlanetOsmLine(any(RideEntity.class));
 			verify(rideEntityRepository, times(1)).save(mockRideEntity);
 		}
 

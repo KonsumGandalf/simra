@@ -8,13 +8,13 @@ import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.classes.RideLocation;
+import com.simra.konsumgandalf.common.models.enums.IncidentType;
 import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
-import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendMatchService;
-import com.simra.konsumgandalf.osmrBackend.services.OsmrBackendNearestService;
 import com.simra.konsumgandalf.common.models.maps.IxFunctionToParticipantTypeMap;
 import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
+import com.simra.konsumgandalf.valhalla.services.ValhallaTraceAttributesService;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -54,10 +54,7 @@ public class RideEntityService {
 	private RideEntityRepository rideEntityRepository;
 
 	@Autowired
-	private OsmrBackendMatchService osmrBackendService;
-
-	@Autowired
-	private OsmrBackendNearestService osmrBackendNearestService;
+	private ValhallaTraceAttributesService valhallaTraceAttributesService;
 
 	@Autowired
 	private CsvUtilService csvUtilService;
@@ -68,18 +65,8 @@ public class RideEntityService {
 	@Autowired
 	private BloomFilterService bloomFilterService;
 
-	RideEntityService(@Value("${SIMRA_RIDE_FILE_PATH}") String filePath) {
-		System.out.println(filePath);
-		if (filePath == null) {
-			new RideEntityService();
-		}
-		else {
-			dataPath = Paths.get(filePath);
-		}
-	}
-
-	RideEntityService() {
-		dataPath = Paths.get("").toAbsolutePath().resolve("/data").normalize();
+	RideEntityService(@Value("${SIMRA_RIDE_FILE_PATH:./}") String filePath) {
+		dataPath = Paths.get(filePath);
 	}
 
 	@Async
@@ -167,28 +154,40 @@ public class RideEntityService {
 		rideEntity.setRideEnd(new Date(rideTimestamps[1]));
 
 		List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
-		rideIncidentList = rideIncidentList.stream().map(incident -> {
-			IxFunctionToParticipantTypeMap.IxFunctionToParticipantType.forEach((key, value) -> {
-				if (key.apply(incident) == 1) {
-					incident.addParticipantsInvolved(value);
+		rideIncidentList = rideIncidentList.stream()
+			.filter(incident -> incident.getIncidentType() != IncidentType.DUMMY_INCIDENT)
+			.map(incident -> {
+				IxFunctionToParticipantTypeMap.IxFunctionToParticipantType.forEach((key, value) -> {
+					if (key.apply(incident) == 1) {
+						incident.addParticipantsInvolved(value);
+					}
+				});
+
+				Date incidentDate = new Date(incident.getTs());
+				// If the incident date is before 1st January 2018, we can assume that the
+				// date is not correct
+				if (incidentDate.before(new Date(1514761200))) {
+					incident.setTimeStamp(incidentDate);
 				}
-			});
+				else {
+					rideLocationList.stream()
+						.filter(location -> location.getLng() == incident.getLng()
+								&& location.getLat() == incident.getLat())
+						.findFirst()
+						.ifPresentOrElse(location -> {
+							incident.setTimeStamp(new Date(location.getTimeStamp()));
+						}, () -> incident.setTimeStamp(new Date((rideTimestamps[0] + rideTimestamps[1]) / 2)));
+				}
 
-			if (incident.getTs() != 0) {
-				incident.setTimeStamp(new Date(incident.getTs()));
-			}
-			else {
-				rideLocationList.stream()
-					.filter(location -> location.getLng() == incident.getLat()
-							&& location.getLat() == incident.getLng())
-					.findFirst()
-					.ifPresentOrElse(location -> {
-						incident.setTimeStamp(new Date(location.getTimeStamp()));
-					}, () -> incident.setTimeStamp(new Date((rideTimestamps[0] + rideTimestamps[1]) / 2)));
-			}
+				return incident;
+			})
+			.filter(this::validateRideIncident)
+			.toList();
 
-			return incident;
-		}).filter(this::validateRideIncident).toList();
+		if (rideIncidentList.size() > 6) {
+			_logger.warn("No valid incidents found in ride entity with path {}", rideEntity.getPath());
+		}
+
 		rideEntity.setRideIncidents(rideIncidentList);
 
 		return rideEntity;
@@ -214,14 +213,13 @@ public class RideEntityService {
 		rideEntity.setCoordinates(cleanedRideLocationString);
 
 		rideEntity = linkToPlanetOsmLine(rideEntity);
-		rideEntity = linkRideIncidentToPlanetOsmLine(rideEntity);
 
 		return rideEntityRepository.save(rideEntity);
 	}
 
 	/**
-	 * Creates a cleaned ride location from a ride entity with the help of OSMR and the
-	 * planet OSM line repository.
+	 * Links a ride entity and its incidents to the closest street segments in the planet
+	 * OSM line repository.
 	 * @param rideEntity - The csv enriched ride entity
 	 * @return - The cleaned ride location
 	 */
@@ -230,42 +228,27 @@ public class RideEntityService {
 		List<OsmrMatchInformation> coordinates = rideEntity.getRideLocations()
 			.stream()
 			.map(location -> new OsmrMatchInformation(location.getLng(), location.getLat(),
-					location.getTimeStamp() / 1000, location.getAcc()))
+					location.getTimeStamp() / 1000))
 			.toList();
 
-		List<Long> waypoints = osmrBackendService.calculateStreetSegmentIdsOfRoute(coordinates);
+		List<Long> streetSegmentIdsOfRoute = valhallaTraceAttributesService
+			.calculateStreetSegmentIdsOfRoute(coordinates);
+		if (streetSegmentIdsOfRoute.isEmpty()) {
+			_logger.error("Could not find any street segments for ride entity with path {}", rideEntity.getPath());
+			return rideEntity;
+		}
 
-		List<PlanetOsmLine> streets = planetOsmLineRepository.findAllById(waypoints);
-
+		List<PlanetOsmLine> streets = planetOsmLineRepository.findAllById(streetSegmentIdsOfRoute);
+		if (streets.isEmpty()) {
+			_logger.error("Could not find any street segments for ride entity with path {}", rideEntity.getPath());
+			return rideEntity;
+		}
 		rideEntity.setPlanetOsmLines(streets);
-		return rideEntity;
-	}
 
-	protected RideEntity linkRideIncidentToPlanetOsmLine(RideEntity rideEntity) {
-		for (RideIncident rideIncident : rideEntity.getRideIncidents()) {
-			Coordinate coordinate = new Coordinate(rideIncident);
-			if (coordinate.getLat() == 0 || coordinate.getLng() == 0) {
-				continue;
-			}
-
-			Long id;
-			try {
-				id = osmrBackendNearestService.getIDNearestStreetToCoordinate(coordinate);
-				if (id == null) {
-					_logger.error("Could not find nearest street segment to incident");
-					continue;
-				}
-
-				Optional<PlanetOsmLine> planetOsmLine = planetOsmLineRepository.findById(id);
-				if (planetOsmLine.isEmpty()) {
-					_logger.error("Could not find planet osm line with id {}", id);
-					continue;
-				}
-				rideIncident.setPlanetOsmLine(planetOsmLine.get());
-			}
-			catch (Exception e) {
-				_logger.error("Error finding nearest street segment to incident", e);
-			}
+		for (RideIncident incident : rideEntity.getRideIncidents()) {
+			PlanetOsmLine planetOsmLine = planetOsmLineRepository.findClosestStreetSegments(streetSegmentIdsOfRoute,
+					incident.getLng(), incident.getLat());
+			incident.setPlanetOsmLine(planetOsmLine);
 		}
 
 		return rideEntity;
@@ -300,6 +283,10 @@ public class RideEntityService {
 
 	protected boolean validateRideIncident(RideIncident rideIncident) {
 		return rideIncident.getLat() != 0 && rideIncident.getLng() != 0;
+	}
+
+	public Map<String, String[]> getRideGeometries(long id) {
+		return rideEntityRepository.findRideGeometries(id);
 	}
 
 }
