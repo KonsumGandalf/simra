@@ -1,6 +1,6 @@
 package com.simra.konsumgandalf.common.constants;
 
-public class DangerousColors {
+public final class DangerousColors {
 
 	public static final String RED_500 = "#EF4444";
 

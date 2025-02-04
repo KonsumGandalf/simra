@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
 
 @ExtendWith(MockitoExtension.class)
 public class FileReaderServiceTest {
@@ -40,6 +41,29 @@ public class FileReaderServiceTest {
 		public void testReadFileFromPath_FileNotFound() {
 			assertThrows(RuntimeException.class, () -> {
 				fileReaderService.readFileFromPath("nonexistentfile.txt");
+			});
+		}
+
+	}
+
+	@Nested
+	class testGetFileLastModified {
+
+		@Test
+		public void testGetFileLastModified_ValidFile() throws Exception {
+			Path tempFile = tempDir.resolve("testfile.txt");
+			String content = "Hello, World!";
+			Files.write(tempFile, content.getBytes());
+
+			Date result = fileReaderService.getFileLastModified(tempFile.toString());
+
+			assertEquals(Files.getLastModifiedTime(tempFile).toMillis(), result.getTime());
+		}
+
+		@Test
+		public void testGetFileLastModified_FileNotFound() {
+			assertThrows(RuntimeException.class, () -> {
+				fileReaderService.getFileLastModified("nonexistentfile.txt");
 			});
 		}
 

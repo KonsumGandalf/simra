@@ -1,0 +1,23 @@
+@startuml
+start
+
+if (is incident timestamp non corrupted?) then (yes)
+    stop
+else (no)
+endif
+
+if (matching incident's lat/lng found) then (yes)
+    stop
+endif
+
+if (file has modified timestamp?) then (yes)
+    stop
+endif
+
+if (Ride timestamps there?) then (yes)
+    stop
+endif
+
+:Use FALLBACK_DATE;
+stop
+@enduml
