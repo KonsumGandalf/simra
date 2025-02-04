@@ -2,20 +2,19 @@ package com.simra.konsumgandalf.rides.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simra.konsumgandalf.common.models.classes.Coordinate;
 import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
+import com.simra.konsumgandalf.common.models.classes.RideLocation;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
-import com.simra.konsumgandalf.common.models.classes.RideLocation;
 import com.simra.konsumgandalf.common.models.enums.IncidentType;
+import com.simra.konsumgandalf.common.models.maps.IxFunctionToParticipantTypeMap;
+import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
 import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
-import com.simra.konsumgandalf.common.models.maps.IxFunctionToParticipantTypeMap;
-import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
-import com.simra.konsumgandalf.valhalla.services.ValhallaTraceAttributesService;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
+import com.simra.konsumgandalf.valhalla.services.ValhallaTraceAttributesService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,6 +37,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE;
+import static com.simra.konsumgandalf.common.constants.AppDates.START_OF_RECORDING;
 
 @Service
 @Transactional
@@ -163,21 +167,9 @@ public class RideEntityService {
 					}
 				});
 
-				Date incidentDate = new Date(incident.getTs());
-				// If the incident date is before 1st January 2018, we can assume that the
-				// date is not correct
-				if (incidentDate.before(new Date(1514761200))) {
-					incident.setTimeStamp(incidentDate);
-				}
-				else {
-					rideLocationList.stream()
-						.filter(location -> location.getLng() == incident.getLng()
-								&& location.getLat() == incident.getLat())
-						.findFirst()
-						.ifPresentOrElse(location -> {
-							incident.setTimeStamp(new Date(location.getTimeStamp()));
-						}, () -> incident.setTimeStamp(new Date((rideTimestamps[0] + rideTimestamps[1]) / 2)));
-				}
+				Date dateOfIncident = getTimeStampFromRideIncident(incident, rideLocationList, rideTimestamps,
+						rideEntity.getPath());
+				incident.setTimeStamp(dateOfIncident);
 
 				return incident;
 			})
@@ -277,6 +269,52 @@ public class RideEntityService {
 		}
 	}
 
+	/**
+	 * This method tries to find the timestamp of a ride incident with multiple
+	 * strategies.
+	 * @param incident - The ride incident
+	 * @param rideLocationList - The list of ride locations of the same ride as the
+	 * incident
+	 * @param rideTimestamps - The start and end timestamps of the ride
+	 * @param ridePath - The path to the ride file
+	 * @return - The timestamp of the ride incident
+	 */
+	protected Date getTimeStampFromRideIncident(RideIncident incident, List<RideLocation> rideLocationList,
+			long[] rideTimestamps, String ridePath) {
+		Date incidentDate = new Date(incident.getTs());
+		if (isAfterStartOfRecording(incidentDate)) {
+			return incidentDate;
+		}
+
+		Optional<Date> matchedDate = rideLocationList.stream()
+			.filter(location -> location.getLng() == incident.getLng() && location.getLat() == incident.getLat())
+			.findFirst()
+			.map(location -> new Date(location.getTimeStamp()));
+
+		if (matchedDate.isPresent() && isAfterStartOfRecording(matchedDate.get())) {
+			return matchedDate.get();
+		}
+
+		if (rideTimestamps.length == 2) {
+			incidentDate = new Date((rideTimestamps[0] + rideTimestamps[1]) / 2);
+		}
+
+		if (!isAfterStartOfRecording(incidentDate)) {
+			try {
+				incidentDate = fileReaderService.getFileLastModified(ridePath);
+			}
+			catch (Exception e) {
+				_logger.error("Error getting last modified date of file", e);
+			}
+		}
+
+		if (!isAfterStartOfRecording(incidentDate)) {
+			incidentDate = FALLBACK_DATE;
+		}
+
+		return incidentDate;
+	}
+
 	protected boolean validateRideLocation(RideLocation rideLocation) {
 		return rideLocation.getLat() != 0 && rideLocation.getLng() != 0 && rideLocation.getTimeStamp() != 0;
 	}
@@ -287,6 +325,10 @@ public class RideEntityService {
 
 	public Map<String, String[]> getRideGeometries(long id) {
 		return rideEntityRepository.findRideGeometries(id);
+	}
+
+	private boolean isAfterStartOfRecording(Date date) {
+		return (date != null) && date.after(START_OF_RECORDING);
 	}
 
 }

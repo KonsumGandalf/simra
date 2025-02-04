@@ -1,5 +1,7 @@
 package com.simra.konsumgandalf.rides.services;
 
+import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE;
+import static com.simra.konsumgandalf.common.constants.AppDates.START_OF_RECORDING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,9 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,7 +111,7 @@ public class RideEntityServiceTest {
 			RideIncident resultRideIncident = result.getRideIncidents().get(0);
 			assertEquals(resultRideIncident.getParticipantsInvolved(),
 					Collections.singletonList(ParticipantType.BUS_COACH));
-			assertEquals(resultRideIncident.getTimeStamp(), new Date(2000));
+			assertEquals(resultRideIncident.getTimeStamp(), FALLBACK_DATE);
 
 			assertEquals(result.getRideStart(), new Date(1000));
 			assertEquals(result.getRideEnd(), new Date(1000));
@@ -262,6 +262,89 @@ public class RideEntityServiceTest {
 			String result = rideEntityService.generateCoordinateString(rideLocationList);
 
 			assertEquals(expectedString, result);
+		}
+
+	}
+
+	@Nested
+	class GetTimeStampFromRideIncident {
+
+		private RideIncident mockRideIncident;
+
+		private List<RideLocation> mockRideLocationList;
+
+		private long[] mockTimestamps;
+
+		private String mockRidePath;
+
+		private long START_OF_RECORDING_TIMESTAMP;
+
+		@BeforeEach
+		public void setUp() {
+			mockRideIncident = new RideIncident();
+			mockRideLocationList = new ArrayList<>();
+			mockTimestamps = new long[] {};
+			mockRidePath = "valid.csv";
+			START_OF_RECORDING_TIMESTAMP = START_OF_RECORDING.getTime();
+		}
+
+		Date getExpectedDate(long timestamp) {
+			return new Date(START_OF_RECORDING_TIMESTAMP + timestamp);
+		}
+
+		@Test
+		public void testGetTimeStampFromRideIncident_ValidTs() {
+			mockRideIncident.setTs(START_OF_RECORDING_TIMESTAMP + 1000);
+
+			Date result = rideEntityService.getTimeStampFromRideIncident(mockRideIncident, mockRideLocationList,
+					mockTimestamps, mockRidePath);
+
+			assertEquals(getExpectedDate(1000), result);
+		}
+
+		@Test
+		public void testGetTimeStampFromRideIncident_LocationTimeStamp() {
+			mockRideIncident.setLat(1.0);
+			mockRideIncident.setLng(2.0);
+
+			RideLocation mockRideLocation = new RideLocation();
+			mockRideLocation.setLat(1.0);
+			mockRideLocation.setLng(2.0);
+			mockRideLocation.setTimeStamp(START_OF_RECORDING_TIMESTAMP + 2000);
+			mockRideLocationList.add(mockRideLocation);
+
+			Date result = rideEntityService.getTimeStampFromRideIncident(mockRideIncident, mockRideLocationList,
+					mockTimestamps, mockRidePath);
+
+			assertEquals(getExpectedDate(2000), result);
+		}
+
+		@Test
+		public void testGetTimeStampFromRideIncident_RidePath() {
+			mockTimestamps = new long[] { START_OF_RECORDING_TIMESTAMP + 1000, START_OF_RECORDING_TIMESTAMP + 10000 };
+
+			Date result = rideEntityService.getTimeStampFromRideIncident(mockRideIncident, mockRideLocationList,
+					mockTimestamps, mockRidePath);
+
+			assertEquals(getExpectedDate(5500), result);
+		}
+
+		@Test
+		public void testGetTimeStampFromRideIncident_LastModified() {
+			when(fileReaderService.getFileLastModified(mockRidePath)).thenReturn(getExpectedDate(5000));
+
+			Date result = rideEntityService.getTimeStampFromRideIncident(mockRideIncident, mockRideLocationList,
+					mockTimestamps, mockRidePath);
+
+			assertEquals(getExpectedDate(5000), result);
+		}
+
+		@Test
+		public void testGetTimeStampFromRideIncident_Fallback() {
+			Date result = rideEntityService.getTimeStampFromRideIncident(mockRideIncident, mockRideLocationList,
+					mockTimestamps, mockRidePath);
+
+			assertEquals(FALLBACK_DATE, result);
 		}
 
 	}
