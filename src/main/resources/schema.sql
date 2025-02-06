@@ -51,3 +51,17 @@ CREATE OR REPLACE TRIGGER trigger_calculate_geometry_and_clear_coordinates
 AFTER INSERT ON ride_entity
 FOR EACH ROW
 EXECUTE FUNCTION calculate_geometry_and_clear_coordinates();
+
+-- Auto calculate the way of all ride incidents
+CREATE OR REPLACE FUNCTION calculate_way_of_ride_incident()
+RETURNS TRIGGER AS '
+BEGIN
+    NEW.way = ST_MakePoint(NEW.lng, NEW.lat);
+    RETURN NEW;
+END;
+' LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_calculate_way_of_ride_incident
+BEFORE INSERT OR UPDATE ON ride_incident
+FOR EACH ROW
+EXECUTE FUNCTION calculate_way_of_ride_incident();

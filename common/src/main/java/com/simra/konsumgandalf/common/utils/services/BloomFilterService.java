@@ -55,10 +55,9 @@ public class BloomFilterService {
 	}
 
 	@PostConstruct
-	public void loadFromDisk() throws IOException, ClassNotFoundException {
+	public void loadFromDisk() {
 		File file = new File(BLOOM_FILTER_FILE_PATH);
 		if (file.exists()) {
-			// If the file exists, read the Bloom filter from it
 			try (FileInputStream fis = new FileInputStream(file)) {
 				bloomFilter = BloomFilter.readFrom(fis, Funnels.stringFunnel(StandardCharsets.UTF_8));
 				_logger.info("Bloom filter loaded from disk");
@@ -70,10 +69,7 @@ public class BloomFilterService {
 			}
 		}
 		else {
-			// If the file does not exist, create a new empty Bloom filter
 			_logger.info("No Bloom filter file found, creating a new one.");
-			// The Bloom filter is already initialized in the constructor, so nothing else
-			// is needed here
 		}
 	}
 
