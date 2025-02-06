@@ -102,6 +102,7 @@ public class RideIncident extends TimeBaseClass {
 	@Temporal(TemporalType.TIMESTAMP)
 	private java.util.Date timeStamp;
 
+	@JsonIgnore
 	@Column(columnDefinition = "geometry(Point,4326)")
 	private Point way;
 
@@ -109,7 +110,7 @@ public class RideIncident extends TimeBaseClass {
 	}
 
 	public RideIncident(double lat, double lng, long ts, BikeType bike, boolean childCheckBox, boolean trailerCheckBox,
-			PhoneLocation phoneLocation, IncidentType incidentType, String description, boolean scary, long timeStamp) {
+			PhoneLocation phoneLocation, IncidentType incidentType, String description, boolean scary) {
 		this.lat = lat;
 		this.lng = lng;
 		this.ts = ts;
@@ -120,7 +121,6 @@ public class RideIncident extends TimeBaseClass {
 		this.incidentType = incidentType;
 		this.description = description;
 		this.scary = scary;
-		this.ts = timeStamp;
 	}
 
 	@PrePersist
