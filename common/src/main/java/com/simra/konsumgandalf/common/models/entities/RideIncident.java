@@ -36,10 +36,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(indexes = {
-		@Index(columnList = "planet_osm_line_osm_id"),
-		@Index(name = "idx_way_gist", columnList = "way")
-})
+@Table(indexes = { @Index(columnList = "planet_osm_line_osm_id"), @Index(name = "idx_way_gist", columnList = "way") })
 @JsonIgnoreProperties({ "i1", "i2", "i3", "i4", "i5", "i6", "i7", "i8", "i9", "i10", "ts" })
 public class RideIncident extends TimeBaseClass {
 

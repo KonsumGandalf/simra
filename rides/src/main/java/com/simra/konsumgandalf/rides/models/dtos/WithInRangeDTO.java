@@ -3,6 +3,7 @@ package com.simra.konsumgandalf.rides.models.dtos;
 import com.simra.konsumgandalf.common.models.classes.Coordinate;
 
 public class WithInRangeDTO extends Coordinate {
+
 	private double range;
 
 	public WithInRangeDTO() {
@@ -20,4 +21,5 @@ public class WithInRangeDTO extends Coordinate {
 	public void setRange(double range) {
 		this.range = range;
 	}
+
 }
