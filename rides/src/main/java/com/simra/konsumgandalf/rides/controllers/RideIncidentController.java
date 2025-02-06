@@ -1,11 +1,17 @@
 package com.simra.konsumgandalf.rides.controllers;
 
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
+import com.simra.konsumgandalf.rides.models.dtos.RideIncidentDTO;
+import com.simra.konsumgandalf.rides.models.dtos.WithInRangeDTO;
 import com.simra.konsumgandalf.rides.services.RideIncidentService;
+import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -22,6 +28,16 @@ public class RideIncidentController {
 	public Map<String, List<RideIncident>> getIncidentsOfStreets(@PathVariable long id) {
 		List<RideIncident> incidents = rideIncidentService.getIncidentsOfStreetSegment(id);
 		return Map.of("incidents", incidents);
+	}
+
+	@GetMapping("marker")
+	public Map<String, String> getIncidentsWithinRange() {
+		return Map.of("incidents", rideIncidentService.getAllIncidentsWithRange());
+	}
+
+	@GetMapping("/{id}")
+	public RideIncident getIncident(@PathVariable long id) {
+		return rideIncidentService.getIncident(id);
 	}
 
 }
