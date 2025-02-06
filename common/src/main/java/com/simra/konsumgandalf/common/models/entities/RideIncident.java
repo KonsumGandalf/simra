@@ -29,15 +29,17 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
-import org.hibernate.annotations.Formula;
+import org.geolatte.geom.Point;
 
-import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(indexes = { @Index(columnList = "planet_osm_line_osm_id") })
+@Table(indexes = {
+		@Index(columnList = "planet_osm_line_osm_id"),
+		@Index(name = "idx_way_gist", columnList = "way")
+})
 @JsonIgnoreProperties({ "i1", "i2", "i3", "i4", "i5", "i6", "i7", "i8", "i9", "i10", "ts" })
 public class RideIncident extends TimeBaseClass {
 
@@ -100,6 +102,9 @@ public class RideIncident extends TimeBaseClass {
 	@Temporal(TemporalType.TIMESTAMP)
 	private java.util.Date timeStamp;
 
+	@Column(columnDefinition = "geometry(Point,4326)")
+	private Point way;
+
 	public RideIncident() {
 	}
 
@@ -119,7 +124,7 @@ public class RideIncident extends TimeBaseClass {
 	}
 
 	@PrePersist
-	private void calculateTrafficTimesAndWeekDays() {
+	private void calculateTrafficTimesAndWeekDaysAndGeometry() {
 		if (timeStamp == null) {
 			return;
 		}
@@ -386,6 +391,14 @@ public class RideIncident extends TimeBaseClass {
 
 	public void setTimeStamp(Date timeStamp) {
 		this.timeStamp = timeStamp;
+	}
+
+	public Point getWay() {
+		return way;
+	}
+
+	public void setWay(Point way) {
+		this.way = way;
 	}
 
 }
