@@ -67,6 +67,8 @@ dependencies {
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
     implementation("org.hibernate.orm:hibernate-spatial:6.6.2.Final")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
