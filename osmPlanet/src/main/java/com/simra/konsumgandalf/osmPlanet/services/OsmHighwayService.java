@@ -8,8 +8,11 @@ import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +24,9 @@ public class OsmHighwayService {
 	private final ZoomRoadTypeMapper zoomRoadTypeMapper = new ZoomRoadTypeMapper();
 
 	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
 	private OsmHighwayRepository osmHighwayRepository;
 
 	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom, TrafficTimes trafficTime,
@@ -28,9 +34,8 @@ public class OsmHighwayService {
 		Integer distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
 
-		List<Map<String, Object>> result = osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.01,
+		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001,
 				trafficTime.name(), weekDay.name());
-		return result.stream().filter(ele -> ele.get("dangerous_color") != null).toList();
 	}
 
 }
