@@ -11,11 +11,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
-@ComponentScan(basePackages = { "com.simra.konsumgandalf.backend.config",
-		"com.simra.konsumgandalf.common.utils.services", "com.simra.konsumgandalf.valhalla.services",
-		"com.simra.konsumgandalf.osmPlanet.services", "com.simra.konsumgandalf.osmPlanet.controller",
-		"com.simra.konsumgandalf.rides.services", "com.simra.konsumgandalf.common.logging",
-		"com.simra.konsumgandalf.rides.controllers", "com.simra.konsumgandalf.osmPlanet.repositories" })
+@ComponentScan(
+		basePackages = { "com.simra.konsumgandalf.backend.config", "com.simra.konsumgandalf.common.utils.services",
+				"com.simra.konsumgandalf.valhalla.services", "com.simra.konsumgandalf.osmPlanet.services",
+				"com.simra.konsumgandalf.osmPlanet.controller", "com.simra.konsumgandalf.rides.services",
+				"com.simra.konsumgandalf.common.logging", "com.simra.konsumgandalf.rides.controllers", })
 @EnableJpaRepositories(basePackages = { "com.simra.konsumgandalf.common.repositories",
 		"com.simra.konsumgandalf.rides.repositories", "com.simra.konsumgandalf.osmPlanet.repositories" })
 @EntityScan(basePackages = { "com.simra.konsumgandalf.common.models.entities.osm",
