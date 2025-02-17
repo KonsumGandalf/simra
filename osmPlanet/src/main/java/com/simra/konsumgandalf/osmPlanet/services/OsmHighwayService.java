@@ -27,8 +27,8 @@ public class OsmHighwayService {
 		int distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
 
-		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001,
-				trafficTime.name(), weekDay.name());
+		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001, trafficTime.name(),
+				weekDay.name());
 	}
 
 }

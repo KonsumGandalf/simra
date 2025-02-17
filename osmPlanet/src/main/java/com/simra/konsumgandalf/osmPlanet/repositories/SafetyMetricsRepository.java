@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface SafetyMetricsRepository extends JpaRepository<SafetyMetrics, Long>, JpaSpecificationExecutor<SafetyMetrics> {
+public interface SafetyMetricsRepository
+		extends JpaRepository<SafetyMetrics, Long>, JpaSpecificationExecutor<SafetyMetrics> {
 
 	@Query(value = """
 			SELECT s
@@ -21,4 +22,5 @@ public interface SafetyMetricsRepository extends JpaRepository<SafetyMetrics, Lo
 			AND s.weekDay = :weekDay
 			""")
 	Optional<SafetyMetrics> findByStreetId(long id, TrafficTimes trafficTime, WeekDays weekDay);
+
 }

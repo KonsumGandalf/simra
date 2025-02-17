@@ -23,9 +23,10 @@ public class StreetsController {
 
 	@GetMapping("/grid")
 	public List<Map<String, Object>> getHighwayInformation(@RequestParam("lat") double lat,
-															   @RequestParam("lng") double lng, @RequestParam("zoom") int zoom,
-															   @RequestParam(defaultValue = "ALL_DAY") TrafficTimes trafficTime,
-															   @RequestParam(defaultValue = "ALL_WEEK") WeekDays weekDay) {
+			@RequestParam("lng") double lng, @RequestParam("zoom") int zoom,
+			@RequestParam(defaultValue = "ALL_DAY") TrafficTimes trafficTime,
+			@RequestParam(defaultValue = "ALL_WEEK") WeekDays weekDay) {
 		return osmHighwayService.getHighwayInformation(lat, lng, zoom, trafficTime, weekDay);
 	}
+
 }

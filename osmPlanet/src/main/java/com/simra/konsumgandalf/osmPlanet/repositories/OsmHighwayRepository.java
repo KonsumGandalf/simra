@@ -63,4 +63,4 @@ public interface OsmHighwayRepository extends PlanetOsmLineRepository {
 	List<FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO> findNumberOfRidesWithinStreetSegmentInTimePeriod(
 			@Param("osmId") Long osmId);
 
-	}
+}

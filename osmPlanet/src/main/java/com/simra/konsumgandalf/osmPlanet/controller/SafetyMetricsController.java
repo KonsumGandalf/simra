@@ -32,20 +32,16 @@ public class SafetyMetricsController {
 	}
 
 	@GetMapping("/streets")
-	public Page<SafetyMetricsDTO> getFilteredData(
-			@RequestParam(required = false) Long id,
-			@RequestParam(required = false) String name,
-			@RequestParam(required = false) List<String> highway,
+	public Page<SafetyMetricsDTO> getFilteredData(@RequestParam(required = false) Long id,
+			@RequestParam(required = false) String name, @RequestParam(required = false) List<String> highway,
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Float maxDangerousScore,
 			@RequestParam(required = false) Integer minNumberOfRides,
 			@RequestParam(required = false) Integer minNumberOfIncidents,
 			@RequestParam(required = false) List<TrafficTimes> trafficTime,
-			@RequestParam(required = false) List<WeekDays> weekDay,
-			Pageable pageable) {
-		return safetyMetricsService.getFilteredData(id, name, highway, minDangerousScore, maxDangerousScore, minNumberOfRides, minNumberOfIncidents,
-				trafficTime,
-				weekDay, pageable);
+			@RequestParam(required = false) List<WeekDays> weekDay, Pageable pageable) {
+		return safetyMetricsService.getFilteredData(id, name, highway, minDangerousScore, maxDangerousScore,
+				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, pageable);
 	}
 
 }

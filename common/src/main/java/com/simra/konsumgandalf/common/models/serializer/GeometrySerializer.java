@@ -9,10 +9,12 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import java.io.IOException;
 
 public class GeometrySerializer extends JsonSerializer<Geometry> {
+
 	@Override
 	public void serialize(Geometry value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		GeoJsonWriter writer = new GeoJsonWriter();
 		String geoJson = writer.write(value);
 		gen.writeRawValue(geoJson);
 	}
+
 }

@@ -25,26 +25,19 @@ public class SafetyMetricsService {
 		return safetyMetricsRepository.findByStreetId(id, trafficTime, weekDay);
 	}
 
-	public Page<SafetyMetricsDTO> getFilteredData(Long id, String name, List<String> highwayType, Float minDangerousScore, Float maxDangerousScore,
-												  Integer minNumberOfRides, Integer minNumberOfIncidents,
-												  List<TrafficTimes> trafficTime, List<WeekDays> weekDay, Pageable pageable) {
+	public Page<SafetyMetricsDTO> getFilteredData(Long id, String name, List<String> highwayType,
+			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
+			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, Pageable pageable) {
 
-		Specification<SafetyMetrics> spec = SafetyMetricsSpecification.filterBy(
-				id, name, highwayType, minDangerousScore, maxDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay);
+		Specification<SafetyMetrics> spec = SafetyMetricsSpecification.filterBy(id, name, highwayType,
+				minDangerousScore, maxDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay);
 
-		return safetyMetricsRepository.findAll(spec, pageable).map(safetyMetrics ->  new SafetyMetricsDTO(
-			safetyMetrics.getPlanetOsmLine().getId(),
-			safetyMetrics.getPlanetOsmLine().getName(),
-			safetyMetrics.getPlanetOsmLine().getHighway(),
-			safetyMetrics.getPlanetOsmLine().getWay(),
-			safetyMetrics.getDangerousScore(),
-			safetyMetrics.getDangerousColor(),
-			safetyMetrics.getNumberOfRides(),
-			safetyMetrics.getNumberOfIncidents(),
-			safetyMetrics.getTrafficTime(),
-			safetyMetrics.getWeekDay()
-			)
-		);
+		return safetyMetricsRepository.findAll(spec, pageable)
+			.map(safetyMetrics -> new SafetyMetricsDTO(safetyMetrics.getPlanetOsmLine().getId(),
+					safetyMetrics.getPlanetOsmLine().getName(), safetyMetrics.getPlanetOsmLine().getHighway(),
+					safetyMetrics.getPlanetOsmLine().getWay(), safetyMetrics.getDangerousScore(),
+					safetyMetrics.getDangerousColor(), safetyMetrics.getNumberOfRides(),
+					safetyMetrics.getNumberOfIncidents(), safetyMetrics.getTrafficTime(), safetyMetrics.getWeekDay()));
 
 	}
 

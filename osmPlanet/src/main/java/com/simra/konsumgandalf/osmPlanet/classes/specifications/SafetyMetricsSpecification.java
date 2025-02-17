@@ -12,9 +12,8 @@ import java.util.List;
 
 public class SafetyMetricsSpecification {
 
-	public static Specification<SafetyMetrics> filterBy(
-			Long id, String name, List<String> highwayType, Float minDangerousScore, Float maxDangerousScore,
-			Integer minNumberOfRides, Integer minNumberOfIncidents,
+	public static Specification<SafetyMetrics> filterBy(Long id, String name, List<String> highwayType,
+			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
 			List<TrafficTimes> trafficTime, List<WeekDays> weekDay) {
 
 		return (Root<SafetyMetrics> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
@@ -34,9 +33,11 @@ public class SafetyMetricsSpecification {
 			}
 			if (minDangerousScore != null && maxDangerousScore != null) {
 				predicates.add(cb.between(root.get("dangerousScore"), minDangerousScore, maxDangerousScore));
-			} else if (minDangerousScore != null) {
+			}
+			else if (minDangerousScore != null) {
 				predicates.add(cb.greaterThanOrEqualTo(root.get("dangerousScore"), minDangerousScore));
-			} else if (maxDangerousScore != null) {
+			}
+			else if (maxDangerousScore != null) {
 				predicates.add(cb.lessThanOrEqualTo(root.get("dangerousScore"), maxDangerousScore));
 			}
 			if (minNumberOfRides != null) {
@@ -55,4 +56,5 @@ public class SafetyMetricsSpecification {
 			return cb.and(predicates.toArray(new Predicate[0]));
 		};
 	}
+
 }

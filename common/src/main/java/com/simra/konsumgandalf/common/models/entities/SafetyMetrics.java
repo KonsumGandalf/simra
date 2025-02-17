@@ -24,10 +24,8 @@ import jakarta.persistence.Table;
  * This entity represents the safety metrics of a ride.
  */
 @Entity
-@Table(indexes = {
-		@Index(name = "idx_traffic_time_week_day", columnList = "trafficTime, weekDay"),
-		@Index(name = "idx_safety_metrics_dangerous_score", columnList = "dangerousScore DESC, trafficTime, weekDay")
-})
+@Table(indexes = { @Index(name = "idx_traffic_time_week_day", columnList = "trafficTime, weekDay"),
+		@Index(name = "idx_safety_metrics_dangerous_score", columnList = "dangerousScore DESC, trafficTime, weekDay") })
 @IdClass(SafetyMetricsKey.class)
 public class SafetyMetrics {
 

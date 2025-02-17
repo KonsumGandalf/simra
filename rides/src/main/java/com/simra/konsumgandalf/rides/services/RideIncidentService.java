@@ -39,8 +39,8 @@ public class RideIncidentService {
 						'lat', ride_incident.lat,
 						'scary', ride_incident.scary
 					)
-       			) FROM ride_incident
-      """;
+				   			) FROM ride_incident
+				  """;
 
 		return jdbcTemplate.queryForObject(sql, String.class);
 	}
