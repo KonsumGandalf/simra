@@ -42,17 +42,6 @@ public interface OsmHighwayRepository extends PlanetOsmLineRepository {
 			@Param("tolerance") double tolerance, @Param("trafficTime") String trafficTime,
 			@Param("weekDay") String weekDay);
 
-	/*
-	 * @Async
-	 *
-	 * @Query(""" SELECT new
-	 * com.simra.konsumgandalf.osmPlanet.classes.dtos.FindStreetsWithNumberOfRidesDTO(p,
-	 * size(p.rideCleanedLocations)) FROM PlanetOsmLine p LEFT JOIN FETCH p.rideIncident
-	 * WHERE p.highway != '' AND p.rideIncident IS NOT EMPTY """)
-	 * CompletableFuture<List<FindStreetsWithNumberOfRidesDTO>> findAllStreets(Pageable
-	 * pageable);
-	 */
-
 	@EntityGraph(attributePaths = { "rideIncident" })
 	@Query(value = """
 			SELECT p

@@ -20,6 +20,7 @@ dependencies {
     implementation("com.opencsv:opencsv:5.9")
     implementation("org.hibernate.orm:hibernate-spatial:6.6.2.Final")
     implementation("org.n52.jackson:jackson-datatype-jts:1.2.10")
+    implementation("org.locationtech.jts.io:jts-io-common:1.20.0")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
