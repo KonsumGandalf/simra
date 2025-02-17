@@ -4,7 +4,7 @@ import com.simra.konsumgandalf.common.models.entities.SafetyMetrics;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsDTO;
-import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsSpecification;
+import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsSpecification;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
