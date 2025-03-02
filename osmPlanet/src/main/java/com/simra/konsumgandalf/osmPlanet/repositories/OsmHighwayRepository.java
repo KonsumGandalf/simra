@@ -72,12 +72,13 @@ public interface OsmHighwayRepository extends PlanetOsmLineRepository {
 	Optional<PlanetOsmLine> findById(Long id);
 
 	@Query("""
-		SELECT r.rideStart as rideStart, r.rideEnd  as rideEnd 
-		FROM PlanetOsmLine p 
-		JOIN p.rideEntities r 
-		WHERE p.id = :id
-		AND r.rideStart >= :startTime
-		AND r.rideEnd <= :endTime
-	""")
+				SELECT r.rideStart as rideStart, r.rideEnd  as rideEnd
+				FROM PlanetOsmLine p
+				JOIN p.rideEntities r
+				WHERE p.id = :id
+				AND r.rideStart >= :startTime
+				AND r.rideEnd <= :endTime
+			""")
 	List<RideEntityDTO> findRideEntitiesTimeById(Long id, LocalDateTime startTime, LocalDateTime endTime);
+
 }

@@ -143,4 +143,5 @@ public class PlanetOsmLine {
 	public void setTags(Map<String, String> tags) {
 		this.tags = tags;
 	}
+
 }

@@ -41,11 +41,11 @@ public class StreetsController {
 	}
 
 	@GetMapping("/{id}/ride-entities")
-	public Map<String, List<RideEntityDTO>> getRideEntitiesTimeById(
-			@PathVariable("id") long id,
+	public Map<String, List<RideEntityDTO>> getRideEntitiesTimeById(@PathVariable("id") long id,
 			@RequestParam("rideStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rideStart,
 			@RequestParam("rideEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rideEnd) {
 
 		return Map.of("rides", osmHighwayService.getRideEntitiesTimeById(id, rideStart, rideEnd));
 	}
+
 }
