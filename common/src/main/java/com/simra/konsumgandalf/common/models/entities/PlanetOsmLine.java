@@ -1,8 +1,12 @@
 package com.simra.konsumgandalf.common.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLHStoreType;
+import org.hibernate.annotations.Type;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,12 +20,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.locationtech.jts.geom.Geometry;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Entity()
 @Table(indexes = { @Index(columnList = "osm_id") })
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PlanetOsmLine {
 
 	@Id
@@ -34,7 +41,6 @@ public class PlanetOsmLine {
 	 * {@link #rideIncident} field is used to calculate the metrics.
 	 */
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "planetOsmLine", orphanRemoval = true)
-	@JsonBackReference
 	private List<SafetyMetrics> safetyMetrics;
 
 	/**
@@ -55,7 +61,12 @@ public class PlanetOsmLine {
 	@JsonIgnore
 	private Set<RideEntity> rideEntities;
 
+	@Column
 	private String name;
+
+	@Type(PostgreSQLHStoreType.class)
+	@Column(columnDefinition = "hstore")
+	private Map<String, String> tags = new HashMap<>();
 
 	public PlanetOsmLine() {
 	}
@@ -125,4 +136,11 @@ public class PlanetOsmLine {
 		this.name = name;
 	}
 
+	public Map<String, String> getTags() {
+		return tags;
+	}
+
+	public void setTags(Map<String, String> tags) {
+		this.tags = tags;
+	}
 }

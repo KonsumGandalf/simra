@@ -1,7 +1,9 @@
 package com.simra.konsumgandalf.common.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.simra.konsumgandalf.common.constants.DangerousColors;
 import com.simra.konsumgandalf.common.models.classes.SafetyMetricsKey;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
@@ -27,6 +29,7 @@ import jakarta.persistence.Table;
 @Table(indexes = { @Index(name = "idx_traffic_time_week_day", columnList = "trafficTime, weekDay"),
 		@Index(name = "idx_safety_metrics_dangerous_score", columnList = "dangerousScore DESC, trafficTime, weekDay") })
 @IdClass(SafetyMetricsKey.class)
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "planetOsmLineId")
 public class SafetyMetrics {
 
 	@Id
@@ -50,7 +53,6 @@ public class SafetyMetrics {
 	 */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "planet_osm_line_osm_id")
-	@JsonManagedReference
 	private PlanetOsmLine planetOsmLine;
 
 	/**
