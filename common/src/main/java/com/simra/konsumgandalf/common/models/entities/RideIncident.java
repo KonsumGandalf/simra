@@ -120,22 +120,6 @@ public class RideIncident extends TimeBaseClass {
 		this.scary = scary;
 	}
 
-	@PrePersist
-	private void calculateTrafficTimesAndWeekDaysAndGeometry() {
-		if (timeStamp == null) {
-			return;
-		}
-
-		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(timeStamp);
-
-		int dayOfWeek = timeStamp.getDay();
-
-		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
-
-		super.setWeekDay(weekDay);
-		super.setTrafficTime(trafficTime);
-	}
-
 	/**
 	 * The following attributes pollute the entity with unnecessary information therefore
 	 * they are not saved

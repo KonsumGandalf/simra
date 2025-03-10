@@ -161,6 +161,11 @@ public class RideEntity extends TimeBaseClass {
 
 		super.setWeekDay(weekDay);
 		super.setTrafficTime(trafficTime);
+
+		for (RideIncident rideIncident : rideIncidents) {
+			rideIncident.setTrafficTime(trafficTime);
+			rideIncident.setWeekDay(weekDay);
+		}
 	}
 
 }
