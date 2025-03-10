@@ -1,7 +1,6 @@
 package com.simra.konsumgandalf.osmPlanet.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,9 +16,19 @@ public class AnalyticsController {
 	@Autowired
 	private AnalyticsService analyticsService;
 
-	@PostMapping("/update")
+	@PostMapping("/update/highway")
 	public void updateHighwayInformation() {
-		analyticsService.updateHighwayInformation();
+		analyticsService.updateSafetyMetricsHighway();
+	}
+
+	@PostMapping("/update/region")
+	public void updateRegionSafetyMetrics() {
+		analyticsService.calculateSafetyMetricsRegion();
+	}
+
+	@PostMapping("/update/simra-region")
+	public void updateSimraRegionSafetyMetrics() {
+		analyticsService.calculateSafetyMetricsSimraRegion();
 	}
 
 }
