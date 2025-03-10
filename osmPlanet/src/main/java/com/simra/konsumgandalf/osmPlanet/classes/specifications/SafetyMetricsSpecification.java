@@ -1,7 +1,7 @@
 package com.simra.konsumgandalf.osmPlanet.classes.specifications;
 
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
-import com.simra.konsumgandalf.common.models.entities.SafetyMetrics;
+import com.simra.konsumgandalf.common.models.entities.SafetyMetricsPlanetOsmLine;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,14 +12,14 @@ import java.util.List;
 
 public class SafetyMetricsSpecification {
 
-	public static Specification<SafetyMetrics> filterBy(Long id, String name, List<String> highwayType,
-			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
-			List<TrafficTimes> trafficTime, List<WeekDays> weekDay) {
+	public static Specification<SafetyMetricsPlanetOsmLine> filterBy(Long id, String name, List<String> highwayType,
+																	 Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
+																	 List<TrafficTimes> trafficTime, List<WeekDays> weekDay) {
 
-		return (Root<SafetyMetrics> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+		return (Root<SafetyMetricsPlanetOsmLine> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
-			Join<SafetyMetrics, PlanetOsmLine> planetOsmLineJoin = root.join("planetOsmLine");
+			Join<SafetyMetricsPlanetOsmLine, PlanetOsmLine> planetOsmLineJoin = root.join("planetOsmLine");
 
 			if (id != null) {
 				predicates.add(cb.like(planetOsmLineJoin.get("id").as(String.class), id + "%"));
