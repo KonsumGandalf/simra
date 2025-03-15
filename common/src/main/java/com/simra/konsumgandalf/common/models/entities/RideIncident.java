@@ -33,6 +33,7 @@ import org.geolatte.geom.Point;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 @Entity
@@ -118,22 +119,6 @@ public class RideIncident extends TimeBaseClass {
 		this.incidentType = incidentType;
 		this.description = description;
 		this.scary = scary;
-	}
-
-	@PrePersist
-	private void calculateTrafficTimesAndWeekDaysAndGeometry() {
-		if (timeStamp == null) {
-			return;
-		}
-
-		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(timeStamp);
-
-		int dayOfWeek = timeStamp.getDay();
-
-		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
-
-		super.setWeekDay(weekDay);
-		super.setTrafficTime(trafficTime);
 	}
 
 	/**

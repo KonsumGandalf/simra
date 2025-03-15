@@ -4,13 +4,9 @@ import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import org.locationtech.jts.geom.Geometry;
 
-public class SafetyMetricsDTO {
-
-	private final Long id;
+public class SafetyMetricsRegionDTO {
 
 	private final String name;
-
-	private final String highway;
 
 	private final float dangerousScore;
 
@@ -24,33 +20,22 @@ public class SafetyMetricsDTO {
 
 	private final WeekDays weekDay;
 
-	private final Geometry way;
+	private final Integer year;
 
-	public SafetyMetricsDTO(Long id, String name, String highway, Geometry way, float dangerousScore,
-			String dangerousColor, int numberOfRides, int numberOfIncidents, TrafficTimes trafficTime,
-			WeekDays weekDay) {
-		this.id = id;
+	public SafetyMetricsRegionDTO(String name, float dangerousScore, String dangerousColor, int numberOfRides,
+			int numberOfIncidents, TrafficTimes trafficTime, WeekDays weekDay, Integer year) {
 		this.name = name;
-		this.highway = highway;
-		this.way = way;
 		this.dangerousScore = dangerousScore;
 		this.dangerousColor = dangerousColor;
 		this.numberOfRides = numberOfRides;
 		this.numberOfIncidents = numberOfIncidents;
 		this.trafficTime = trafficTime;
 		this.weekDay = weekDay;
+		this.year = year;
 	}
 
 	public String getName() {
 		return name;
-	}
-
-	public String getHighway() {
-		return highway;
-	}
-
-	public Long getId() {
-		return id;
 	}
 
 	public float getDangerousScore() {
@@ -69,16 +54,16 @@ public class SafetyMetricsDTO {
 		return numberOfIncidents;
 	}
 
-	public Geometry getWay() {
-		return way;
-	}
-
 	public TrafficTimes getTrafficTime() {
 		return trafficTime;
 	}
 
 	public WeekDays getWeekDay() {
 		return weekDay;
+	}
+
+	public Integer getYear() {
+		return year;
 	}
 
 }

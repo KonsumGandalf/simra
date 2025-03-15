@@ -20,6 +20,7 @@ public class CorsConfig {
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
 		config.addAllowedOrigin("http://localhost:4200");
+		config.addAllowedOrigin("http://konsumpi:8081");
 		config.addAllowedOrigin("http://spring:8080");
 		config.addAllowedOriginPattern(CorsConfiguration.ALL);
 		config.addAllowedHeader(CorsConfiguration.ALL);

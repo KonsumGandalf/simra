@@ -10,6 +10,6 @@ public final class AppDates {
 		.from(LocalDate.parse("2018-01-01").atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
 
 	public static final Date FALLBACK_DATE = Date
-		.from(LocalDate.parse("2017-12-31").atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+		.from(LocalDate.parse("2000-01-01").atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
 
 }

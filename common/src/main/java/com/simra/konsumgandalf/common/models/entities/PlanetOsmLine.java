@@ -41,7 +41,7 @@ public class PlanetOsmLine {
 	 * {@link #rideIncident} field is used to calculate the metrics.
 	 */
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "planetOsmLine", orphanRemoval = true)
-	private List<SafetyMetrics> safetyMetrics;
+	private List<SafetyMetricsPlanetOsmLine> safetyMetricPlanetOsmLines;
 
 	/**
 	 * The incidents that occurred on this street
@@ -112,12 +112,12 @@ public class PlanetOsmLine {
 		this.getRideIncident().add(rideIncident);
 	}
 
-	public List<SafetyMetrics> getSafetyMetrics() {
-		return safetyMetrics;
+	public List<SafetyMetricsPlanetOsmLine> getSafetyMetrics() {
+		return safetyMetricPlanetOsmLines;
 	}
 
-	public void setSafetyMetrics(List<SafetyMetrics> safetyMetrics) {
-		this.safetyMetrics = safetyMetrics;
+	public void setSafetyMetrics(List<SafetyMetricsPlanetOsmLine> safetyMetricPlanetOsmLines) {
+		this.safetyMetricPlanetOsmLines = safetyMetricPlanetOsmLines;
 	}
 
 	public Set<RideEntity> getRideEntities() {

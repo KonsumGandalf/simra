@@ -1,39 +1,19 @@
 package com.simra.konsumgandalf.common.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.simra.konsumgandalf.common.constants.DangerousColors;
-import com.simra.konsumgandalf.common.models.classes.SafetyMetricsKey;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.MappedSuperclass;
 
 /**
- * This entity represents the safety metrics of a ride.
+ * This entity represents the safety metrics of an object
  */
-@Entity
-@Table(indexes = { @Index(name = "idx_traffic_time_week_day", columnList = "trafficTime, weekDay"),
-		@Index(name = "idx_safety_metrics_dangerous_score", columnList = "dangerousScore DESC, trafficTime, weekDay") })
-@IdClass(SafetyMetricsKey.class)
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "planetOsmLineId")
-public class SafetyMetrics {
-
-	@Id
-	private Long planetOsmLineId;
+@MappedSuperclass
+public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 
 	@Id
 	@Column(length = 21)
@@ -48,12 +28,8 @@ public class SafetyMetrics {
 	@Column(length = 7)
 	private String dangerousColor = DangerousColors.NEUTRAL_200;
 
-	/**
-	 * The {@link PlanetOsmLine} entity that is associated with this safety metrics
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "planet_osm_line_osm_id")
-	private PlanetOsmLine planetOsmLine;
+	@Column()
+	private Integer year;
 
 	/**
 	 * The total number of rides registered here
@@ -146,6 +122,25 @@ public class SafetyMetrics {
 		this.dangerousColor = dangerousColor;
 	}
 
+	public SafetyMetrics(TrafficTimes trafficTime, WeekDays weekDay, Integer year, int numberOfRides,
+			int numberOfIncidents, int numberOfScaryIncidents, int numberOfClosePasses, int numberOfPullInOuts,
+			int numberOfNearLeftRightHooks, int numberOfHeadOnApproaches, int numberOfTailgating,
+			int numberOfNearDoorings, int numberOfObstacleDodges) {
+		this.trafficTime = trafficTime;
+		this.weekDay = weekDay;
+		this.year = year;
+		this.numberOfRides = numberOfRides;
+		this.numberOfIncidents = numberOfIncidents;
+		this.numberOfScaryIncidents = numberOfScaryIncidents;
+		this.numberOfClosePasses = numberOfClosePasses;
+		this.numberOfPullInOuts = numberOfPullInOuts;
+		this.numberOfNearLeftRightHooks = numberOfNearLeftRightHooks;
+		this.numberOfHeadOnApproaches = numberOfHeadOnApproaches;
+		this.numberOfTailgating = numberOfTailgating;
+		this.numberOfNearDoorings = numberOfNearDoorings;
+		this.numberOfObstacleDodges = numberOfObstacleDodges;
+	}
+
 	public int getNumberOfRides() {
 		return numberOfRides;
 	}
@@ -234,14 +229,6 @@ public class SafetyMetrics {
 		this.numberOfObstacleDodges = numberOfObstacleDodges;
 	}
 
-	public PlanetOsmLine getPlanetOsmLine() {
-		return planetOsmLine;
-	}
-
-	public void setPlanetOsmLine(PlanetOsmLine planetOsmLine) {
-		this.planetOsmLine = planetOsmLine;
-	}
-
 	public String getDangerousColor() {
 		return dangerousColor;
 	}
@@ -250,9 +237,9 @@ public class SafetyMetrics {
 		this.dangerousColor = dangerousColor;
 	}
 
-	public SafetyMetrics addUpSafetyMetric(SafetyMetrics newSafetyMetric) {
+	public T addUpSafetyMetric(T newSafetyMetric) {
 		if (newSafetyMetric == null) {
-			return this;
+			return (T) this;
 		}
 
 		this.numberOfRides += newSafetyMetric.getNumberOfRides();
@@ -265,15 +252,7 @@ public class SafetyMetrics {
 		this.numberOfTailgating += newSafetyMetric.getNumberOfTailgating();
 		this.numberOfNearDoorings += newSafetyMetric.getNumberOfNearDoorings();
 		this.numberOfObstacleDodges += newSafetyMetric.getNumberOfObstacleDodges();
-		return this;
-	}
-
-	public Long getPlanetOsmLineId() {
-		return planetOsmLineId;
-	}
-
-	public void setPlanetOsmLineId(Long planetOsmLineId) {
-		this.planetOsmLineId = planetOsmLineId;
+		return (T) this;
 	}
 
 	public TrafficTimes getTrafficTime() {
@@ -290,6 +269,14 @@ public class SafetyMetrics {
 
 	public void setWeekDay(WeekDays weekDay) {
 		this.weekDay = weekDay;
+	}
+
+	public Integer getYear() {
+		return year;
+	}
+
+	public void setYear(Integer year) {
+		this.year = year;
 	}
 
 }

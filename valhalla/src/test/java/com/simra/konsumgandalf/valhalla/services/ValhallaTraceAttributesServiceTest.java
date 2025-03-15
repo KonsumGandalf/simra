@@ -41,7 +41,7 @@ public class ValhallaTraceAttributesServiceTest {
 	ValhallaTraceAttributesService serviceSpy;
 
 	@InjectMocks
-	private ValhallaTraceAttributesService service = new ValhallaTraceAttributesService("http://localhost:8080");
+	private ValhallaTraceAttributesService service = new ValhallaTraceAttributesService("http://localhost:8080", 10000);
 
 	@BeforeEach
 	public void setUp() {
@@ -123,7 +123,7 @@ public class ValhallaTraceAttributesServiceTest {
 			mockWebServer = new MockWebServer();
 			mockWebServer.start();
 			String baseUrl = mockWebServer.url("/").toString();
-			service = new ValhallaTraceAttributesService(baseUrl);
+			service = new ValhallaTraceAttributesService(baseUrl, 100000);
 		}
 
 		@AfterEach
@@ -148,7 +148,7 @@ public class ValhallaTraceAttributesServiceTest {
 			assertEquals("POST", request.getMethod());
 
 			JsonNode expectedNode = objectMapper.readTree(
-					"{\"costing\":\"bicycle\",\"filters\":{\"attributes\":[\"edge.way_id\"],\"action\":\"include\"},\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"timestamp\":1693842834,\"lon\":52.520007},{\"lat\":23.404954,\"timestamp\":1693842835,\"lon\":42.520007}],\"snap_prevention\":[\"motorway\",\"trunk\",\"primary\"]}");
+					"{\"costing\":\"bicycle\",\"filters\":{\"attributes\":[\"edge.way_id\"],\"action\":\"include\"},\"trace_options\":{\"turn_penalty_factor\":100000},\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"timestamp\":1693842834,\"lon\":52.520007},{\"lat\":23.404954,\"timestamp\":1693842835,\"lon\":42.520007}],\"snap_prevention\":[\"motorway\",\"trunk\",\"primary\"]}");
 			JsonNode actualNode = objectMapper.readTree(request.getBody().readUtf8());
 			assertEquals(expectedNode, actualNode);
 			assertEquals(List.of(1L, 2L), ids);

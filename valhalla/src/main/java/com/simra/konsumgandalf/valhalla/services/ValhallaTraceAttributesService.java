@@ -28,8 +28,12 @@ public class ValhallaTraceAttributesService extends ValhallaService {
 			"snap_prevention", List.of("motorway", "trunk", "primary"), "filters",
 			Map.of("attributes", List.of("edge.way_id"), "action", "include"));
 
-	public ValhallaTraceAttributesService(@Value("${VALHALLA_BACKEND_URL}") String osmrBackendUrl) {
+	private final int TURN_PENALTY_FACTOR;
+
+	public ValhallaTraceAttributesService(@Value("${VALHALLA_BACKEND_URL}") String osmrBackendUrl,
+			@Value("${VALHALLA_TURN_PENALTY_FACTOR}") int turnPenaltyFactor) {
 		super(osmrBackendUrl + "/trace_attributes", 500, 10 * 1024 * 1024);
+		TURN_PENALTY_FACTOR = turnPenaltyFactor;
 	}
 
 	public List<Long> calculateStreetSegmentIdsOfRoute(List<OsmrMatchInformation> coordinates) {
@@ -87,6 +91,7 @@ public class ValhallaTraceAttributesService extends ValhallaService {
 	public Mono<List<Long>> fetchIdsFromChunk(List<OsmrMatchInformation> coordinates) {
 		Map<String, Object> payload = new HashMap<>(BASE_PAYLOAD);
 		payload.put("shape", coordinates);
+		payload.put("trace_options", Map.of("turn_penalty_factor", TURN_PENALTY_FACTOR));
 
 		return webClient.post()
 			.bodyValue(payload)

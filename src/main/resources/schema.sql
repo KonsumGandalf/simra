@@ -65,3 +65,14 @@ CREATE OR REPLACE TRIGGER trigger_calculate_way_of_ride_incident
 BEFORE INSERT OR UPDATE ON ride_incident
 FOR EACH ROW
 EXECUTE FUNCTION calculate_way_of_ride_incident();
+
+-- Calculate the length of a geometry in kilometers which is not possible with non native queries
+CREATE OR REPLACE FUNCTION st_length_m(geom geometry)
+RETURNS double precision AS '
+DECLARE
+    length_m double precision;
+BEGIN
+    length_m := ST_Length(geom::geography);
+    RETURN length_m;
+END;
+' LANGUAGE plpgsql IMMUTABLE;

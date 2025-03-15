@@ -11,9 +11,12 @@ public class TrafficTimeWeekDayKey {
 
 	protected final WeekDays weekDay;
 
-	public TrafficTimeWeekDayKey(TrafficTimes trafficTime, WeekDays weekDay) {
+	protected final Integer year;
+
+	public TrafficTimeWeekDayKey(TrafficTimes trafficTime, WeekDays weekDay, Integer year) {
 		this.trafficTime = trafficTime;
 		this.weekDay = weekDay;
+		this.year = year;
 	}
 
 	public TrafficTimes getTrafficTime() {
@@ -24,6 +27,10 @@ public class TrafficTimeWeekDayKey {
 		return weekDay;
 	}
 
+	public Integer getYear() {
+		return year;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -31,12 +38,16 @@ public class TrafficTimeWeekDayKey {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		TrafficTimeWeekDayKey that = (TrafficTimeWeekDayKey) o;
-		return trafficTime == that.trafficTime && weekDay == that.weekDay;
+		return trafficTime == that.trafficTime && weekDay == that.weekDay && Objects.equals(year, that.year);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(trafficTime, weekDay);
+		return Objects.hash(trafficTime, weekDay, year);
+	}
+
+	public TrafficTimeWeekDayKey getTrafficTimeWeekDayKey() {
+		return this;
 	}
 
 }
