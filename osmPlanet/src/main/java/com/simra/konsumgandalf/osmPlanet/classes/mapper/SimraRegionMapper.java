@@ -14,7 +14,6 @@ public class SimraRegionMapper {
 	public SimraRegionMapper() {
 		map.put("Berlin-Potsdam", List.of("Berlin", "Potsdam"));
 		map.put("London", List.of("London"));
-		map.put("Other", List.of("Other"));
 		map.put("Bern", List.of("Bern"));
 		map.put("Pforzheim-Enzkreis", List.of("Pforzheim", "Enzkreis"));
 		map.put("Augsburg", List.of("Augsburg"));
@@ -35,4 +34,5 @@ public class SimraRegionMapper {
 	public List<String> getRegionsForSimraRegion(String simraRegion) {
 		return map.getOrDefault(simraRegion, List.of());
 	}
+
 }

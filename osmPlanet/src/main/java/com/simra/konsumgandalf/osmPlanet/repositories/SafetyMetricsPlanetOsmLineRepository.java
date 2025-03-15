@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SafetyMetricsPlanetOsmLineRepository extends JpaRepository<SafetyMetricsPlanetOsmLine, Long>, JpaSpecificationExecutor<SafetyMetricsPlanetOsmLine> {
+public interface SafetyMetricsPlanetOsmLineRepository
+		extends JpaRepository<SafetyMetricsPlanetOsmLine, Long>, JpaSpecificationExecutor<SafetyMetricsPlanetOsmLine> {
 
 	@Query(value = """
 			SELECT s
@@ -21,32 +22,34 @@ public interface SafetyMetricsPlanetOsmLineRepository extends JpaRepository<Safe
 			WHERE s.planetOsmLine.id = :id
 			AND s.trafficTime = :trafficTime
 			AND s.weekDay = :weekDay
+			AND s.year = :year
 			""")
-	Optional<SafetyMetricsPlanetOsmLine> findByStreetId(long id, TrafficTimes trafficTime, WeekDays weekDay);
+	Optional<SafetyMetricsPlanetOsmLine> findByStreetId(long id, TrafficTimes trafficTime, WeekDays weekDay, int year);
 
 	@Query("""
-        SELECT
-        	b.osmId AS osmId,
-        	b.name AS name,
-        	sm.trafficTime as trafficTime,
-        	sm.weekDay AS weekDay,
-        	SUM(sm.numberOfRides) AS totalRides,
-        	SUM(sm.numberOfIncidents) AS totalIncidents,
-        	SUM(sm.numberOfScaryIncidents) AS totalScaryIncidents,
-        	SUM(sm.numberOfClosePasses) AS totalClosePasses,
-        	SUM(sm.numberOfPullInOuts) AS totalPullInOuts,
-        	SUM(sm.numberOfNearLeftRightHooks) AS totalNearLeftRightHooks,
-        	SUM(sm.numberOfHeadOnApproaches) AS totalHeadOnApproaches,
-        	SUM(sm.numberOfTailgating) AS totalTailgating,
-        	SUM(sm.numberOfNearDoorings) AS totalNearDoorings,
-        	SUM(sm.numberOfObstacleDodges) AS totalObstacleDodges
-        FROM SafetyMetricsPlanetOsmLine sm
-        JOIN sm.planetOsmLine pol
-        JOIN PlanetOsmPolygon b ON ST_Contains(b.way, pol.way)
-        WHERE b.boundary = 'administrative'
-        AND b.adminLevel = :adminLevel
-        AND (sm.numberOfRides > 0 OR sm.numberOfIncidents > 0)
-        GROUP BY b.osmId, b.name, sm.trafficTime, sm.weekDay
-    """)
-	List<RegionSafetyMetricsProjection> getRegionSafetyMetricsOfAdminLevel(int adminLevel);
+			    SELECT
+			    	b.osmId AS osmId,
+			    	b.name AS name,
+			    	b.adminLevel AS adminLevel,
+			    	sm.trafficTime as trafficTime,
+			    	sm.weekDay AS weekDay,
+			    	sm.year AS year,
+			    	SUM(sm.numberOfIncidents) AS totalIncidents,
+			    	SUM(sm.numberOfScaryIncidents) AS totalScaryIncidents,
+			    	SUM(sm.numberOfClosePasses) AS totalClosePasses,
+			    	SUM(sm.numberOfPullInOuts) AS totalPullInOuts,
+			    	SUM(sm.numberOfNearLeftRightHooks) AS totalNearLeftRightHooks,
+			    	SUM(sm.numberOfHeadOnApproaches) AS totalHeadOnApproaches,
+			    	SUM(sm.numberOfTailgating) AS totalTailgating,
+			    	SUM(sm.numberOfNearDoorings) AS totalNearDoorings,
+			    	SUM(sm.numberOfObstacleDodges) AS totalObstacleDodges
+			    FROM SafetyMetricsPlanetOsmLine sm
+			    JOIN sm.planetOsmLine pol
+			    JOIN PlanetOsmPolygon b ON ST_Contains(b.way, pol.way)
+			    WHERE b.boundary = 'administrative'
+			    AND b.adminLevel IN (:adminLevel)
+			    GROUP BY b.osmId, b.name, b.adminLevel, sm.trafficTime, sm.weekDay, sm.year
+			""")
+	List<RegionSafetyMetricsProjection> getRegionSafetyMetricsOfAdminLevel(List<Integer> adminLevel);
+
 }

@@ -31,12 +31,12 @@ public class OsmHighwayService {
 	private OsmHighwayRepository osmHighwayRepository;
 
 	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom, TrafficTimes trafficTime,
-			WeekDays weekDay) {
+			WeekDays weekDay, int year) {
 		int distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
 
 		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001, trafficTime.name(),
-				weekDay.name());
+				weekDay.name(), year);
 	}
 
 	public Optional<PlanetOsmLine> getHighwayById(long id) {

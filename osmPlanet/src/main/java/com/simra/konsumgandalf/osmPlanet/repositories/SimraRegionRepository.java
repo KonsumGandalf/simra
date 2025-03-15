@@ -1,10 +1,39 @@
 package com.simra.konsumgandalf.osmPlanet.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.SimraRegion;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityTotalDTO;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SimraRegionRepository extends JpaRepository<SimraRegion, Long> {
+
 	Optional<SimraRegion> findByName(String name);
+
+	@Query("""
+				SELECT SUM(ST_LENGTH_M(r.way)) AS totalDistance,
+				SUM(1) AS totalRides
+				FROM SimraRegion sr
+				JOIN RideEntity r
+				ON r.trafficTime IN :trafficTime
+				AND r.weekDay IN :weekDay
+				AND r.year IN :year
+				AND ST_INTERSECTS(sr.way, ST_Transform(r.way, 3857))
+				WHERE sr.name = :name
+			""")
+	RideEntityTotalDTO totalRides(String name, List<TrafficTimes> trafficTime, List<WeekDays> weekDay,
+			List<Integer> year);
+
+	@Query("""
+				SELECT AVG(CAST(ST_LENGTH_M(ST_TRANSFORM(p.way, 4326)) AS double)) AS avgSegmentDistance
+				FROM PlanetOsmLine p
+				WHERE ST_INTERSECTS(:geo, ST_Transform(p.way, 3857))
+			""")
+	Float getAvgSegmentDistance(Geometry geo);
+
 }

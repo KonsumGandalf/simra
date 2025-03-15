@@ -10,11 +10,11 @@ import jakarta.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SafetyMetricsSpecification {
+public class SafetyMetricsLineSpecification {
 
 	public static Specification<SafetyMetricsPlanetOsmLine> filterBy(Long id, String name, List<String> highwayType,
-																	 Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
-																	 List<TrafficTimes> trafficTime, List<WeekDays> weekDay) {
+			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
+			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year) {
 
 		return (Root<SafetyMetricsPlanetOsmLine> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
@@ -51,6 +51,9 @@ public class SafetyMetricsSpecification {
 			}
 			if (weekDay != null) {
 				predicates.add(root.get("weekDay").in(weekDay));
+			}
+			if (year != null) {
+				predicates.add(root.get("year").in(year));
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));

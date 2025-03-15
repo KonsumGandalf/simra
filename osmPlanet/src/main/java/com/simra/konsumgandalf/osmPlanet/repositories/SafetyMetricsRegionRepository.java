@@ -16,12 +16,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SafetyMetricsRegionRepository extends JpaRepository<SafetyMetricsRegion, Long>, JpaSpecificationExecutor<SafetyMetricsRegion> {
-	@EntityGraph(attributePaths = {"region"})
+public interface SafetyMetricsRegionRepository
+		extends JpaRepository<SafetyMetricsRegion, Long>, JpaSpecificationExecutor<SafetyMetricsRegion> {
+
 	@Query("""
 			SELECT s
 			FROM SafetyMetricsRegion s
 			WHERE s.region.name = :name
 			""")
-	Optional<SafetyMetricsRegion> findByName(String name);
+	List<SafetyMetricsRegion> findByName(String name);
+
 }

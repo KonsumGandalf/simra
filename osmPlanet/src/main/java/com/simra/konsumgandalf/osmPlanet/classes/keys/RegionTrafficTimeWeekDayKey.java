@@ -8,8 +8,8 @@ public class RegionTrafficTimeWeekDayKey extends TrafficTimeWeekDayKey {
 
 	private SimraRegion region;
 
-	public RegionTrafficTimeWeekDayKey(SimraRegion region, TrafficTimes trafficTime, WeekDays weekDay) {
-		super(trafficTime, weekDay);
+	public RegionTrafficTimeWeekDayKey(SimraRegion region, TrafficTimes trafficTime, WeekDays weekDay, Integer year) {
+		super(trafficTime, weekDay, year);
 		this.region = region;
 	}
 
@@ -31,4 +31,5 @@ public class RegionTrafficTimeWeekDayKey extends TrafficTimeWeekDayKey {
 	public SimraRegion getSimraRegion() {
 		return region;
 	}
+
 }

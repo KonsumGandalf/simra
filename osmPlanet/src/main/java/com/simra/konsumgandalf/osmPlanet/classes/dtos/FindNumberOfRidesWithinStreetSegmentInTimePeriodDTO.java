@@ -13,13 +13,13 @@ public class FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO extends Traffic
 	private int numberOfRides;
 
 	public FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(Object[] row) {
-		super(TrafficTimes.valueOf((String) row[1]), WeekDays.valueOf((String) row[0]));
-		this.numberOfRides = ((Number) row[2]).intValue();
+		super(TrafficTimes.valueOf((String) row[0]), WeekDays.valueOf((String) row[1]), ((Number) row[2]).intValue());
+		this.numberOfRides = ((Number) row[3]).intValue();
 	}
 
-	public FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(WeekDays weekDay, TrafficTimes trafficTime,
+	public FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO(TrafficTimes trafficTime, WeekDays weekDay, Integer year,
 			long numberOfRides) {
-		super(trafficTime, weekDay);
+		super(trafficTime, weekDay, year);
 		this.numberOfRides = (int) numberOfRides;
 	}
 
@@ -31,8 +31,12 @@ public class FindNumberOfRidesWithinStreetSegmentInTimePeriodDTO extends Traffic
 		this.numberOfRides = numberOfRides;
 	}
 
+	@Override
 	public TrafficTimeWeekDayKey getTrafficTimeWeekDayKey() {
-		return new TrafficTimeWeekDayKey(this.trafficTime, this.weekDay);
+		return new TrafficTimeWeekDayKey(this.trafficTime, this.weekDay, this.getYear()); // Cast
+																							// to
+																							// parent
+																							// class
 	}
 
 }

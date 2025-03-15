@@ -4,18 +4,35 @@ import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 
 public interface RegionSafetyMetricsProjection {
+
 	Long getOsmId();
+
 	String getName();
+
+	Long getAdminLevel();
+
 	TrafficTimes getTrafficTime();
+
 	WeekDays getWeekDay();
-	Long getTotalRides();
+
+	Integer getYear();
+
 	Long getTotalIncidents();
+
 	Long getTotalScaryIncidents();
+
 	Long getTotalClosePasses();
+
 	Long getTotalPullInOuts();
+
 	Long getTotalNearLeftRightHooks();
+
 	Long getTotalHeadOnApproaches();
+
 	Long getTotalTailgating();
+
 	Long getTotalNearDoorings();
+
 	Long getTotalObstacleDodges();
+
 }

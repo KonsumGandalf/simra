@@ -5,12 +5,13 @@ import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
-import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.RegionSafetyMetricsProjection;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.services.SafetyMetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,31 +30,56 @@ public class SafetyMetricsController {
 
 	@GetMapping("streets/{id}")
 	public Optional<SafetyMetricsPlanetOsmLine> getSafetyDetailsOfStreet(@PathVariable long id,
-																		 @RequestParam(defaultValue = "ALL_DAY") TrafficTimes trafficTime,
-																		 @RequestParam(defaultValue = "ALL_WEEK") WeekDays weekDay) {
-		return safetyMetricsService.getSafetyMetricsOfStreet(id, trafficTime, weekDay);
+			@RequestParam(defaultValue = "ALL_DAY") TrafficTimes trafficTime,
+			@RequestParam(defaultValue = "ALL_WEEK") WeekDays weekDay, @RequestParam(defaultValue = "2000") int year) {
+		return safetyMetricsService.getSafetyMetricsOfStreet(id, trafficTime, weekDay, year);
 	}
 
 	@GetMapping("/streets")
-	public Page<SafetyMetricsDTO> getFilteredData(@RequestParam(required = false) Long id,
+	public Page<SafetyMetricsLineDTO> getFilteredData(@RequestParam(required = false) Long id,
 			@RequestParam(required = false) String name, @RequestParam(required = false) List<String> highway,
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Float maxDangerousScore,
 			@RequestParam(required = false) Integer minNumberOfRides,
 			@RequestParam(required = false) Integer minNumberOfIncidents,
 			@RequestParam(required = false) List<TrafficTimes> trafficTime,
-			@RequestParam(required = false) List<WeekDays> weekDay, Pageable pageable) {
+			@RequestParam(required = false) List<WeekDays> weekDay, @RequestParam(required = false) List<Integer> year,
+			Pageable pageable) {
 		return safetyMetricsService.getFilteredData(id, name, highway, minDangerousScore, maxDangerousScore,
-				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, pageable);
+				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, pageable);
 	}
 
-	@GetMapping("/region/{name}")
-	public Optional<SafetyMetricsRegion> getRegionSafetyMetrics(@PathVariable String name) {
+	@GetMapping("/regions")
+	public Page<SafetyMetricsRegionDTO> getRegionMetrics(@RequestParam(required = false) String name,
+			@RequestParam(required = false) Float minDangerousScore,
+			@RequestParam(required = false) Integer minNumberOfRides,
+			@RequestParam(required = false) Integer minNumberOfIncidents,
+			@RequestParam(required = false) List<TrafficTimes> trafficTime,
+			@RequestParam(required = false) List<WeekDays> weekDay, @RequestParam(required = false) List<Integer> year,
+			Pageable pageable) {
+		return safetyMetricsService.getRegionMetrics(name, minDangerousScore, minNumberOfRides, minNumberOfIncidents,
+				trafficTime, weekDay, year, pageable);
+	}
+
+	@GetMapping("/regions/{name}")
+	public List<SafetyMetricsRegion> getRegionSafetyMetrics(@PathVariable String name) {
 		return safetyMetricsService.getRegionSafetyMetrics(name);
 	}
 
-	@GetMapping("/simra-region/{name}")
-	public Optional<SafetyMetricsSimraRegion> getSimraRegionSafetyMetrics(@PathVariable String name) {
+	@GetMapping("/simra-regions")
+	public Page<SafetyMetricsRegionDTO> getSimraRegionMetrics(@RequestParam(required = false) String name,
+			@RequestParam(required = false) Float minDangerousScore,
+			@RequestParam(required = false) Integer minNumberOfRides,
+			@RequestParam(required = false) Integer minNumberOfIncidents,
+			@RequestParam(required = false) List<TrafficTimes> trafficTime,
+			@RequestParam(required = false) List<WeekDays> weekDay, @RequestParam(required = false) List<Integer> year,
+			Pageable pageable) {
+		return safetyMetricsService.getSimraRegionMetrics(name, minDangerousScore, minNumberOfRides,
+				minNumberOfIncidents, trafficTime, weekDay, year, pageable);
+	}
+
+	@GetMapping("/simra-regions/{name}")
+	public List<SafetyMetricsSimraRegion> getSimraRegionSafetyMetrics(@PathVariable String name) {
 		return safetyMetricsService.getSimraRegionSafetyMetrics(name);
 	}
 
