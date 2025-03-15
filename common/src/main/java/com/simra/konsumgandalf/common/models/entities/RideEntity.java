@@ -26,7 +26,9 @@ import org.springframework.data.annotation.Transient;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -34,6 +36,8 @@ import java.util.List;
  */
 @Entity
 public class RideEntity extends TimeBaseClass {
+
+	private static final Calendar calendar = new GregorianCalendar();
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -154,17 +158,21 @@ public class RideEntity extends TimeBaseClass {
 
 		Date rideMedianDate = new Date((rideStart.getTime() + rideEnd.getTime()) / 2);
 		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(rideMedianDate);
+		calendar.setTime(rideMedianDate);
 
-		int dayOfWeek = rideMedianDate.getDay();
+		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
 
 		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
+		int year = calendar.get(Calendar.YEAR);
 
+		super.setYear(year);
 		super.setWeekDay(weekDay);
 		super.setTrafficTime(trafficTime);
 
 		for (RideIncident rideIncident : rideIncidents) {
 			rideIncident.setTrafficTime(trafficTime);
 			rideIncident.setWeekDay(weekDay);
+			rideIncident.setYear(year);
 		}
 	}
 

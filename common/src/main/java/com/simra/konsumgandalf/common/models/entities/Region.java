@@ -1,13 +1,15 @@
 package com.simra.konsumgandalf.common.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,28 +19,41 @@ import java.util.Objects;
  */
 @Entity
 public class Region {
+
 	@Id
-	@Column
+	@Column(unique = true)
 	private String name;
 
 	@Column
-	private Long osmId;
+	private Long id;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "region")
-	@JsonBackReference
+	@Column
+	private int adminLevel;
+
+	/**
+	 * The average length of all street segments in this region in meters.
+	 */
+	@Column
+	private Float avgSegmentDistance;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "region", fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<SafetyMetricsRegion> safetyMetricsRegions;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "simra_region_name")
+	@ManyToMany(cascade = CascadeType.ALL)
 	@JsonBackReference
-	private SimraRegion simraRegion;
+	private List<SimraRegion> simraRegions;
+
+	@Column()
+	private Geometry way;
 
 	public Region() {
 	}
 
-	public Region(String name, Long osmId) {
+	public Region(String name, Long id, int adminLevel) {
 		this.name = name;
-		this.osmId = osmId;
+		this.id = id;
+		this.adminLevel = adminLevel;
 	}
 
 	public String getName() {
@@ -53,15 +68,16 @@ public class Region {
 		return safetyMetricsRegions;
 	}
 
-	public void setSafetyMetricsRegions(
-			List<SafetyMetricsRegion> safetyMetricsCities) {
+	public void setSafetyMetricsRegions(List<SafetyMetricsRegion> safetyMetricsCities) {
 		this.safetyMetricsRegions = safetyMetricsCities;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 		Region region = (Region) o;
 		return Objects.equals(name, region.name);
 	}
@@ -71,19 +87,44 @@ public class Region {
 		return Objects.hash(name);
 	}
 
-	public SimraRegion getSimraRegion() {
-		return simraRegion;
+	public List<SimraRegion> getSimraRegions() {
+		return simraRegions;
 	}
 
-	public void setSimraRegion(SimraRegion simraRegion) {
-		this.simraRegion = simraRegion;
+	public void setSimraRegions(List<SimraRegion> simraRegions) {
+		this.simraRegions = this.simraRegions;
 	}
 
-	public Long getOsmId() {
-		return osmId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setOsmId(Long osmId) {
-		this.osmId = osmId;
+	public void setId(Long osmId) {
+		this.id = osmId;
 	}
+
+	public Float getAvgSegmentDistance() {
+		return avgSegmentDistance;
+	}
+
+	public void setAvgSegmentDistance(Float avgSegmentDistance) {
+		this.avgSegmentDistance = avgSegmentDistance;
+	}
+
+	public Geometry getWay() {
+		return way;
+	}
+
+	public void setWay(Geometry way) {
+		this.way = way;
+	}
+
+	public int getAdminLevel() {
+		return adminLevel;
+	}
+
+	public void setAdminLevel(int level) {
+		this.adminLevel = level;
+	}
+
 }

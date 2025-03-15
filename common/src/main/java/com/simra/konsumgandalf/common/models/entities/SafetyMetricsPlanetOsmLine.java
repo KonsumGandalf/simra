@@ -18,10 +18,9 @@ import jakarta.persistence.Table;
  * This entity represents the safety metrics of a ride.
  */
 @Entity
-@Table(indexes = {
-		@Index(name = "idx_sm_line_traffic_time_week_day", columnList = "trafficTime, weekDay"),
-		@Index(name = "idx_sm_line_safety_metrics_dangerous_score", columnList = "dangerousScore DESC, trafficTime, weekDay")
-})
+@Table(indexes = { @Index(name = "idx_sm_line_traffic_time_week_day_year", columnList = "trafficTime, weekDay, year"),
+		@Index(name = "idx_sm_line_safety_metrics_dangerous_score",
+				columnList = "dangerousScore DESC, trafficTime, weekDay, year") })
 @IdClass(SafetyMetricsIDKey.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "osmId")
 public class SafetyMetricsPlanetOsmLine extends SafetyMetrics<SafetyMetricsPlanetOsmLine> {
@@ -44,13 +43,13 @@ public class SafetyMetricsPlanetOsmLine extends SafetyMetrics<SafetyMetricsPlane
 		super(trafficTime, weekDays);
 	}
 
-	public SafetyMetricsPlanetOsmLine(int numberOfRides, int numberOfIncidents, int numberOfScaryIncidents, float dangerousScore,
-									  int numberOfClosePasses, int numberOfPullInOuts, int numberOfNearLeftRightHooks,
-									  int numberOfHeadOnApproaches, int numberOfTailgating, int numberOfNearDoorings, int numberOfObstacleDodges,
-									  String dangerousColor) {
-		super(numberOfRides, numberOfIncidents, numberOfScaryIncidents, dangerousScore, numberOfClosePasses, numberOfPullInOuts,
-				numberOfNearLeftRightHooks, numberOfHeadOnApproaches, numberOfTailgating, numberOfNearDoorings, numberOfObstacleDodges,
-				dangerousColor);
+	public SafetyMetricsPlanetOsmLine(int numberOfRides, int numberOfIncidents, int numberOfScaryIncidents,
+			float dangerousScore, int numberOfClosePasses, int numberOfPullInOuts, int numberOfNearLeftRightHooks,
+			int numberOfHeadOnApproaches, int numberOfTailgating, int numberOfNearDoorings, int numberOfObstacleDodges,
+			String dangerousColor) {
+		super(numberOfRides, numberOfIncidents, numberOfScaryIncidents, dangerousScore, numberOfClosePasses,
+				numberOfPullInOuts, numberOfNearLeftRightHooks, numberOfHeadOnApproaches, numberOfTailgating,
+				numberOfNearDoorings, numberOfObstacleDodges, dangerousColor);
 	}
 
 	public PlanetOsmLine getPlanetOsmLine() {
@@ -68,4 +67,5 @@ public class SafetyMetricsPlanetOsmLine extends SafetyMetrics<SafetyMetricsPlane
 	public void setOsmId(Long planetOsmLineId) {
 		this.osmId = planetOsmLineId;
 	}
+
 }

@@ -12,8 +12,8 @@ public class SafetyMetricsIDKey extends TimeBaseClass {
 		super();
 	}
 
-	protected SafetyMetricsIDKey(Long planetOsmLineId, TrafficTimes trafficTime, WeekDays weekDay) {
-		super(trafficTime, weekDay);
+	protected SafetyMetricsIDKey(Long planetOsmLineId, TrafficTimes trafficTime, WeekDays weekDay, Integer year) {
+		super(trafficTime, weekDay, year);
 		this.osmId = planetOsmLineId;
 	}
 

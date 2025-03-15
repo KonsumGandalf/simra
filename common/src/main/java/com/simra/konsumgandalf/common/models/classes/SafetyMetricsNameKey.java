@@ -16,8 +16,8 @@ public class SafetyMetricsNameKey extends TimeBaseClass {
 		super();
 	}
 
-	protected SafetyMetricsNameKey(String name, TrafficTimes trafficTime, WeekDays weekDay) {
-		super(trafficTime, weekDay);
+	protected SafetyMetricsNameKey(String name, TrafficTimes trafficTime, WeekDays weekDay, Integer year) {
+		super(trafficTime, weekDay, year);
 		this.name = name;
 	}
 
@@ -28,4 +28,5 @@ public class SafetyMetricsNameKey extends TimeBaseClass {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 }

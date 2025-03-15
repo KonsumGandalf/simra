@@ -8,14 +8,13 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import org.checkerframework.checker.units.qual.C;
-import org.hibernate.annotations.ColumnDefault;
 
 /**
  * This entity represents the safety metrics of an object
  */
 @MappedSuperclass
 public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
+
 	@Id
 	@Column(length = 21)
 	@Enumerated(EnumType.STRING)
@@ -30,8 +29,7 @@ public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 	private String dangerousColor = DangerousColors.NEUTRAL_200;
 
 	@Column()
-	@ColumnDefault("2000")
-	private int year;
+	private Integer year;
 
 	/**
 	 * The total number of rides registered here
@@ -107,9 +105,9 @@ public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 	}
 
 	public SafetyMetrics(int numberOfRides, int numberOfIncidents, int numberOfScaryIncidents, float dangerousScore,
-									  int numberOfClosePasses, int numberOfPullInOuts, int numberOfNearLeftRightHooks,
-									  int numberOfHeadOnApproaches, int numberOfTailgating, int numberOfNearDoorings, int numberOfObstacleDodges,
-									  String dangerousColor) {
+			int numberOfClosePasses, int numberOfPullInOuts, int numberOfNearLeftRightHooks,
+			int numberOfHeadOnApproaches, int numberOfTailgating, int numberOfNearDoorings, int numberOfObstacleDodges,
+			String dangerousColor) {
 		this.numberOfRides = numberOfRides;
 		this.numberOfIncidents = numberOfIncidents;
 		this.numberOfScaryIncidents = numberOfScaryIncidents;
@@ -124,11 +122,13 @@ public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 		this.dangerousColor = dangerousColor;
 	}
 
-	public SafetyMetrics(TrafficTimes trafficTime, WeekDays weekDay, int numberOfRides, int numberOfIncidents, int numberOfScaryIncidents,
-									  int numberOfClosePasses, int numberOfPullInOuts, int numberOfNearLeftRightHooks,
-									  int numberOfHeadOnApproaches, int numberOfTailgating, int numberOfNearDoorings, int numberOfObstacleDodges) {
+	public SafetyMetrics(TrafficTimes trafficTime, WeekDays weekDay, Integer year, int numberOfRides,
+			int numberOfIncidents, int numberOfScaryIncidents, int numberOfClosePasses, int numberOfPullInOuts,
+			int numberOfNearLeftRightHooks, int numberOfHeadOnApproaches, int numberOfTailgating,
+			int numberOfNearDoorings, int numberOfObstacleDodges) {
 		this.trafficTime = trafficTime;
 		this.weekDay = weekDay;
+		this.year = year;
 		this.numberOfRides = numberOfRides;
 		this.numberOfIncidents = numberOfIncidents;
 		this.numberOfScaryIncidents = numberOfScaryIncidents;
@@ -237,8 +237,7 @@ public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 		this.dangerousColor = dangerousColor;
 	}
 
-	public T addUpSafetyMetric(
-			T newSafetyMetric) {
+	public T addUpSafetyMetric(T newSafetyMetric) {
 		if (newSafetyMetric == null) {
 			return (T) this;
 		}
@@ -272,11 +271,12 @@ public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 		this.weekDay = weekDay;
 	}
 
-	public int getYear() {
+	public Integer getYear() {
 		return year;
 	}
 
-	public void setYear(int year) {
+	public void setYear(Integer year) {
 		this.year = year;
 	}
+
 }

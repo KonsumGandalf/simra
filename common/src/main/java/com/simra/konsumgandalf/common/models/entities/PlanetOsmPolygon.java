@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.Geometry;
 
 @Entity
 public class PlanetOsmPolygon {
+
 	@Id
 	private Long osmId;
 
@@ -19,6 +20,7 @@ public class PlanetOsmPolygon {
 	@Column
 	private String name;
 
-	@Column
+	@Column(name = "way", columnDefinition = "geometry")
 	private Geometry way;
+
 }
