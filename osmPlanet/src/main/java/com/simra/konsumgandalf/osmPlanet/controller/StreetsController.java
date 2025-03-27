@@ -34,6 +34,16 @@ public class StreetsController {
 		return osmHighwayService.getHighwayInformation(lat, lng, zoom, trafficTime, weekDay, year);
 	}
 
+	@GetMapping("/name/{name-prefix}")
+	public List<String> getHighwayNames(@PathVariable("name-prefix") String namePrefix) {
+		return osmHighwayService.findAllHighwayNameStartingWith(namePrefix);
+	}
+
+	@GetMapping("/id/{id-prefix}")
+	public List<String> getHighwayIds(@PathVariable("id-prefix") String idPrefix) {
+		return osmHighwayService.findAllHighwayIdStartingWith(idPrefix);
+	}
+
 	@GetMapping("/{id}")
 	public Optional<PlanetOsmLine> getHighwayById(@PathVariable("id") long id) {
 		return osmHighwayService.getHighwayById(id);

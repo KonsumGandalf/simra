@@ -28,4 +28,14 @@ public class RegionController {
 		return regionService.getRegionByName(name);
 	}
 
+	@GetMapping("name")
+	public List<String> getAllRegions() {
+		return regionService.getAllRegions("");
+	}
+
+	@GetMapping("name/{prefix}")
+	public List<String> getAllRegions(@PathVariable String prefix) {
+		return regionService.getAllRegions(prefix);
+	}
+
 }

@@ -8,6 +8,7 @@ import com.simra.konsumgandalf.osmPlanet.classes.enums.RoadTypes;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
+import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import org.modelmapper.internal.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,20 @@ public class OsmHighwayService {
 	private final ZoomRoadTypeMapper zoomRoadTypeMapper = new ZoomRoadTypeMapper();
 
 	@Autowired
+	private RegionRepository regionRepository;
+
+	@Autowired
 	private OsmHighwayRepository osmHighwayRepository;
 
 	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom, TrafficTimes trafficTime,
 			WeekDays weekDay, int year) {
 		int distanceFilter = zoomDistanceMapper.getDistanceForZoom(zoom);
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
+
+		if (zoom <= 11) {
+			return regionRepository.findWays(lng, lat, distanceFilter, 0.0001, trafficTime.name(), weekDay.name(),
+					year);
+		}
 
 		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001, trafficTime.name(),
 				weekDay.name(), year);
@@ -45,6 +54,14 @@ public class OsmHighwayService {
 
 	public List<RideEntityDTO> getRideEntitiesTimeById(long id, LocalDateTime startTime, LocalDateTime endTime) {
 		return osmHighwayRepository.findRideEntitiesTimeById(id, startTime, endTime);
+	}
+
+	public List<String> findAllHighwayNameStartingWith(String namePrefix) {
+		return osmHighwayRepository.findAllHighwayNameStartingWith(namePrefix);
+	}
+
+	public List<String> findAllHighwayIdStartingWith(String idPrefix) {
+		return osmHighwayRepository.findAllHighwayIdStartingWith(idPrefix);
 	}
 
 }

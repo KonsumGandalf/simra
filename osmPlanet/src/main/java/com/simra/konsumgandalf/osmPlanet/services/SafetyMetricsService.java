@@ -1,5 +1,6 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
+import com.simra.konsumgandalf.common.models.entities.Region;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsPlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
@@ -9,9 +10,11 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsGenericSpecification;
 import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsLineSpecification;
+import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsRegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsSimraRegionRepository;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +36,9 @@ public class SafetyMetricsService {
 	@Autowired
 	private SafetyMetricsSimraRegionRepository safetyMetricsSimraRegionRepository;
 
+	@Autowired
+	private RegionRepository regionRepository;
+
 	public Optional<SafetyMetricsPlanetOsmLine> getSafetyMetricsOfStreet(long id, TrafficTimes trafficTime,
 			WeekDays weekDay, int year) {
 		return safetyMetricsRepository.findByStreetId(id, trafficTime, weekDay, year);
@@ -40,11 +46,15 @@ public class SafetyMetricsService {
 
 	public Page<SafetyMetricsLineDTO> getFilteredData(Long id, String name, List<String> highwayType,
 			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
-			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, Pageable pageable) {
+			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, String regionName,
+			Pageable pageable) {
+
+		Optional<Geometry> regionWayOpt = regionRepository.findRegionWayByName(regionName);
+		Geometry regionWay = regionWayOpt.orElse(null);
 
 		Specification<SafetyMetricsPlanetOsmLine> spec = SafetyMetricsGenericSpecification.filterBy("planetOsmLine", id,
 				name, highwayType, minDangerousScore, maxDangerousScore, minNumberOfRides, minNumberOfIncidents,
-				trafficTime, weekDay, year);
+				trafficTime, weekDay, year, regionWay);
 
 		return safetyMetricsRepository.findAll(spec, pageable)
 			.map(safetyMetrics -> new SafetyMetricsLineDTO(safetyMetrics.getPlanetOsmLine().getId(),
