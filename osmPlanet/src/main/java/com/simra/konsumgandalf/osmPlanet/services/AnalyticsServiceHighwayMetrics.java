@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import static com.simra.konsumgandalf.osmPlanet.utils.ScoreUtils.calculateDangerousScore;
+import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
 
 /**
  * This service provides analytics for the OSM planet.

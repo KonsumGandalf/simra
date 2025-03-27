@@ -12,7 +12,6 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityTotalDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.TimeFilters;
 import com.simra.konsumgandalf.osmPlanet.classes.keys.RegionTrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.SimraRegionMapper;
-import com.simra.konsumgandalf.osmPlanet.repositories.OsmPolygonRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsSimraRegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SimraRegionRepository;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.simra.konsumgandalf.osmPlanet.utils.ScoreUtils.calculateDangerousScore;
+import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
 import static com.simra.konsumgandalf.osmPlanet.utils.TimeFilterUtils.getTimeFilters;
 
 /**
@@ -156,20 +155,6 @@ public class AnalyticsServiceSimraRegionMetrics {
 
 		return simraRegionRepository.totalRides(name, timeFilters.trafficTimes(), timeFilters.weekDays(),
 				timeFilters.years());
-	}
-
-	private Map<String, List<String>> prepareSimraRegionMap() {
-		Map<String, List<String>> simraRegionMap = new HashMap<>(simraMapper.map);
-
-		// Just use Level 4 since all level 6 regions are already included in level 4
-		simraRegionMap.put("All",
-				regionRepository.findAll()
-					.stream()
-					.filter(region -> region.getAdminLevel() == 4)
-					.map(Region::getName)
-					.toList());
-
-		return simraRegionMap;
 	}
 
 	private void updateSimraRegionGeometry(SimraRegion simraRegion, List<Region> regions) {
