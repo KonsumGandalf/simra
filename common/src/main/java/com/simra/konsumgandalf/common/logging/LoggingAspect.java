@@ -1,6 +1,8 @@
 package com.simra.konsumgandalf.common.logging;
 
 import com.simra.konsumgandalf.common.constants.CronExpressions;
+import com.simra.konsumgandalf.common.models.entities.MethodRun;
+import com.simra.konsumgandalf.common.repositories.MethodRunRepository;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -31,6 +33,9 @@ public class LoggingAspect {
 	@Autowired
 	private ThreadPoolTaskExecutor taskExecutor;
 
+	@Autowired
+	private MethodRunRepository methodRunRepository;
+
 	@Around("@annotation(com.simra.konsumgandalf.common.logging.LogExecutionTime)")
 	public Object methodTimeLogger(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 		MethodSignature methodSignature = (MethodSignature) proceedingJoinPoint.getSignature();
@@ -43,6 +48,7 @@ public class LoggingAspect {
 		Object result = proceedingJoinPoint.proceed();
 		stopWatch.stop();
 
+		methodRunRepository.save(new MethodRun(methodName, stopWatch.getLastTaskTimeMillis()));
 		totalTimes.merge(key, stopWatch.getLastTaskTimeMillis(), Long::sum);
 
 		return result;

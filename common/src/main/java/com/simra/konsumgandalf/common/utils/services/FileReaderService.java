@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
@@ -39,6 +40,10 @@ public class FileReaderService {
 		catch (IOException e) {
 			throw new RuntimeException("Error reading file", e);
 		}
+	}
+
+	public static boolean isEntityFile(Path path) {
+		return path.getFileName().toString().startsWith("VM");
 	}
 
 }

@@ -23,7 +23,7 @@ java {
 
 allprojects {
     group = "com.simra.konsumgandalf"
-    version = "0.0.2-SNAPSHOT"
+    version = "0.0.3-SNAPSHOT"
 
     repositories {
         mavenLocal()
@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":rides"))
     implementation(project(":common"))
     implementation(project(":osmPlanet"))
+    implementation(project(":profiles"))
 
     implementation("com.opencsv:opencsv:5.9")
     implementation("org.springframework.boot:spring-boot-starter-actuator")

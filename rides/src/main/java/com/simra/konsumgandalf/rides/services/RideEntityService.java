@@ -26,8 +26,6 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -79,7 +77,7 @@ public class RideEntityService {
 
 		Files.walk(dataPath, 4)
 			.filter(Files::isRegularFile)
-			.filter(this::isEntityFile)
+			.filter(FileReaderService::isEntityFile)
 			.map(Path::toString)
 			.filter(this::checkIfRideEntityExists)
 			.forEach(path -> {
@@ -100,15 +98,11 @@ public class RideEntityService {
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 	}
 
-	private boolean isEntityFile(Path path) {
-		return path.getFileName().toString().startsWith("VM");
-	}
-
 	private boolean checkIfRideEntityExists(String path) {
 		boolean doesExistInBloomFilter = bloomFilterService.mightContain(path);
-		if (doesExistInBloomFilter) {
+		if (!doesExistInBloomFilter) {
 			_logger.info("[BloomFilter]: Ride entity with path {} already exists", path);
-			return false;
+			return true;
 		}
 		else {
 			Optional<RideEntity> rideEntity = rideEntityRepository.findOneByPath(path);

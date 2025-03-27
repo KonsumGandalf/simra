@@ -5,7 +5,6 @@ import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
-import com.simra.konsumgandalf.osmPlanet.classes.dtos.RegionSafetyMetricsProjection;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.services.SafetyMetricsService;
@@ -44,9 +43,9 @@ public class SafetyMetricsController {
 			@RequestParam(required = false) Integer minNumberOfIncidents,
 			@RequestParam(required = false) List<TrafficTimes> trafficTime,
 			@RequestParam(required = false) List<WeekDays> weekDay, @RequestParam(required = false) List<Integer> year,
-			Pageable pageable) {
+			@RequestParam(required = false) String region, Pageable pageable) {
 		return safetyMetricsService.getFilteredData(id, name, highway, minDangerousScore, maxDangerousScore,
-				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, pageable);
+				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, region, pageable);
 	}
 
 	@GetMapping("/regions")

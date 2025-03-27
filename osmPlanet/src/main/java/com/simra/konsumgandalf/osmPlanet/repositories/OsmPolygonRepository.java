@@ -32,18 +32,6 @@ public interface OsmPolygonRepository extends JpaRepository<PlanetOsmPolygon, Lo
 	RideEntityTotalDTO totalRidesByRegion(Long osmId, List<TrafficTimes> trafficTime, List<WeekDays> weekDay,
 			List<Integer> year);
 
-	/**
-	 * Returns the length of all street segments in a region
-	 */
-	@Query("""
-				SELECT AVG(CAST(ST_LENGTH_M(ST_TRANSFORM(p.way, 4326)) AS double)) AS avgSegmentDistance
-				FROM PlanetOsmPolygon b
-				JOIN PlanetOsmLine p
-				ON ST_INTERSECTS(b.way, ST_Transform(p.way, 3857))
-				WHERE b.osmId = :osmId
-			""")
-	Float getAvgSegmentDistance(Long osmId);
-
 	@Query("""
 				SELECT b.way
 				FROM PlanetOsmPolygon b

@@ -21,7 +21,6 @@ import java.util.Objects;
 public class Region {
 
 	@Id
-	@Column(unique = true)
 	private String name;
 
 	@Column
@@ -29,12 +28,6 @@ public class Region {
 
 	@Column
 	private int adminLevel;
-
-	/**
-	 * The average length of all street segments in this region in meters.
-	 */
-	@Column
-	private Float avgSegmentDistance;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "region", fetch = FetchType.LAZY)
 	@JsonIgnore
@@ -101,14 +94,6 @@ public class Region {
 
 	public void setId(Long osmId) {
 		this.id = osmId;
-	}
-
-	public Float getAvgSegmentDistance() {
-		return avgSegmentDistance;
-	}
-
-	public void setAvgSegmentDistance(Float avgSegmentDistance) {
-		this.avgSegmentDistance = avgSegmentDistance;
 	}
 
 	public Geometry getWay() {

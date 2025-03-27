@@ -21,4 +21,8 @@ public class RegionService {
 		return regionRepository.findBasicRegionByName(name);
 	}
 
+	public List<String> getAllRegions(String prefix) {
+		return regionRepository.findAllNames(prefix);
+	}
+
 }

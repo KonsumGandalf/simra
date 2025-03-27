@@ -84,4 +84,22 @@ public interface OsmHighwayRepository extends PlanetOsmLineRepository {
 			""")
 	List<RideEntityDTO> findRideEntitiesTimeById(Long id, LocalDateTime startTime, LocalDateTime endTime);
 
+	@Query("""
+			 	SELECT DISTINCT p.name
+				FROM PlanetOsmLine p
+				WHERE p.name LIKE :namePrefix%
+				ORDER BY p.name
+				LIMIT 10
+			""")
+	List<String> findAllHighwayNameStartingWith(String namePrefix);
+
+	@Query("""
+			 	SELECT DISTINCT p.id
+				FROM PlanetOsmLine p
+				WHERE CAST(p.id AS String) LIKE :idPrefix%
+				ORDER BY p.id
+				LIMIT 10
+			""")
+	List<String> findAllHighwayIdStartingWith(String idPrefix);
+
 }

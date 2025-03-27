@@ -17,7 +17,7 @@ public class SimraRegionMapper {
 		map.put("Bern", List.of("Bern"));
 		map.put("Pforzheim-Enzkreis", List.of("Pforzheim", "Enzkreis"));
 		map.put("Augsburg", List.of("Augsburg"));
-		map.put("Ruhr Region", List.of("Ruhrgebiet", "Essen", "Dortmund", "Bochum", "Duisburg", "Gelsenkirchen"));
+		map.put("Ruhr-Region", List.of("Ruhrgebiet", "Essen", "Dortmund", "Bochum", "Duisburg", "Gelsenkirchen"));
 		map.put("Stuttgart", List.of("Stuttgart"));
 		map.put("Leipzig", List.of("Leipzig"));
 		map.put("Wuppertal-Solingen-Remscheid", List.of("Wuppertal", "Solingen", "Remscheid"));
@@ -26,7 +26,7 @@ public class SimraRegionMapper {
 		map.put("Hannover", List.of("Hannover"));
 		map.put("Bielefeld", List.of("Bielefeld"));
 		map.put("Munich", List.of("Munich"));
-		map.put("ZES Experimental", List.of("ZES Experimental"));
+		map.put("ZES-Experimental", List.of("ZES Experimental"));
 		map.put("Konstanz", List.of("Konstanz"));
 		map.put("Weimar", List.of("Weimar"));
 	}

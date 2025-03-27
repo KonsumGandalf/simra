@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/osmPlanet" />
+            <option value="$PROJECT_DIR$/profiles" />
             <option value="$PROJECT_DIR$/rides" />
             <option value="$PROJECT_DIR$/valhalla" />
           </set>
