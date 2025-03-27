@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CsvUtilService {
@@ -24,6 +25,11 @@ public class CsvUtilService {
 	 */
 	public <T> List<T> parseCsvToModel(String csvContent, Class<T> clazz) {
 		return parseCsvToModel(csvContent, clazz, false);
+	}
+
+	public <T> Optional<T> parseCsvToSingleModel(String csvContent, Class<T> clazz) {
+		List<T> models = parseCsvToModel(csvContent, clazz, false);
+		return models.isEmpty() ? Optional.empty() : Optional.ofNullable(models.get(0));
 	}
 
 	/**

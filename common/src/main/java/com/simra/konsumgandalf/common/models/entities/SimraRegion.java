@@ -2,19 +2,22 @@ package com.simra.konsumgandalf.common.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.simra.konsumgandalf.common.models.enums.SimraRegionGroup;
+import com.simra.konsumgandalf.common.models.maps.SimraRegionEnumNameMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import org.locationtech.jts.geom.Geometry;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Contains multiple regions to a super region.
@@ -22,9 +25,22 @@ import java.util.List;
 @Entity
 public class SimraRegion {
 
+	private static final SimraRegionEnumNameMapper simraRegionEnumNameMapper = new SimraRegionEnumNameMapper();
+
 	@Id
 	@Column
 	private String name;
+
+	/**
+	 * The group of the region necessary for the profile assignment.
+	 */
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private SimraRegionGroup simraRegionGroup;
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "simraRegion")
+	private List<Profile> profileEntities;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "region")
 	@JsonBackReference
@@ -50,6 +66,20 @@ public class SimraRegion {
 
 	public SimraRegion(String name) {
 		this.name = name;
+
+		Optional<SimraRegionGroup> simraRegionGroup = simraRegionEnumNameMapper.getEnumForName(name);
+		if (simraRegionGroup.isPresent()) {
+			this.simraRegionGroup = simraRegionGroup.get();
+		}
+	}
+
+	public SimraRegion(SimraRegionGroup simraRegionGroup) {
+		this.simraRegionGroup = simraRegionGroup;
+
+		Optional<String> name = simraRegionEnumNameMapper.getNameForEnum(simraRegionGroup);
+		if (name.isPresent()) {
+			this.name = name.get();
+		}
 	}
 
 	public String getName() {
@@ -90,6 +120,22 @@ public class SimraRegion {
 
 	public void setAvgSegmentDistance(Float avgSegmentDistance) {
 		this.avgSegmentDistance = avgSegmentDistance;
+	}
+
+	public SimraRegionGroup getSimraRegionGroup() {
+		return simraRegionGroup;
+	}
+
+	public void setSimraRegionGroup(SimraRegionGroup simraRegionGroup) {
+		this.simraRegionGroup = simraRegionGroup;
+	}
+
+	public List<Profile> getProfileEntities() {
+		return profileEntities;
+	}
+
+	public void setProfileEntities(List<Profile> profileEntities) {
+		this.profileEntities = profileEntities;
 	}
 
 }

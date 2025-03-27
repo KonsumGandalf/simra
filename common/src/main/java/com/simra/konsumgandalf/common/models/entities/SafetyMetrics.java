@@ -4,15 +4,22 @@ import com.simra.konsumgandalf.common.constants.DangerousColors;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
+import java.util.Date;
 
 /**
  * This entity represents the safety metrics of an object
  */
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public abstract class SafetyMetrics<T extends SafetyMetrics<T>> {
 
 	@Id
