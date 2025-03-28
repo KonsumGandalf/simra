@@ -86,12 +86,6 @@ public class AnalyticsServiceRegionMetrics {
 					safetyMetricsProjection.getTrafficTime(), safetyMetricsProjection.getWeekDay(),
 					safetyMetricsProjection.getYear());
 
-			if (safetyMetricsProjection.getTrafficTime() == TrafficTimes.EVENING_RUSH_HOUR
-					&& safetyMetricsProjection.getWeekDay() == WeekDays.WEEK
-					&& safetyMetricsProjection.getYear() == 2024 && Objects.equals(region.getName(), "Berlin")) {
-				_logger.info("Total rides for region {}: {}", region.getName(), totalRides.getTotalRides());
-			}
-
 			SafetyMetricsRegion safetyMetrics = new SafetyMetricsRegion(totalRides.getTotalDistance(),
 					safetyMetricsProjection.getTrafficTime(), safetyMetricsProjection.getWeekDay(),
 					safetyMetricsProjection.getYear(), Math.toIntExact(totalRides.getTotalRides()),
