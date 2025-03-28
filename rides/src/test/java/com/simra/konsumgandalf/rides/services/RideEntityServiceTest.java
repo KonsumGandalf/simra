@@ -109,7 +109,8 @@ public class RideEntityServiceTest {
 			inOrder.verify(csvUtilService).parseCsvToModel("bike,incident\n1,3", RideIncident.class);
 
 			RideIncident resultRideIncident = result.getRideIncidents().get(0);
-			assertEquals(Collections.singletonList(ParticipantType.BUS_COACH), resultRideIncident.getParticipantsInvolved());
+			assertEquals(Collections.singletonList(ParticipantType.BUS_COACH),
+					resultRideIncident.getParticipantsInvolved());
 			assertEquals(FALLBACK_DATE, resultRideIncident.getTimeStamp());
 
 			assertEquals(FALLBACK_DATE, result.getRideStart());
