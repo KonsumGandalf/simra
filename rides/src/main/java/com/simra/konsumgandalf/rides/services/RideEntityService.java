@@ -37,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE;
+import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE_MILLIS;
 import static com.simra.konsumgandalf.common.constants.AppDates.START_OF_RECORDING;
 
 @Service
@@ -144,9 +145,16 @@ public class RideEntityService {
 		rideEntity.setRideLocations(rideLocationList);
 
 		long[] rideTimestamps = rideLocationList.stream()
-			.map(RideLocation::getTimeStamp)
-			.collect(Collectors.teeing(Collectors.minBy(Long::compareTo), Collectors.maxBy(Long::compareTo),
-					(min, max) -> new long[] { min.orElse(0L), max.orElse(0L) }));
+				.map(RideLocation::getTimeStamp)
+				.collect(Collectors.teeing(
+						Collectors.minBy(Long::compareTo),
+						Collectors.maxBy(Long::compareTo),
+						(min, max) -> new long[] {
+								Math.max(min.orElse(0L), FALLBACK_DATE_MILLIS),
+								Math.max(max.orElse(0L), FALLBACK_DATE_MILLIS)
+						}
+				));
+
 
 		rideEntity.setRideStart(new Date(rideTimestamps[0]));
 		rideEntity.setRideEnd(new Date(rideTimestamps[1]));
