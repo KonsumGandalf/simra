@@ -145,16 +145,10 @@ public class RideEntityService {
 		rideEntity.setRideLocations(rideLocationList);
 
 		long[] rideTimestamps = rideLocationList.stream()
-				.map(RideLocation::getTimeStamp)
-				.collect(Collectors.teeing(
-						Collectors.minBy(Long::compareTo),
-						Collectors.maxBy(Long::compareTo),
-						(min, max) -> new long[] {
-								Math.max(min.orElse(0L), FALLBACK_DATE_MILLIS),
-								Math.max(max.orElse(0L), FALLBACK_DATE_MILLIS)
-						}
-				));
-
+			.map(RideLocation::getTimeStamp)
+			.collect(Collectors.teeing(Collectors.minBy(Long::compareTo), Collectors.maxBy(Long::compareTo),
+					(min, max) -> new long[] { Math.max(min.orElse(0L), FALLBACK_DATE_MILLIS),
+							Math.max(max.orElse(0L), FALLBACK_DATE_MILLIS) }));
 
 		rideEntity.setRideStart(new Date(rideTimestamps[0]));
 		rideEntity.setRideEnd(new Date(rideTimestamps[1]));

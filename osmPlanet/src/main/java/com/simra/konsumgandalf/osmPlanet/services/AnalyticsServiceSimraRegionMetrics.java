@@ -139,7 +139,8 @@ public class AnalyticsServiceSimraRegionMetrics {
 			safetyMetricsSimraRegion.setRegion(key.getSimraRegion());
 			safetyMetricsSimraRegion.setName(key.getSimraRegion().getName());
 			float dangerousScore = calculateDangerousScore(Math.round(totalRides.getTotalDistance() / 1000),
-					safetyMetricsSimraRegion.getNumberOfIncidents(), safetyMetricsSimraRegion.getNumberOfScaryIncidents());
+					safetyMetricsSimraRegion.getNumberOfIncidents(),
+					safetyMetricsSimraRegion.getNumberOfScaryIncidents());
 			safetyMetricsSimraRegion.setDangerousScore(dangerousScore);
 			safetyMetricsSimraRegion.setDangerousColor(DangerousScoreToColorMap.getColorForScore(dangerousScore));
 			safetyMetricsRegionList.add(safetyMetricsSimraRegion);
