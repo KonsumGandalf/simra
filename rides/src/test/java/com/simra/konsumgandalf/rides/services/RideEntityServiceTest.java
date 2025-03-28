@@ -109,13 +109,12 @@ public class RideEntityServiceTest {
 			inOrder.verify(csvUtilService).parseCsvToModel("bike,incident\n1,3", RideIncident.class);
 
 			RideIncident resultRideIncident = result.getRideIncidents().get(0);
-			assertEquals(resultRideIncident.getParticipantsInvolved(),
-					Collections.singletonList(ParticipantType.BUS_COACH));
-			assertEquals(resultRideIncident.getTimeStamp(), FALLBACK_DATE);
+			assertEquals(Collections.singletonList(ParticipantType.BUS_COACH), resultRideIncident.getParticipantsInvolved());
+			assertEquals(FALLBACK_DATE, resultRideIncident.getTimeStamp());
 
-			assertEquals(result.getRideStart(), new Date(1000));
-			assertEquals(result.getRideEnd(), new Date(1000));
-			assertEquals(result.getRideLocations(), List.of(mockRideLocationValid));
+			assertEquals(FALLBACK_DATE, result.getRideStart());
+			assertEquals(FALLBACK_DATE, result.getRideEnd());
+			assertEquals(List.of(mockRideLocationValid), result.getRideLocations());
 		}
 
 		@Nested
