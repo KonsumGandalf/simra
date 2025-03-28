@@ -107,10 +107,12 @@ public class RideEntityService {
 			if (rideEntity.isPresent()) {
 				_logger.info("[Database]: Ride entity with path {} already exists", path);
 				return true;
-			} else {
+			}
+			else {
 				return false;
 			}
-		} else {
+		}
+		else {
 			bloomFilterService.add(path);
 			return false;
 		}
