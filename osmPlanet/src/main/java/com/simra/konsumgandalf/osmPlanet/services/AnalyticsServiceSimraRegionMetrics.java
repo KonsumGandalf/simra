@@ -98,8 +98,8 @@ public class AnalyticsServiceSimraRegionMetrics {
 			simraRegion.setRegions(regions);
 			simraRegions.add(simraRegion);
 		}
+
 		simraRegionRepository.saveAll(simraRegions);
-		regionRepository.flush();
 		return simraRegions;
 	}
 
@@ -138,10 +138,8 @@ public class AnalyticsServiceSimraRegionMetrics {
 					safetyMetricsRegion.getNumberOfNearDoorings(), safetyMetricsRegion.getNumberOfObstacleDodges());
 			safetyMetricsSimraRegion.setRegion(key.getSimraRegion());
 			safetyMetricsSimraRegion.setName(key.getSimraRegion().getName());
-			float dangerousScore = calculateDangerousScore(
-					Math.round(totalRides.getTotalDistance() / key.getSimraRegion().getAvgSegmentDistance()),
-					safetyMetricsSimraRegion.getNumberOfIncidents(),
-					safetyMetricsSimraRegion.getNumberOfScaryIncidents());
+			float dangerousScore = calculateDangerousScore(Math.round(totalRides.getTotalDistance() / 1000),
+					safetyMetricsSimraRegion.getNumberOfIncidents(), safetyMetricsSimraRegion.getNumberOfScaryIncidents());
 			safetyMetricsSimraRegion.setDangerousScore(dangerousScore);
 			safetyMetricsSimraRegion.setDangerousColor(DangerousScoreToColorMap.getColorForScore(dangerousScore));
 			safetyMetricsRegionList.add(safetyMetricsSimraRegion);
@@ -158,15 +156,12 @@ public class AnalyticsServiceSimraRegionMetrics {
 	}
 
 	private void updateSimraRegionGeometry(SimraRegion simraRegion, List<Region> regions) {
-		if (simraRegion.getWay() == null || simraRegion.getAvgSegmentDistance() == null) {
+		if (simraRegion.getWay() == null) {
 			try {
 				byte[] unifiedBytes = regionRepository.unifyRegionWays(regions.stream().map(Region::getName).toList());
 				Geometry way = geometryReader.read(unifiedBytes);
 				way.setSRID(3857);
 				simraRegion.setWay(way);
-
-				Float avgDistance = simraRegionRepository.getAvgSegmentDistance(way);
-				simraRegion.setAvgSegmentDistance(avgDistance);
 			}
 			catch (ParseException e) {
 				_logger.error("Error while unifying way for SimraRegion {}", simraRegion.getName(), e);

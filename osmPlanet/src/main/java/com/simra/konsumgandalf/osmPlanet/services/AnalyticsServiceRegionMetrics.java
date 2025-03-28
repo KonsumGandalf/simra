@@ -86,15 +86,12 @@ public class AnalyticsServiceRegionMetrics {
 					safetyMetricsProjection.getTrafficTime(), safetyMetricsProjection.getWeekDay(),
 					safetyMetricsProjection.getYear());
 
-			if (safetyMetricsProjection.getTrafficTime() == TrafficTimes.EVENING_RUSH_HOUR
-					&& safetyMetricsProjection.getWeekDay() == WeekDays.WEEK
-					&& safetyMetricsProjection.getYear() == 2024 && Objects.equals(region.getName(), "Berlin")) {
-				_logger.info("Total rides for region {}: {}", region.getName(), totalRides.getTotalRides());
-			}
-
-			SafetyMetricsRegion safetyMetrics = new SafetyMetricsRegion(totalRides.getTotalDistance(),
-					safetyMetricsProjection.getTrafficTime(), safetyMetricsProjection.getWeekDay(),
-					safetyMetricsProjection.getYear(), Math.toIntExact(totalRides.getTotalRides()),
+			SafetyMetricsRegion safetyMetrics = new SafetyMetricsRegion(
+					totalRides.getTotalDistance(),
+					safetyMetricsProjection.getTrafficTime(),
+					safetyMetricsProjection.getWeekDay(),
+					safetyMetricsProjection.getYear(),
+					Math.toIntExact(totalRides.getTotalRides()),
 					Math.toIntExact(safetyMetricsProjection.getTotalIncidents()),
 					Math.toIntExact(safetyMetricsProjection.getTotalScaryIncidents()),
 					Math.toIntExact(safetyMetricsProjection.getTotalClosePasses()),
@@ -103,7 +100,8 @@ public class AnalyticsServiceRegionMetrics {
 					Math.toIntExact(safetyMetricsProjection.getTotalHeadOnApproaches()),
 					Math.toIntExact(safetyMetricsProjection.getTotalTailgating()),
 					Math.toIntExact(safetyMetricsProjection.getTotalNearDoorings()),
-					Math.toIntExact(safetyMetricsProjection.getTotalObstacleDodges()));
+					Math.toIntExact(safetyMetricsProjection.getTotalObstacleDodges())
+			);
 
 			float dangerousScore = calculateDangerousScore(Math.round(totalRides.getTotalDistance() / 1000),
 					safetyMetrics.getNumberOfIncidents(), safetyMetrics.getNumberOfScaryIncidents());
