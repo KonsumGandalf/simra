@@ -100,21 +100,19 @@ public class RideEntityService {
 	}
 
 	private boolean checkIfRideEntityExists(String path) {
-		boolean doesExistInBloomFilter = bloomFilterService.mightContain(path);
-		if (!doesExistInBloomFilter) {
-			_logger.info("[BloomFilter]: Ride entity with path {} already exists", path);
-			return true;
-		}
-		else {
+		boolean mightExist = bloomFilterService.mightContain(path);
+
+		if (mightExist) {
 			Optional<RideEntity> rideEntity = rideEntityRepository.findOneByPath(path);
 			if (rideEntity.isPresent()) {
 				_logger.info("[Database]: Ride entity with path {} already exists", path);
-				bloomFilterService.add(path);
+				return true;
+			} else {
 				return false;
 			}
-			else {
-				return true;
-			}
+		} else {
+			bloomFilterService.add(path);
+			return false;
 		}
 	}
 
