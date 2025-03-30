@@ -3,7 +3,6 @@ package com.simra.konsumgandalf.common.models.classes;
 import com.opencsv.bean.CsvBindByName;
 import jakarta.persistence.Embeddable;
 
-@Embeddable
 public class RideLocation {
 
 	@CsvBindByName(column = "lat")

@@ -79,7 +79,7 @@ public class RideIncident extends TimeBaseClass {
 	@CsvCustomBindByName(column = "incident", converter = EnumConverter.class)
 	@Column(length = 20)
 	@Enumerated(EnumType.STRING)
-	private IncidentType incidentType = IncidentType.OTHER;
+	private IncidentType incidentType = IncidentType.NOTHING;
 
 	@CsvBindByName(column = "desc")
 	@Column(columnDefinition = "text")

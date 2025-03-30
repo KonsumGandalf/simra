@@ -1,6 +1,8 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
+import com.simra.konsumgandalf.common.constants.CronExpressions;
 import com.simra.konsumgandalf.common.logging.LogExecutionTime;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
@@ -13,13 +15,20 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.FindNumberOfRidesWithinStr
 import com.simra.konsumgandalf.osmPlanet.classes.keys.TrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
+import static com.simra.konsumgandalf.osmPlanet.utils.TimeFilterUtils.getAllYears;
 
 /**
  * This service provides analytics for the OSM planet.
@@ -41,13 +51,19 @@ public class AnalyticsServiceHighwayMetrics {
 	@Autowired
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsLineRepository;
 
-	private final int PAGE_SIZE = 100;
+	private final int PAGE_SIZE;
+
+	private static final Runtime runtime = Runtime.getRuntime();
 
 	private static final Logger _logger = LoggerFactory.getLogger(AnalyticsServiceHighwayMetrics.class);
 
+	public AnalyticsServiceHighwayMetrics(@Value("${ANALYTICS_PAGE_SIZE}") int pageSize) {
+		PAGE_SIZE = pageSize;
+	}
+
 	// @Scheduled(cron = CronExpressions.EVERY_DAY)
-	@LogExecutionTime
 	@Async
+	@LogExecutionTime
 	public void updateSafetyMetricsHighway() {
 		long startTime = System.nanoTime();
 
@@ -58,10 +74,11 @@ public class AnalyticsServiceHighwayMetrics {
 		while (hasMoreData.get()) {
 			final int count = pageCounter.getAndIncrement();
 			List<PlanetOsmLine> fetchedStreets = osmHighwayRepository.findAllStreets(PageRequest.of(count, PAGE_SIZE));
-
 			if (fetchedStreets.isEmpty()) {
 				hasMoreData.set(false);
 			}
+			// List<PlanetOsmLine> fetchedStreets = osmHighwayRepository
+			// .findAllWithIncidentsAndEntitiesByOsmIdIn(streetIds);
 
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				updateSafetyMetrics(fetchedStreets);
@@ -80,6 +97,11 @@ public class AnalyticsServiceHighwayMetrics {
 
 		CompletableFuture.allOf(listOfProcessedStreets.toArray(new CompletableFuture[0])).join();
 		_logger.info("All highway information updated in {} seconds.", (System.nanoTime() - startTime) / 1e9);
+	}
+
+	@Scheduled(cron = CronExpressions.EVERY_10_SECONDS)
+	void printMemoryUsage() {
+		_logger.info("Used Memory: {} MB", (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
 	}
 
 	/**
@@ -181,15 +203,6 @@ public class AnalyticsServiceHighwayMetrics {
 		});
 
 		return trafficTimesSafetyMetricsHashBiMap;
-	}
-
-	private List<Integer> getAllYears(HashBiMap<TrafficTimeWeekDayKey, SafetyMetricsPlanetOsmLine> metricsMap) {
-		return metricsMap.keySet()
-			.stream()
-			.map(TrafficTimeWeekDayKey::getYear)
-			.filter(year -> year != 2000)
-			.distinct()
-			.toList();
 	}
 
 	void calculateAllYearValues(HashBiMap<TrafficTimeWeekDayKey, SafetyMetricsPlanetOsmLine> metricsMap) {

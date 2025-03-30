@@ -11,6 +11,7 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.FindNumberOfRidesWithinStr
 import com.simra.konsumgandalf.osmPlanet.classes.keys.TrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -44,13 +47,16 @@ public class AnalyticsServiceHighwayMetricsTest {
 	@Mock
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsRepository;
 
-	@InjectMocks
 	private AnalyticsServiceHighwayMetrics analyticsServiceHighwayMetrics;
 
 	AnalyticsServiceHighwayMetrics analyticsServiceSpy;
 
 	@BeforeEach
 	public void setUp() {
+		analyticsServiceHighwayMetrics = new AnalyticsServiceHighwayMetrics(100);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "osmHighwayRepository", osmHighwayRepository);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "safetyMetricsLineRepository",
+				safetyMetricsRepository);
 		analyticsServiceSpy = spy(analyticsServiceHighwayMetrics);
 	}
 
