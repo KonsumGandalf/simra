@@ -76,3 +76,7 @@ BEGIN
     RETURN length_m;
 END;
 ' LANGUAGE plpgsql IMMUTABLE;
+
+--- Set Indexes for the analyticsServices
+CREATE INDEX IF NOT EXISTS idx_rel_planet_osm_id ON ride_entity__planet_osm_line (planet_osm_lines_osm_id);
+CREATE INDEX IF NOT EXISTS idx_rel_ride_entity_id ON ride_entity__planet_osm_line (ride_entities_id);
