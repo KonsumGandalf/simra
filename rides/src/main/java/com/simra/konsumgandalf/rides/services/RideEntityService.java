@@ -2,6 +2,7 @@ package com.simra.konsumgandalf.rides.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simra.konsumgandalf.common.logging.LogExecutionTime;
 import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
 import com.simra.konsumgandalf.common.models.classes.RideLocation;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
@@ -73,14 +74,15 @@ public class RideEntityService {
 	}
 
 	@Async
+	@LogExecutionTime
 	public void loadAllPreviousRides() throws Exception {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-		Files.walk(dataPath, 4)
+		Files.walk(dataPath, 8)
 			.filter(Files::isRegularFile)
 			.filter(FileReaderService::isEntityFile)
 			.map(Path::toString)
-			.filter(this::checkIfRideEntityExists)
+			.filter(this::checkIfNotRideEntityExists)
 			.forEach(path -> {
 				CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 					try {
@@ -99,22 +101,22 @@ public class RideEntityService {
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 	}
 
-	private boolean checkIfRideEntityExists(String path) {
+	private boolean checkIfNotRideEntityExists(String path) {
 		boolean mightExist = bloomFilterService.mightContain(path);
 
 		if (mightExist) {
-			Optional<RideEntity> rideEntity = rideEntityRepository.findOneByPath(path);
-			if (rideEntity.isPresent()) {
+			boolean exists = rideEntityRepository.existsByPath(path);
+			if (exists) {
 				_logger.info("[Database]: Ride entity with path {} already exists", path);
-				return true;
+				return false;
 			}
 			else {
-				return false;
+				return true;
 			}
 		}
 		else {
 			bloomFilterService.add(path);
-			return false;
+			return true;
 		}
 	}
 
@@ -123,7 +125,6 @@ public class RideEntityService {
 	 * @param rideEntity - The ride entity to enrich
 	 * @return - The enriched ride entity
 	 */
-	// @LogExecutionTime
 	protected RideEntity enrichRideEntityWithCsv(RideEntity rideEntity) {
 		String content = fileReaderService.readFileFromPath(rideEntity.getPath());
 
@@ -142,20 +143,32 @@ public class RideEntityService {
 			.stream()
 			.filter(this::validateRideLocation)
 			.toList();
+
+		if (rideLocationList.size() < 2) {
+			throw new IllegalArgumentException("File does not contain enough ride locations");
+		}
+
 		rideEntity.setRideLocations(rideLocationList);
 
 		long[] rideTimestamps = rideLocationList.stream()
 			.map(RideLocation::getTimeStamp)
 			.collect(Collectors.teeing(Collectors.minBy(Long::compareTo), Collectors.maxBy(Long::compareTo),
-					(min, max) -> new long[] { Math.max(min.orElse(0L), FALLBACK_DATE_MILLIS),
-							Math.max(max.orElse(0L), FALLBACK_DATE_MILLIS) }));
+					(min, max) -> {
+						long minValue = (min.isEmpty() || min.get() < START_OF_RECORDING.getTime())
+								? FALLBACK_DATE_MILLIS : min.get();
+						long maxValue = (max.isEmpty() || max.get() < START_OF_RECORDING.getTime())
+								? FALLBACK_DATE_MILLIS : max.get();
+
+						return new long[] { minValue, maxValue };
+					}));
 
 		rideEntity.setRideStart(new Date(rideTimestamps[0]));
 		rideEntity.setRideEnd(new Date(rideTimestamps[1]));
 
 		List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
 		rideIncidentList = rideIncidentList.stream()
-			.filter(incident -> incident.getIncidentType() != IncidentType.DUMMY_INCIDENT)
+			.filter(incident -> incident.getIncidentType() != IncidentType.DUMMY_INCIDENT
+					|| incident.getIncidentType() != IncidentType.NOTHING)
 			.map(incident -> {
 				IxFunctionToParticipantTypeMap.IxFunctionToParticipantType.forEach((key, value) -> {
 					if (key.apply(incident) == 1) {
@@ -171,10 +184,6 @@ public class RideEntityService {
 			})
 			.filter(this::validateRideIncident)
 			.toList();
-
-		if (rideIncidentList.size() > 6) {
-			_logger.warn("No valid incidents found in ride entity with path {}", rideEntity.getPath());
-		}
 
 		rideEntity.setRideIncidents(rideIncidentList);
 
@@ -211,7 +220,6 @@ public class RideEntityService {
 	 * @param rideEntity - The csv enriched ride entity
 	 * @return - The cleaned ride location
 	 */
-	// @LogExecutionTime
 	protected RideEntity linkToPlanetOsmLine(RideEntity rideEntity) {
 		List<OsmrMatchInformation> coordinates = rideEntity.getRideLocations()
 			.stream()
