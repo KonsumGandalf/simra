@@ -56,7 +56,7 @@ public class ProfileService {
 	public void loadAllPrevProfiles() throws Exception {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-		Files.walk(dataPath, 4)
+		Files.walk(dataPath, 8)
 			.filter(Files::isRegularFile)
 			.filter(FileReaderService::isEntityFile)
 			.map(Path::toString)
