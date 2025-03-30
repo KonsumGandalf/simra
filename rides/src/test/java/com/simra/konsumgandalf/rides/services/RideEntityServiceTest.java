@@ -92,11 +92,19 @@ public class RideEntityServiceTest {
 			mockRideLocationValid.setLat(1.0);
 			mockRideLocationValid.setLng(4.0);
 			mockRideLocationValid.setTimeStamp(1000);
+			RideLocation mockRideLocationValid2 = new RideLocation();
+			mockRideLocationValid2.setLat(1.2);
+			mockRideLocationValid2.setLng(4.1);
+			mockRideLocationValid2.setTimeStamp(FALLBACK_DATE.getTime());
+			RideLocation mockRideLocationValid3 = new RideLocation();
+			mockRideLocationValid3.setLat(1.4);
+			mockRideLocationValid3.setLng(4.3);
+			mockRideLocationValid3.setTimeStamp(FALLBACK_DATE.getTime());
 			RideLocation mockInvalidRideLocation = new RideLocation();
 			mockInvalidRideLocation.setLat(1.0);
 			mockInvalidRideLocation.setLng(4.0);
-			when(csvUtilService.parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class))
-				.thenReturn(List.of(mockRideLocationValid, mockInvalidRideLocation));
+			when(csvUtilService.parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class)).thenReturn(List
+				.of(mockRideLocationValid, mockRideLocationValid2, mockRideLocationValid3, mockInvalidRideLocation));
 
 			mockRideEntity = new RideEntity("valid.csv");
 			mockRideEntity.setRideIncidents(Collections.singletonList(mockRideIncident));
@@ -115,7 +123,8 @@ public class RideEntityServiceTest {
 
 			assertEquals(FALLBACK_DATE, result.getRideStart());
 			assertEquals(FALLBACK_DATE, result.getRideEnd());
-			assertEquals(List.of(mockRideLocationValid), result.getRideLocations());
+			assertEquals(List.of(mockRideLocationValid, mockRideLocationValid2, mockRideLocationValid3),
+					result.getRideLocations());
 		}
 
 		@Nested
