@@ -19,7 +19,7 @@ public class SafetyMetricsProfileController {
 
 	@PostMapping("/update")
 	public void updateSafetyMetricsProfiles() {
-		analyticsProfileService.updateProfileSimraRegion();
+		analyticsProfileService.calculateProfileSafetyMetrics();
 	}
 
 }

@@ -53,29 +53,39 @@ public class ProfileService {
 		dataPath = filePath;
 	}
 
-	public void loadAllPrevProfiles() throws Exception {
+	public void loadAllPrevProfiles() {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-		Files.walk(dataPath, 8)
-			.filter(Files::isRegularFile)
-			.filter(FileReaderService::isEntityFile)
-			.map(Path::toString)
-			.filter(path -> !isProfileUpToDate(path))
-			.forEach(path -> {
-				CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-					try {
-						_logger.info("Processing file: " + path.toString() + " on thread: "
-								+ Thread.currentThread().getName());
-						generateNewProfileEntity(path);
-						bloomFilterService.add(path);
-					}
-					catch (Exception e) {
-						_logger.error("Error processing file: " + path.toString(), e);
-					}
+		try {
+			Files.walk(dataPath, 8)
+				.filter(Files::isRegularFile)
+				.filter(FileReaderService::isEntityFile)
+				.map(Path::toString)
+				.filter(path -> !isProfileUpToDate(path))
+				.forEach(path -> {
+					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+						try {
+							_logger.info("Processing file: " + path.toString() + " on thread: "
+									+ Thread.currentThread().getName());
+							generateNewProfileEntity(path);
+							bloomFilterService.add(path);
+						}
+						catch (Exception e) {
+							_logger.error("Error processing file: " + path.toString(), e);
+						}
+					});
+					futures.add(future);
 				});
-				futures.add(future);
-			});
+		}
+		catch (Exception e) {
+			_logger.error("Error loading profiles", e);
+		}
+
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+	}
+
+	public boolean isEmpty() {
+		return profileRepository.count() == 0;
 	}
 
 	protected Profile generateProfileFromCsv(String path) {
