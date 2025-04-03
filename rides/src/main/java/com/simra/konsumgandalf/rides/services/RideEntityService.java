@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,40 +69,51 @@ public class RideEntityService {
 	@Autowired
 	private BloomFilterService bloomFilterService;
 
+	@Autowired
+	private PlanetOsmLineService planetOsmLineService;
+
 	RideEntityService(@Value("${SIMRA_RIDE_FILE_PATH:./}") String filePath) {
 		dataPath = Paths.get(filePath);
 	}
 
-	@Async
 	@LogExecutionTime
-	public void loadAllPreviousRides() throws Exception {
+	public void loadAllPreviousRides() {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-		Files.walk(dataPath, 8)
-			.filter(Files::isRegularFile)
-			.filter(FileReaderService::isEntityFile)
-			.map(Path::toString)
-			.filter(this::checkIfNotRideEntityExists)
-			.forEach(path -> {
-				CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-					try {
-						_logger.info("Processing file: " + path.toString() + " on thread: "
-								+ Thread.currentThread().getName());
-						generateNewRideEntity(path);
-						bloomFilterService.add(path);
-					}
-					catch (Exception e) {
-						_logger.error("Error processing file: " + path.toString(), e);
-					}
+		try {
+			Files.walk(dataPath, 8)
+				.filter(Files::isRegularFile)
+				.filter(FileReaderService::isEntityFile)
+				.map(Path::toString)
+				.filter(this::checkIfNotRideEntityExists)
+				.forEach(path -> {
+					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+						try {
+							_logger
+								.info("Processing file: " + path + " on thread: " + Thread.currentThread().getName());
+							generateNewRideEntity(path);
+							bloomFilterService.add(path);
+						}
+						catch (Exception e) {
+							_logger.error("Error processing file: " + path, e);
+						}
+					});
+					futures.add(future);
 				});
-				futures.add(future);
-			});
+		}
+		catch (IOException e) {
+			_logger.error("Error reading files from path: " + dataPath, e);
+		}
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 	}
 
+	public boolean isEmpty() {
+		return rideEntityRepository.count() == 0;
+	}
+
 	private boolean checkIfNotRideEntityExists(String path) {
-		boolean mightExist = bloomFilterService.mightContain(path);
+		boolean mightExist = bloomFilterService.mightContain(path) || bloomFilterService.wasCreated();
 
 		if (mightExist) {
 			boolean exists = rideEntityRepository.existsByPath(path);
@@ -168,7 +179,7 @@ public class RideEntityService {
 		List<RideIncident> rideIncidentList = csvUtilService.parseCsvToModel(filteredParts[0], RideIncident.class);
 		rideIncidentList = rideIncidentList.stream()
 			.filter(incident -> incident.getIncidentType() != IncidentType.DUMMY_INCIDENT
-					|| incident.getIncidentType() != IncidentType.NOTHING)
+					&& incident.getIncidentType() != IncidentType.NOTHING)
 			.map(incident -> {
 				IxFunctionToParticipantTypeMap.IxFunctionToParticipantType.forEach((key, value) -> {
 					if (key.apply(incident) == 1) {
@@ -240,6 +251,8 @@ public class RideEntityService {
 			return rideEntity;
 		}
 		rideEntity.setPlanetOsmLines(streets);
+
+		planetOsmLineService.addModifiedHighways(streets);
 
 		for (RideIncident incident : rideEntity.getRideIncidents()) {
 			PlanetOsmLine planetOsmLine = planetOsmLineRepository.findClosestStreetSegments(streetSegmentIdsOfRoute,

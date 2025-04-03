@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.classes.RideLocation;
+import com.simra.konsumgandalf.common.models.enums.IncidentType;
 import com.simra.konsumgandalf.common.models.enums.ParticipantType;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
@@ -84,6 +85,7 @@ public class RideEntityServiceTest {
 			mockRideIncident.setLng(4.0);
 			mockRideIncident.setI1(1);
 			mockRideIncident.setTs(2000);
+			mockRideIncident.setIncidentType(IncidentType.CLOSE_PASS);
 			mockRideIncident.setParticipantsInvolved(new ArrayList<>());
 			when(csvUtilService.parseCsvToModel("bike,incident\n1,3", RideIncident.class))
 				.thenReturn(Collections.singletonList(mockRideIncident));
