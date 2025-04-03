@@ -14,10 +14,10 @@ import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLine
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,13 +44,20 @@ public class AnalyticsServiceHighwayMetricsTest {
 	@Mock
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsRepository;
 
-	@InjectMocks
+	@Mock
+	private OsmHighwayService osmHighwayService;
+
 	private AnalyticsServiceHighwayMetrics analyticsServiceHighwayMetrics;
 
 	AnalyticsServiceHighwayMetrics analyticsServiceSpy;
 
 	@BeforeEach
 	public void setUp() {
+		analyticsServiceHighwayMetrics = new AnalyticsServiceHighwayMetrics(100);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "osmHighwayRepository", osmHighwayRepository);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "safetyMetricsLineRepository",
+				safetyMetricsRepository);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "osmHighwayService", osmHighwayService);
 		analyticsServiceSpy = spy(analyticsServiceHighwayMetrics);
 	}
 
@@ -127,7 +134,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 	}
 
 	@Test
-	public void testUpdateSafetyMetricsHighway() {
+	public void testCalculateSafetyMetricsHighway() {
 		PlanetOsmLine mockStreet1 = new PlanetOsmLine();
 		PlanetOsmLine mockStreet2 = new PlanetOsmLine();
 		List<PlanetOsmLine> mockStreetsPage1 = Arrays.asList(mockStreet1);
@@ -140,7 +147,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 
 		doNothing().when(analyticsServiceSpy).updateSafetyMetrics(anyList());
 
-		analyticsServiceSpy.updateSafetyMetricsHighway();
+		analyticsServiceSpy.calculateSafetyMetricsHighway();
 
 		verify(osmHighwayRepository, times(3)).findAllStreets(any(PageRequest.class));
 		verify(analyticsServiceSpy, times(1)).updateSafetyMetrics(mockStreetsPage1);

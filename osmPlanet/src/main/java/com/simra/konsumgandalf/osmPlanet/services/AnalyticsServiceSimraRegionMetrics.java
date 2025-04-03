@@ -5,16 +5,15 @@ import com.simra.konsumgandalf.common.models.entities.Region;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
 import com.simra.konsumgandalf.common.models.entities.SimraRegion;
-import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
-import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.common.models.maps.DangerousScoreToColorMap;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityMetricsDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityTotalDTO;
-import com.simra.konsumgandalf.osmPlanet.classes.dtos.TimeFilters;
 import com.simra.konsumgandalf.osmPlanet.classes.keys.RegionTrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.SimraRegionMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsSimraRegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SimraRegionRepository;
+import com.simra.konsumgandalf.osmPlanet.utils.AnalyticsUtils;
 import jakarta.transaction.Transactional;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -22,7 +21,6 @@ import org.locationtech.jts.io.WKBReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,9 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
-import static com.simra.konsumgandalf.osmPlanet.utils.TimeFilterUtils.getTimeFilters;
 
 /**
  * This service provides analytics for the OSM planet.
@@ -56,12 +54,12 @@ public class AnalyticsServiceSimraRegionMetrics {
 
 	private static final WKBReader geometryReader = new WKBReader();
 
-	@Async
 	@LogExecutionTime
 	public void calculateSafetyMetricsSimraRegion() {
 		List<SimraRegion> simraRegions = createOrUpdateSimraRegions();
 		Map<RegionTrafficTimeWeekDayKey, SafetyMetricsRegion> metricsRegionHashMap = accumulateSafetyMetrics(
 				simraRegions);
+		_logger.info("Finished calculating safety metrics for simra regions");
 		convertAndSaveSimraRegionMetrics(metricsRegionHashMap);
 	}
 
@@ -122,23 +120,36 @@ public class AnalyticsServiceSimraRegionMetrics {
 	private void convertAndSaveSimraRegionMetrics(
 			Map<RegionTrafficTimeWeekDayKey, SafetyMetricsRegion> metricsRegionHashMap) {
 		List<SafetyMetricsSimraRegion> safetyMetricsRegionList = new ArrayList<>();
+
+		List<RideEntityMetricsDTO> totalRidesAndLengthNotAll = safetyMetricsSimraRegionRepository
+			.findNumberOfRidesAndLengthNotAll();
+		List<RideEntityMetricsDTO> totalRidesAndLengthAll = safetyMetricsSimraRegionRepository
+			.findNumberOfRidesAndLengthAll();
+		List<RideEntityMetricsDTO> totalRidesAndLength = Stream
+			.concat(totalRidesAndLengthNotAll.stream(), totalRidesAndLengthAll.stream())
+			.toList();
+		_logger.info("Total rides and length per region calculated.");
+
 		for (Map.Entry<RegionTrafficTimeWeekDayKey, SafetyMetricsRegion> entry : metricsRegionHashMap.entrySet()) {
 			RegionTrafficTimeWeekDayKey key = entry.getKey();
 			SafetyMetricsRegion safetyMetricsRegion = entry.getValue();
-			RideEntityTotalDTO totalRides = this.totalRideMetersPerSimraRegion(key.getSimraRegion().getName(),
+
+			RideEntityTotalDTO totalRides = AnalyticsUtils.totalRideMetersPerRegion(totalRidesAndLength,
+					key.getSimraRegion().getName(), safetyMetricsRegion.getTrafficTime(),
+					safetyMetricsRegion.getWeekDay(), safetyMetricsRegion.getYear());
+
+			SafetyMetricsSimraRegion safetyMetricsSimraRegion = new SafetyMetricsSimraRegion(totalRides.totalDistance(),
 					safetyMetricsRegion.getTrafficTime(), safetyMetricsRegion.getWeekDay(),
-					safetyMetricsRegion.getYear());
-			SafetyMetricsSimraRegion safetyMetricsSimraRegion = new SafetyMetricsSimraRegion(
-					totalRides.getTotalDistance(), safetyMetricsRegion.getTrafficTime(),
-					safetyMetricsRegion.getWeekDay(), safetyMetricsRegion.getYear(),
-					Math.toIntExact(totalRides.getTotalRides()), safetyMetricsRegion.getNumberOfIncidents(),
-					safetyMetricsRegion.getNumberOfScaryIncidents(), safetyMetricsRegion.getNumberOfClosePasses(),
-					safetyMetricsRegion.getNumberOfPullInOuts(), safetyMetricsRegion.getNumberOfNearLeftRightHooks(),
+					safetyMetricsRegion.getYear(), Math.toIntExact(totalRides.totalRides()),
+					safetyMetricsRegion.getNumberOfIncidents(), safetyMetricsRegion.getNumberOfScaryIncidents(),
+					safetyMetricsRegion.getNumberOfClosePasses(), safetyMetricsRegion.getNumberOfPullInOuts(),
+					safetyMetricsRegion.getNumberOfNearLeftRightHooks(),
 					safetyMetricsRegion.getNumberOfHeadOnApproaches(), safetyMetricsRegion.getNumberOfTailgating(),
 					safetyMetricsRegion.getNumberOfNearDoorings(), safetyMetricsRegion.getNumberOfObstacleDodges());
 			safetyMetricsSimraRegion.setRegion(key.getSimraRegion());
 			safetyMetricsSimraRegion.setName(key.getSimraRegion().getName());
-			float dangerousScore = calculateDangerousScore(Math.round(totalRides.getTotalDistance() / 1000),
+
+			float dangerousScore = calculateDangerousScore(Math.round(totalRides.totalDistance() / 1000),
 					safetyMetricsSimraRegion.getNumberOfIncidents(),
 					safetyMetricsSimraRegion.getNumberOfScaryIncidents());
 			safetyMetricsSimraRegion.setDangerousScore(dangerousScore);
@@ -148,25 +159,15 @@ public class AnalyticsServiceSimraRegionMetrics {
 		safetyMetricsSimraRegionRepository.saveAll(safetyMetricsRegionList);
 	}
 
-	private RideEntityTotalDTO totalRideMetersPerSimraRegion(String name, TrafficTimes time, WeekDays weekDay,
-			Integer year) {
-		TimeFilters timeFilters = getTimeFilters(time, weekDay, year);
-
-		return simraRegionRepository.totalRides(name, timeFilters.trafficTimes(), timeFilters.weekDays(),
-				timeFilters.years());
-	}
-
 	private void updateSimraRegionGeometry(SimraRegion simraRegion, List<Region> regions) {
-		if (simraRegion.getWay() == null) {
-			try {
-				byte[] unifiedBytes = regionRepository.unifyRegionWays(regions.stream().map(Region::getName).toList());
-				Geometry way = geometryReader.read(unifiedBytes);
-				way.setSRID(3857);
-				simraRegion.setWay(way);
-			}
-			catch (ParseException e) {
-				_logger.error("Error while unifying way for SimraRegion {}", simraRegion.getName(), e);
-			}
+		try {
+			byte[] unifiedBytes = regionRepository.unifyRegionWays(regions.stream().map(Region::getName).toList());
+			Geometry way = geometryReader.read(unifiedBytes);
+			way.setSRID(4326);
+			simraRegion.setWay(way);
+		}
+		catch (ParseException e) {
+			_logger.error("Error while unifying way for SimraRegion {}", simraRegion.getName(), e);
 		}
 	}
 

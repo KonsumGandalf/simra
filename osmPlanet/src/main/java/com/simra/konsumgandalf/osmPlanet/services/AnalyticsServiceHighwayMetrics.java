@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
+import static com.simra.konsumgandalf.osmPlanet.utils.TimeFilterUtils.getAllYears;
 
 /**
  * This service provides analytics for the OSM planet.
@@ -41,26 +42,33 @@ public class AnalyticsServiceHighwayMetrics {
 	@Autowired
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsLineRepository;
 
-	private final int PAGE_SIZE = 100;
+	@Autowired
+	private OsmHighwayService osmHighwayService;
+
+	private final int PAGE_SIZE;
+
+	private static final Runtime runtime = Runtime.getRuntime();
 
 	private static final Logger _logger = LoggerFactory.getLogger(AnalyticsServiceHighwayMetrics.class);
 
-	// @Scheduled(cron = CronExpressions.EVERY_DAY)
+	public AnalyticsServiceHighwayMetrics(@Value("${ANALYTICS_PAGE_SIZE}") int pageSize) {
+		PAGE_SIZE = pageSize;
+	}
+
 	@LogExecutionTime
-	@Async
-	public void updateSafetyMetricsHighway() {
+	@Transactional
+	public void calculateSafetyMetricsHighway() {
 		long startTime = System.nanoTime();
 
 		List<CompletableFuture<Void>> listOfProcessedStreets = new ArrayList<>();
-		final AtomicBoolean hasMoreData = new AtomicBoolean(true);
 		AtomicInteger pageCounter = new AtomicInteger(0);
 
-		while (hasMoreData.get()) {
+		_logger.info("Started to analyse planetOsmLine metrics");
+		while (true) {
 			final int count = pageCounter.getAndIncrement();
 			List<PlanetOsmLine> fetchedStreets = osmHighwayRepository.findAllStreets(PageRequest.of(count, PAGE_SIZE));
-
 			if (fetchedStreets.isEmpty()) {
-				hasMoreData.set(false);
+				break;
 			}
 
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -107,6 +115,7 @@ public class AnalyticsServiceHighwayMetrics {
 		}
 
 		safetyMetricsLineRepository.saveAll(safetyMetricsPlanetOsmLineList);
+		osmHighwayService.updateLastAnalysed(streets);
 
 		return;
 	}
@@ -181,15 +190,6 @@ public class AnalyticsServiceHighwayMetrics {
 		});
 
 		return trafficTimesSafetyMetricsHashBiMap;
-	}
-
-	private List<Integer> getAllYears(HashBiMap<TrafficTimeWeekDayKey, SafetyMetricsPlanetOsmLine> metricsMap) {
-		return metricsMap.keySet()
-			.stream()
-			.map(TrafficTimeWeekDayKey::getYear)
-			.filter(year -> year != 2000)
-			.distinct()
-			.toList();
 	}
 
 	void calculateAllYearValues(HashBiMap<TrafficTimeWeekDayKey, SafetyMetricsPlanetOsmLine> metricsMap) {

@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import org.locationtech.jts.geom.Geometry;
@@ -34,13 +35,17 @@ public class Region {
 	private List<SafetyMetricsRegion> safetyMetricsRegions;
 
 	@ManyToMany(cascade = CascadeType.ALL)
-	@JsonBackReference
+	@JsonIgnore
 	private List<SimraRegion> simraRegions;
 
 	@Column()
 	private Geometry way;
 
 	public Region() {
+	}
+
+	public Region(String name) {
+		this.name = name;
 	}
 
 	public Region(String name, Long id, int adminLevel) {

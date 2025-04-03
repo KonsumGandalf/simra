@@ -20,13 +20,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.locationtech.jts.geom.Geometry;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Entity()
-@Table(indexes = { @Index(columnList = "osm_id") })
+@Table(indexes = { @Index(columnList = "osm_id"),
+		@Index(columnList = "lastModified, lastAnalysed", name = "idx_last_modified_last_analysis") })
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PlanetOsmLine {
@@ -67,6 +69,12 @@ public class PlanetOsmLine {
 	@Type(PostgreSQLHStoreType.class)
 	@Column(columnDefinition = "hstore")
 	private Map<String, String> tags = new HashMap<>();
+
+	@Column(nullable = true)
+	private Instant lastModified;
+
+	@Column(nullable = true)
+	private Instant lastAnalysed;
 
 	public PlanetOsmLine() {
 	}
@@ -142,6 +150,30 @@ public class PlanetOsmLine {
 
 	public void setTags(Map<String, String> tags) {
 		this.tags = tags;
+	}
+
+	public List<SafetyMetricsPlanetOsmLine> getSafetyMetricPlanetOsmLines() {
+		return safetyMetricPlanetOsmLines;
+	}
+
+	public void setSafetyMetricPlanetOsmLines(List<SafetyMetricsPlanetOsmLine> safetyMetricPlanetOsmLines) {
+		this.safetyMetricPlanetOsmLines = safetyMetricPlanetOsmLines;
+	}
+
+	public Instant getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Instant lastModified) {
+		this.lastModified = lastModified;
+	}
+
+	public Instant getLastAnalysed() {
+		return lastAnalysed;
+	}
+
+	public void setLastAnalysed(Instant lastAnalysed) {
+		this.lastAnalysed = lastAnalysed;
 	}
 
 }

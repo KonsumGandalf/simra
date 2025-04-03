@@ -2,10 +2,13 @@ package com.simra.konsumgandalf.common.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -20,5 +23,9 @@ public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Lo
 			""", nativeQuery = true)
 	PlanetOsmLine findClosestStreetSegments(@Param("streetSegmentIds") List<Long> streetSegmentIds,
 			@Param("lng") double lng, @Param("lat") double lat);
+
+	@Modifying
+	@Query("UPDATE PlanetOsmLine p SET p.lastModified = :timestamp WHERE p.id IN :ids")
+	void updateLastModifiedByIds(Collection<Long> ids, Instant timestamp);
 
 }

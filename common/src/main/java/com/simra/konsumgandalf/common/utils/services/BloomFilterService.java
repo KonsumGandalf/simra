@@ -15,8 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 
 @Service
@@ -32,6 +30,8 @@ public class BloomFilterService {
 
 	private static final Logger _logger = LoggerFactory.getLogger(BloomFilterService.class);
 
+	private boolean wasCreated = false;
+
 	public BloomFilterService(@Value("${BLOOM_FILTER_FILE}") String filePath,
 			@Value("${BLOOM_FILTER_EXPECTED_INSERTIONS}") int expectedInsertions,
 			@Value("${BLOOM_FILTER_ERROR_RATE}") double fpp) {
@@ -45,7 +45,7 @@ public class BloomFilterService {
 		bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), EXPECTED_INSERTIONS, ERROR_RATE);
 	}
 
-	@Scheduled(cron = CronExpressions.EVERY_MINUTE)
+	@Scheduled(cron = CronExpressions.EVERY_HOUR)
 	@PreDestroy
 	public void saveToDisk() throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(BLOOM_FILTER_FILE_PATH)) {
@@ -66,10 +66,12 @@ public class BloomFilterService {
 				_logger.error("Corrupted Bloom filter file, creating a new one.");
 				bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), EXPECTED_INSERTIONS,
 						ERROR_RATE);
+				wasCreated = true;
 			}
 		}
 		else {
 			_logger.info("No Bloom filter file found, creating a new one.");
+			wasCreated = true;
 		}
 	}
 
@@ -84,6 +86,10 @@ public class BloomFilterService {
 	 */
 	public boolean mightContain(String element) {
 		return bloomFilter.mightContain(element);
+	}
+
+	public boolean wasCreated() {
+		return wasCreated;
 	}
 
 }

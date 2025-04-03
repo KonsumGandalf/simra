@@ -1,12 +1,16 @@
 package com.simra.konsumgandalf.osmPlanet.controller;
 
+import com.simra.konsumgandalf.common.models.entities.Region;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceRegionMetrics;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceSimraRegionMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceHighwayMetrics;
+
+import java.util.List;
 
 /**
  * Temporary controller to update the highway information
@@ -26,7 +30,7 @@ public class AnalyticsController {
 
 	@PostMapping("/update/highway")
 	public void updateHighwayInformation() {
-		analyticsServiceHighwayMetrics.updateSafetyMetricsHighway();
+		analyticsServiceHighwayMetrics.calculateSafetyMetricsHighway();
 	}
 
 	@PostMapping("/update/region")
@@ -37,6 +41,11 @@ public class AnalyticsController {
 	@PostMapping("/update/simra-region")
 	public void updateSimraRegionSafetyMetrics() {
 		analyticsServiceSimraRegionMetrics.calculateSafetyMetricsSimraRegion();
+	}
+
+	@GetMapping("/temp/regions")
+	public List<Region> tempRegions() {
+		return analyticsServiceRegionMetrics.tempRegions();
 	}
 
 }

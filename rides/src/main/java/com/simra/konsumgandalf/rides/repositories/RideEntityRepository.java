@@ -13,8 +13,8 @@ import java.util.Optional;
 @Repository
 public interface RideEntityRepository extends JpaRepository<RideEntity, Long> {
 
-	@Query("SELECT r FROM RideEntity r WHERE r.path = :rideId")
-	public Optional<RideEntity> findOneByPath(String rideId);
+	@Query("SELECT COUNT(r) > 0 FROM RideEntity r WHERE r.path = :rideId")
+	boolean existsByPath(String rideId);
 
 	@Query(value = """
 				SELECT

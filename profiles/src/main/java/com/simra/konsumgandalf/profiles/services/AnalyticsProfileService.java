@@ -50,7 +50,7 @@ public class AnalyticsProfileService {
 
 	@Async
 	@LogExecutionTime
-	public void updateProfileSimraRegion() {
+	public void calculateProfileSafetyMetrics() {
 		List<CompletableFuture<Void>> listOfProcessedSimraRegions = new ArrayList<>();
 
 		List<SimraRegion> allSimraRegions = profileSimraRegionRepository.findAll()

@@ -1,6 +1,6 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
-import com.simra.konsumgandalf.common.models.entities.Region;
+import com.simra.konsumgandalf.common.models.classes.PageResult;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsPlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
@@ -9,13 +9,13 @@ import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsGenericSpecification;
-import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsLineSpecification;
 import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsRegionRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsSimraRegionRepository;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -44,7 +44,9 @@ public class SafetyMetricsService {
 		return safetyMetricsRepository.findByStreetId(id, trafficTime, weekDay, year);
 	}
 
-	public Page<SafetyMetricsLineDTO> getFilteredData(Long id, String name, List<String> highwayType,
+	@Cacheable(value = "streetsMetrics",
+			key = "T(java.util.Objects).hash(#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #p9, #p10, #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
+	public PageResult<SafetyMetricsLineDTO> getFilteredData(Long id, String name, List<String> highwayType,
 			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
 			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, String regionName,
 			Pageable pageable) {
@@ -56,39 +58,48 @@ public class SafetyMetricsService {
 				name, highwayType, minDangerousScore, maxDangerousScore, minNumberOfRides, minNumberOfIncidents,
 				trafficTime, weekDay, year, regionWay);
 
-		return safetyMetricsRepository.findAll(spec, pageable)
+		Page<SafetyMetricsLineDTO> page = safetyMetricsRepository.findAll(spec, pageable)
 			.map(safetyMetrics -> new SafetyMetricsLineDTO(safetyMetrics.getPlanetOsmLine().getId(),
 					safetyMetrics.getPlanetOsmLine().getName(), safetyMetrics.getPlanetOsmLine().getHighway(),
-					safetyMetrics.getPlanetOsmLine().getWay(), safetyMetrics.getDangerousScore(),
-					safetyMetrics.getDangerousColor(), safetyMetrics.getNumberOfRides(),
-					safetyMetrics.getNumberOfIncidents(), safetyMetrics.getTrafficTime(), safetyMetrics.getWeekDay(),
-					safetyMetrics.getYear()));
+					safetyMetrics.getDangerousScore(), safetyMetrics.getDangerousColor(),
+					safetyMetrics.getNumberOfRides(), safetyMetrics.getNumberOfIncidents(),
+					safetyMetrics.getTrafficTime(), safetyMetrics.getWeekDay(), safetyMetrics.getYear()));
+		return new PageResult<>(page.getContent(), pageable.getPageNumber(), pageable.getPageSize(),
+				page.getTotalElements());
 	}
 
-	public Page<SafetyMetricsRegionDTO> getRegionMetrics(String name, Float minDangerousScore, Integer minNumberOfRides,
-			Integer minNumberOfIncidents, List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year,
-			Pageable pageable) {
+	@Cacheable(value = "regionMetrics",
+			key = "T(java.util.Objects).hash(#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
+	public PageResult<SafetyMetricsRegionDTO> getRegionMetrics(String name, Float minDangerousScore,
+			Integer minNumberOfRides, Integer minNumberOfIncidents, List<TrafficTimes> trafficTime,
+			List<WeekDays> weekDay, List<Integer> year, Pageable pageable) {
 		Specification<SafetyMetricsRegion> spec = SafetyMetricsGenericSpecification.filterBy("region", name,
 				minDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year);
 
-		return safetyMetricsRegionRepository.findAll(spec, pageable)
+		Page<SafetyMetricsRegionDTO> page = safetyMetricsRegionRepository.findAll(spec, pageable)
 			.map(safetyMetrics -> new SafetyMetricsRegionDTO(safetyMetrics.getRegion().getName(),
 					safetyMetrics.getDangerousScore(), safetyMetrics.getDangerousColor(),
 					safetyMetrics.getNumberOfRides(), safetyMetrics.getNumberOfIncidents(),
 					safetyMetrics.getTrafficTime(), safetyMetrics.getWeekDay(), safetyMetrics.getYear()));
+		return new PageResult<>(page.getContent(), pageable.getPageNumber(), pageable.getPageSize(),
+				page.getTotalElements());
 	}
 
-	public Page<SafetyMetricsRegionDTO> getSimraRegionMetrics(String name, Float minDangerousScore,
+	@Cacheable(value = "simraRegionMetrics",
+			key = "T(java.util.Objects).hash(#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
+	public PageResult<SafetyMetricsRegionDTO> getSimraRegionMetrics(String name, Float minDangerousScore,
 			Integer minNumberOfRides, Integer minNumberOfIncidents, List<TrafficTimes> trafficTime,
 			List<WeekDays> weekDay, List<Integer> year, Pageable pageable) {
 		Specification<SafetyMetricsSimraRegion> spec = SafetyMetricsGenericSpecification.filterBy("region", name,
 				minDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year);
 
-		return safetyMetricsSimraRegionRepository.findAll(spec, pageable)
+		Page<SafetyMetricsRegionDTO> page = safetyMetricsSimraRegionRepository.findAll(spec, pageable)
 			.map(safetyMetrics -> new SafetyMetricsRegionDTO(safetyMetrics.getRegion().getName(),
 					safetyMetrics.getDangerousScore(), safetyMetrics.getDangerousColor(),
 					safetyMetrics.getNumberOfRides(), safetyMetrics.getNumberOfIncidents(),
 					safetyMetrics.getTrafficTime(), safetyMetrics.getWeekDay(), safetyMetrics.getYear()));
+		return new PageResult<>(page.getContent(), pageable.getPageNumber(), pageable.getPageSize(),
+				page.getTotalElements());
 	}
 
 	public List<SafetyMetricsRegion> getRegionSafetyMetrics(String name) {

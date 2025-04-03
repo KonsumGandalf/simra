@@ -6,10 +6,7 @@ import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.common.models.maps.TrafficTimesMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,10 +18,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import org.geolatte.geom.Geometry;
-import org.springframework.data.annotation.Transient;
 
-import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -53,7 +49,6 @@ public class RideEntity extends TimeBaseClass {
 	private Geometry way;
 
 	@Transient
-	@ElementCollection
 	private List<RideLocation> rideLocations = new ArrayList<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

@@ -9,14 +9,13 @@ import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
-import org.modelmapper.internal.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.xml.crypto.Data;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,8 +39,10 @@ public class OsmHighwayService {
 		List<String> roadTypes = zoomRoadTypeMapper.getRoadTypes(zoom).stream().map(RoadTypes::getType).toList();
 
 		if (zoom <= 11) {
-			return regionRepository.findWays(lng, lat, distanceFilter, 0.0001, trafficTime.name(), weekDay.name(),
-					year);
+			int adminLevel = zoom <= 9 ? 4 : 6;
+
+			return regionRepository.findWays(adminLevel, lng, lat, distanceFilter, 0.0001, trafficTime.name(),
+					weekDay.name(), year);
 		}
 
 		return osmHighwayRepository.findHighways(lng, lat, distanceFilter, roadTypes, 0.0001, trafficTime.name(),
@@ -62,6 +63,13 @@ public class OsmHighwayService {
 
 	public List<String> findAllHighwayIdStartingWith(String idPrefix) {
 		return osmHighwayRepository.findAllHighwayIdStartingWith(idPrefix);
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void updateLastAnalysed(List<PlanetOsmLine> streets) {
+		List<Long> ids = streets.stream().map(PlanetOsmLine::getId).toList();
+
+		osmHighwayRepository.updateLastAnalysedByIds(ids, Instant.now());
 	}
 
 }

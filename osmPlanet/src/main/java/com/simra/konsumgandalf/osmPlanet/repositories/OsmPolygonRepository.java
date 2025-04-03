@@ -33,12 +33,12 @@ public interface OsmPolygonRepository extends JpaRepository<PlanetOsmPolygon, Lo
 			List<Integer> year);
 
 	@Query("""
-				SELECT b.way
-				FROM PlanetOsmPolygon b
+			 			SELECT ST_AsBinary(ST_Transform(b.way, 4326))
+			             FROM PlanetOsmPolygon b
 				WHERE b.osmId = :osmId
 				ORDER BY ST_AREA(b.way) DESC
 			 		LIMIT 1
 			""")
-	Geometry getWayByOsmId(Long osmId);
+	byte[] getWayByOsmId(Long osmId);
 
 }
