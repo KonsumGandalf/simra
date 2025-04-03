@@ -1,8 +1,6 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
-import com.simra.konsumgandalf.common.constants.CronExpressions;
 import com.simra.konsumgandalf.common.logging.LogExecutionTime;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
@@ -15,10 +13,6 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.FindNumberOfRidesWithinStr
 import com.simra.konsumgandalf.osmPlanet.classes.keys.TrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
-import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import static com.simra.konsumgandalf.common.utils.ScoreUtils.calculateDangerousScore;
 import static com.simra.konsumgandalf.osmPlanet.utils.TimeFilterUtils.getAllYears;
@@ -51,6 +42,9 @@ public class AnalyticsServiceHighwayMetrics {
 	@Autowired
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsLineRepository;
 
+	@Autowired
+	private OsmHighwayService osmHighwayService;
+
 	private final int PAGE_SIZE;
 
 	private static final Runtime runtime = Runtime.getRuntime();
@@ -61,24 +55,21 @@ public class AnalyticsServiceHighwayMetrics {
 		PAGE_SIZE = pageSize;
 	}
 
-	// @Scheduled(cron = CronExpressions.EVERY_DAY)
-	@Async
 	@LogExecutionTime
-	public void updateSafetyMetricsHighway() {
+	@Transactional
+	public void calculateSafetyMetricsHighway() {
 		long startTime = System.nanoTime();
 
 		List<CompletableFuture<Void>> listOfProcessedStreets = new ArrayList<>();
-		final AtomicBoolean hasMoreData = new AtomicBoolean(true);
 		AtomicInteger pageCounter = new AtomicInteger(0);
 
-		while (hasMoreData.get()) {
+		_logger.info("Started to analyse planetOsmLine metrics");
+		while (true) {
 			final int count = pageCounter.getAndIncrement();
 			List<PlanetOsmLine> fetchedStreets = osmHighwayRepository.findAllStreets(PageRequest.of(count, PAGE_SIZE));
 			if (fetchedStreets.isEmpty()) {
-				hasMoreData.set(false);
+				break;
 			}
-			// List<PlanetOsmLine> fetchedStreets = osmHighwayRepository
-			// .findAllWithIncidentsAndEntitiesByOsmIdIn(streetIds);
 
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				updateSafetyMetrics(fetchedStreets);
@@ -97,11 +88,6 @@ public class AnalyticsServiceHighwayMetrics {
 
 		CompletableFuture.allOf(listOfProcessedStreets.toArray(new CompletableFuture[0])).join();
 		_logger.info("All highway information updated in {} seconds.", (System.nanoTime() - startTime) / 1e9);
-	}
-
-	@Scheduled(cron = CronExpressions.EVERY_10_SECONDS)
-	void printMemoryUsage() {
-		_logger.info("Used Memory: {} MB", (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
 	}
 
 	/**
@@ -129,6 +115,7 @@ public class AnalyticsServiceHighwayMetrics {
 		}
 
 		safetyMetricsLineRepository.saveAll(safetyMetricsPlanetOsmLineList);
+		osmHighwayService.updateLastAnalysed(streets);
 
 		return;
 	}

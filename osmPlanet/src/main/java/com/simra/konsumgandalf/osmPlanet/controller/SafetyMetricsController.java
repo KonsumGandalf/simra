@@ -1,5 +1,6 @@
 package com.simra.konsumgandalf.osmPlanet.controller;
 
+import com.simra.konsumgandalf.common.models.classes.PageResult;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsPlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
@@ -35,7 +36,7 @@ public class SafetyMetricsController {
 	}
 
 	@GetMapping("/streets")
-	public Page<SafetyMetricsLineDTO> getFilteredData(@RequestParam(required = false) Long id,
+	public PageResult<SafetyMetricsLineDTO> getFilteredData(@RequestParam(required = false) Long id,
 			@RequestParam(required = false) String name, @RequestParam(required = false) List<String> highway,
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Float maxDangerousScore,
@@ -49,7 +50,7 @@ public class SafetyMetricsController {
 	}
 
 	@GetMapping("/regions")
-	public Page<SafetyMetricsRegionDTO> getRegionMetrics(@RequestParam(required = false) String name,
+	public PageResult<SafetyMetricsRegionDTO> getRegionMetrics(@RequestParam(required = false) String name,
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Integer minNumberOfRides,
 			@RequestParam(required = false) Integer minNumberOfIncidents,
@@ -66,7 +67,7 @@ public class SafetyMetricsController {
 	}
 
 	@GetMapping("/simra-regions")
-	public Page<SafetyMetricsRegionDTO> getSimraRegionMetrics(@RequestParam(required = false) String name,
+	public PageResult<SafetyMetricsRegionDTO> getSimraRegionMetrics(@RequestParam(required = false) String name,
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Integer minNumberOfRides,
 			@RequestParam(required = false) Integer minNumberOfIncidents,

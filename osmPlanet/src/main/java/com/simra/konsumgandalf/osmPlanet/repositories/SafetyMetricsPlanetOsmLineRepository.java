@@ -26,30 +26,35 @@ public interface SafetyMetricsPlanetOsmLineRepository
 			""")
 	Optional<SafetyMetricsPlanetOsmLine> findByStreetId(long id, TrafficTimes trafficTime, WeekDays weekDay, int year);
 
-	@Query("""
+	@Query(value = """
 			    SELECT
-			    	b.osmId AS osmId,
-			    	b.name AS name,
-			    	b.adminLevel AS adminLevel,
-			    	sm.trafficTime as trafficTime,
-			    	sm.weekDay AS weekDay,
-			    	sm.year AS year,
-			    	SUM(sm.numberOfIncidents) AS totalIncidents,
-			    	SUM(sm.numberOfScaryIncidents) AS totalScaryIncidents,
-			    	SUM(sm.numberOfClosePasses) AS totalClosePasses,
-			    	SUM(sm.numberOfPullInOuts) AS totalPullInOuts,
-			    	SUM(sm.numberOfNearLeftRightHooks) AS totalNearLeftRightHooks,
-			    	SUM(sm.numberOfHeadOnApproaches) AS totalHeadOnApproaches,
-			    	SUM(sm.numberOfTailgating) AS totalTailgating,
-			    	SUM(sm.numberOfNearDoorings) AS totalNearDoorings,
-			    	SUM(sm.numberOfObstacleDodges) AS totalObstacleDodges
-			    FROM SafetyMetricsPlanetOsmLine sm
-			    JOIN sm.planetOsmLine pol
-			    JOIN PlanetOsmPolygon b ON ST_Contains(b.way, pol.way)
+			        b.osm_id AS osmId,
+			        b.name AS name,
+			        b.admin_level AS adminLevel,
+			        sm.traffic_time AS trafficTime,
+			        sm.week_day AS weekDay,
+			        sm.year AS year,
+			        SUM(sm.number_of_incidents) AS totalIncidents,
+			        SUM(sm.number_of_scary_incidents) AS totalScaryIncidents,
+			        SUM(sm.number_of_close_passes) AS totalClosePasses,
+			        SUM(sm.number_of_pull_in_outs) AS totalPullInOuts,
+			        SUM(sm.number_of_near_left_right_hooks) AS totalNearLeftRightHooks,
+			        SUM(sm.number_of_head_on_approaches) AS totalHeadOnApproaches,
+			        SUM(sm.number_of_tailgating) AS totalTailgating,
+			        SUM(sm.number_of_near_doorings) AS totalNearDoorings,
+			        SUM(sm.number_of_obstacle_dodges) AS totalObstacleDodges
+			    FROM safety_metrics_planet_osm_line sm
+			    JOIN planet_osm_line pol
+			      ON sm.planet_osm_line_osm_id = pol.osm_id
+			      AND pol.last_modified IS NOT NULL
+			      AND pol.last_analysed IS NOT NULL
+			    JOIN planet_osm_polygon b
+			      ON b.way && pol.way
+			      AND ST_Contains(b.way, pol.way)
 			    WHERE b.boundary = 'administrative'
-			    AND b.adminLevel IN (:adminLevel)
-			    GROUP BY b.osmId, b.name, b.adminLevel, sm.trafficTime, sm.weekDay, sm.year
-			""")
-	List<RegionSafetyMetricsProjection> getRegionSafetyMetricsOfAdminLevel(List<Integer> adminLevel);
+			      AND b.admin_level IN (:adminLevel)
+			    GROUP BY b.osm_id, b.name, b.admin_level, sm.traffic_time, sm.week_day, sm.year
+			""", nativeQuery = true)
+	List<RegionSafetyMetricsProjection> getRegionSafetyMetricsOfAdminLevel(List<String> adminLevel);
 
 }

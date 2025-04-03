@@ -36,4 +36,10 @@ public interface SimraRegionRepository extends JpaRepository<SimraRegion, Long> 
 			""")
 	Float getAvgSegmentDistance(Geometry geo);
 
+	@Query("SELECT r.name FROM SimraRegion sr JOIN sr.regions r WHERE sr.name = :name")
+	List<String> findRegionNames(String name);
+
+	@Query("SELECT way FROM SimraRegion WHERE name = :name")
+	Optional<Geometry> findWayByName(String name);
+
 }

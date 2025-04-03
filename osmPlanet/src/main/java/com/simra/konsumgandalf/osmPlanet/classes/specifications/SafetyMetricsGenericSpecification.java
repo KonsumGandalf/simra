@@ -75,8 +75,13 @@ public class SafetyMetricsGenericSpecification {
 				predicates.add(root.get("year").in(year));
 			}
 			if (regionWay != null) {
-				Expression<Object> regionBoundary = cb.literal(regionWay);
-				predicates.add(cb.isTrue(cb.function("ST_INTERSECTS", Boolean.class, join.get("way"), regionBoundary)));
+				Expression<Object> transformedRegion = cb.function("ST_TRANSFORM", Object.class, cb.literal(regionWay),
+						cb.literal(3857));
+
+				Expression<Boolean> intersects = cb.function("ST_INTERSECTS", Boolean.class, join.get("way"),
+						transformedRegion);
+
+				predicates.add(cb.isTrue(intersects));
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));

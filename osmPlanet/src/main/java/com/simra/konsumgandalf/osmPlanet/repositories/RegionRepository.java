@@ -31,10 +31,10 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 
 	@Query(value = """
 			    WITH transformed_point AS (
-			                 SELECT ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 3857) AS pt
+			                 SELECT ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS pt
 			    )
 			    SELECT
-			        ST_AsGeoJSON(ST_Transform(ST_Simplify(region.way, :tolerance), 4326)) as way,
+			        ST_AsGeoJSON(ST_Simplify(region.way, :tolerance), 4326) as way,
 			        sm.dangerous_color
 			    FROM
 			        region
@@ -44,13 +44,13 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 			    LEFT JOIN
 			        safety_metrics_region AS sm
 			        ON region.name = sm.region_name
+			        AND (region.admin_level = :adminLevel OR region.name IN ('Berlin', 'Hamburg', 'Bremen'))
 			        AND sm.traffic_time = :trafficTime
 			        AND sm.week_day = :weekDay
 			        AND sm.year = :year
 			    WHERE sm.dangerous_color IS NOT NULL;
 			""", nativeQuery = true)
-	List<Map<String, Object>> findWays(@Param("longitude") double longitude, @Param("latitude") double latitude,
-			@Param("distanceFilter") int distanceFilter, @Param("tolerance") double tolerance,
-			@Param("trafficTime") String trafficTime, @Param("weekDay") String weekDay, @Param("year") int year);
+	List<Map<String, Object>> findWays(int adminLevel, double longitude, double latitude, int distanceFilter,
+			double tolerance, String trafficTime, String weekDay, int year);
 
 }
