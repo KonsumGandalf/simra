@@ -2,6 +2,7 @@ package com.simra.konsumgandalf.common.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.simra.konsumgandalf.common.models.enums.SimraRegionGroup;
 import com.simra.konsumgandalf.common.models.maps.SimraRegionEnumNameMapper;
 import jakarta.persistence.CascadeType;
@@ -46,10 +47,11 @@ public class SimraRegion {
 	@JsonBackReference
 	private List<SafetyMetricsSimraRegion> safetyMetricsSimraRegions;
 
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = jakarta.persistence.FetchType.LAZY)
 	@JoinTable(name = "simra_region_region",
 			joinColumns = @JoinColumn(name = "simra_region_name", referencedColumnName = "name"),
 			inverseJoinColumns = @JoinColumn(name = "region_name", referencedColumnName = "name"))
+	@JsonManagedReference
 	private List<Region> regions;
 
 	/**
