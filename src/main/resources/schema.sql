@@ -69,14 +69,15 @@ EXECUTE FUNCTION calculate_way_of_ride_incident();
 -- Calculate the length of a geometry in kilometers which is not possible with non native queries
 CREATE OR REPLACE FUNCTION st_length_m(geom geometry)
 RETURNS double precision AS '
-DECLARE
-    length_m double precision;
 BEGIN
-    length_m := ST_Length(geom::geography);
-    RETURN length_m;
+    RETURN ST_Length(geom::geography);
 END;
 ' LANGUAGE plpgsql IMMUTABLE;
 
 --- Set Indexes for the analyticsServices
 CREATE INDEX IF NOT EXISTS idx_rel_planet_osm_id ON ride_entity__planet_osm_line (planet_osm_lines_osm_id);
 CREATE INDEX IF NOT EXISTS idx_rel_ride_entity_id ON ride_entity__planet_osm_line (ride_entities_id);
+
+CREATE INDEX IF NOT EXISTS idx_region_way_gist ON region USING GIST (way);
+CREATE INDEX IF NOT EXISTS idx_simra_region_way_gist ON region USING GIST (way);
+CREATE INDEX IF NOT EXISTS idx_ride_entity_way_gist ON simra_region USING GIST (way);
