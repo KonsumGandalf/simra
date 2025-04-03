@@ -11,11 +11,9 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.FindNumberOfRidesWithinStr
 import com.simra.konsumgandalf.osmPlanet.classes.keys.TrafficTimeWeekDayKey;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.SafetyMetricsPlanetOsmLineRepository;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +26,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -47,6 +44,9 @@ public class AnalyticsServiceHighwayMetricsTest {
 	@Mock
 	private SafetyMetricsPlanetOsmLineRepository safetyMetricsRepository;
 
+	@Mock
+	private OsmHighwayService osmHighwayService;
+
 	private AnalyticsServiceHighwayMetrics analyticsServiceHighwayMetrics;
 
 	AnalyticsServiceHighwayMetrics analyticsServiceSpy;
@@ -57,6 +57,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "osmHighwayRepository", osmHighwayRepository);
 		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "safetyMetricsLineRepository",
 				safetyMetricsRepository);
+		ReflectionTestUtils.setField(analyticsServiceHighwayMetrics, "osmHighwayService", osmHighwayService);
 		analyticsServiceSpy = spy(analyticsServiceHighwayMetrics);
 	}
 
@@ -133,7 +134,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 	}
 
 	@Test
-	public void testUpdateSafetyMetricsHighway() {
+	public void testCalculateSafetyMetricsHighway() {
 		PlanetOsmLine mockStreet1 = new PlanetOsmLine();
 		PlanetOsmLine mockStreet2 = new PlanetOsmLine();
 		List<PlanetOsmLine> mockStreetsPage1 = Arrays.asList(mockStreet1);
@@ -146,7 +147,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 
 		doNothing().when(analyticsServiceSpy).updateSafetyMetrics(anyList());
 
-		analyticsServiceSpy.updateSafetyMetricsHighway();
+		analyticsServiceSpy.calculateSafetyMetricsHighway();
 
 		verify(osmHighwayRepository, times(3)).findAllStreets(any(PageRequest.class));
 		verify(analyticsServiceSpy, times(1)).updateSafetyMetrics(mockStreetsPage1);
