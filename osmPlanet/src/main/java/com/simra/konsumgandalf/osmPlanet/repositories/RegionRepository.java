@@ -1,12 +1,10 @@
 package com.simra.konsumgandalf.osmPlanet.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.Region;
-import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityTotalDTO;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,7 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 			nativeQuery = true)
 	byte[] unifyRegionWays(List<String> names);
 
-	@Query("SELECT r.name FROM Region r WHERE r.name LIKE :prefix% AND r.safetyMetricsRegions IS NOT EMPTY")
+	@Query("SELECT r.name FROM Region r WHERE r.name ILIKE :prefix% AND r.safetyMetricsRegions IS NOT EMPTY")
 	List<String> findAllNames(String prefix);
 
 	@Query(value = """
@@ -34,6 +32,7 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 			                 SELECT ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS pt
 			    )
 			    SELECT
+			        region.name AS name,
 			        ST_AsGeoJSON(ST_Simplify(region.way, :tolerance), 4326) as way,
 			        sm.dangerous_color
 			    FROM
@@ -44,7 +43,7 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 			    LEFT JOIN
 			        safety_metrics_region AS sm
 			        ON region.name = sm.region_name
-			        AND (region.admin_level = :adminLevel OR region.name IN ('Berlin', 'Hamburg', 'Bremen'))
+			        AND (region.admin_level = :adminLevel OR region.admin_level = 9 AND :adminLevel = 6)
 			        AND sm.traffic_time = :trafficTime
 			        AND sm.week_day = :weekDay
 			        AND sm.year = :year
@@ -52,5 +51,14 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 			""", nativeQuery = true)
 	List<Map<String, Object>> findWays(int adminLevel, double longitude, double latitude, int distanceFilter,
 			double tolerance, String trafficTime, String weekDay, int year);
+
+	@Query(value = """
+				SELECT
+					r.name,
+					r.admin_level,
+					ST_AsGeoJSON(r.way) AS way
+				FROM region r
+			""", nativeQuery = true)
+	List<Map<String, Object>> getPolygonRaw();
 
 }

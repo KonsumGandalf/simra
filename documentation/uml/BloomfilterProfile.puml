@@ -1,0 +1,18 @@
+@startuml
+start
+
+:Check if profile is in Bloom filter;
+if (In Bloom filter?) then (No)
+else (Yes)
+  :Read last modified timestamp of file;
+  :Read last modified timestamp of entity with path from DB;
+  if (File is newer?) then (Yes)
+  else (No)
+    :Skip profile;
+    stop
+  endif
+endif
+:Read profile CSV;
+:Add path to Bloom filter;
+end
+@enduml

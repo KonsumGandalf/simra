@@ -3,15 +3,16 @@ package com.simra.konsumgandalf.rides.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simra.konsumgandalf.common.logging.LogExecutionTime;
-import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
+import com.simra.konsumgandalf.common.models.classes.MatchInformation;
 import com.simra.konsumgandalf.common.models.classes.RideLocation;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.entities.RideEntity;
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
 import com.simra.konsumgandalf.common.models.enums.IncidentType;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.common.models.maps.IxFunctionToParticipantTypeMap;
 import com.simra.konsumgandalf.common.repositories.PlanetOsmLineRepository;
-import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
 import com.simra.konsumgandalf.rides.repositories.RideEntityRepository;
@@ -34,7 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE;
@@ -67,7 +71,10 @@ public class RideEntityService {
 	private FileReaderService fileReaderService;
 
 	@Autowired
-	private BloomFilterService bloomFilterService;
+	private BloomFilterRideExistenceChecker bloomFilterRideExistenceChecker;
+
+	@Autowired
+	private DatabaseExistenceChecker databaseExistenceChecker;
 
 	@Autowired
 	private PlanetOsmLineService planetOsmLineService;
@@ -76,23 +83,36 @@ public class RideEntityService {
 		dataPath = Paths.get(filePath);
 	}
 
+	public void loadAllPreviousRidesBloomFilter() {
+		loadAllPreviousRides(bloomFilterRideExistenceChecker::doesNotExist);
+	}
+
+	public void loadAllPreviousRidesDatabase() {
+		loadAllPreviousRides(databaseExistenceChecker::doesNotExist);
+	}
+
 	@LogExecutionTime
-	public void loadAllPreviousRides() {
+	private void loadAllPreviousRides(Predicate<String> rideExistenceChecker) {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
+		AtomicInteger counter = new AtomicInteger(0);
 
 		try {
 			Files.walk(dataPath, 8)
 				.filter(Files::isRegularFile)
 				.filter(FileReaderService::isEntityFile)
 				.map(Path::toString)
-				.filter(this::checkIfNotRideEntityExists)
+				.filter(rideExistenceChecker)
 				.forEach(path -> {
 					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 						try {
 							_logger
-								.info("Processing file: " + path + " on thread: " + Thread.currentThread().getName());
-							generateNewRideEntity(path);
-							bloomFilterService.add(path);
+								.debug("Processing file: " + path + " on thread: " + Thread.currentThread().getName());
+							RideEntity r = generateNewRideEntity(path);
+							if (r == null) {
+								return;
+							}
+							counter.incrementAndGet();
+							bloomFilterRideExistenceChecker.add(path);
 						}
 						catch (Exception e) {
 							_logger.error("Error processing file: " + path, e);
@@ -106,29 +126,7 @@ public class RideEntityService {
 		}
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-	}
-
-	public boolean isEmpty() {
-		return rideEntityRepository.count() == 0;
-	}
-
-	private boolean checkIfNotRideEntityExists(String path) {
-		boolean mightExist = bloomFilterService.mightContain(path) || bloomFilterService.wasCreated();
-
-		if (mightExist) {
-			boolean exists = rideEntityRepository.existsByPath(path);
-			if (exists) {
-				_logger.info("[Database]: Ride entity with path {} already exists", path);
-				return false;
-			}
-			else {
-				return true;
-			}
-		}
-		else {
-			bloomFilterService.add(path);
-			return true;
-		}
+		_logger.info("Loaded {} new rides", counter.get());
 	}
 
 	/**
@@ -147,7 +145,8 @@ public class RideEntityService {
 			.toArray(String[]::new);
 
 		if (filteredParts.length < 2) {
-			throw new IllegalArgumentException("File does not contain two CSV sections");
+			_logger.error("File does not contain enough parts");
+			return null;
 		}
 
 		List<RideLocation> rideLocationList = csvUtilService.parseCsvToModel(filteredParts[1], RideLocation.class)
@@ -156,7 +155,8 @@ public class RideEntityService {
 			.toList();
 
 		if (rideLocationList.size() < 2) {
-			throw new IllegalArgumentException("File does not contain enough ride locations");
+			_logger.error("File does not contain enough ride locations");
+			return null;
 		}
 
 		rideEntity.setRideLocations(rideLocationList);
@@ -217,6 +217,10 @@ public class RideEntityService {
 			throw new RuntimeException(e);
 		}
 
+		if (rideEntity == null) {
+			return null;
+		}
+
 		String cleanedRideLocationString = generateCoordinateString(rideEntity.getRideLocations());
 		rideEntity.setCoordinates(cleanedRideLocationString);
 
@@ -232,10 +236,9 @@ public class RideEntityService {
 	 * @return - The cleaned ride location
 	 */
 	protected RideEntity linkToPlanetOsmLine(RideEntity rideEntity) {
-		List<OsmrMatchInformation> coordinates = rideEntity.getRideLocations()
+		List<MatchInformation> coordinates = rideEntity.getRideLocations()
 			.stream()
-			.map(location -> new OsmrMatchInformation(location.getLng(), location.getLat(),
-					location.getTimeStamp() / 1000))
+			.map(location -> new MatchInformation(location.getLng(), location.getLat(), location.getTimeStamp() / 1000))
 			.toList();
 
 		List<Long> streetSegmentIdsOfRoute = valhallaTraceAttributesService
@@ -245,14 +248,16 @@ public class RideEntityService {
 			return rideEntity;
 		}
 
-		List<PlanetOsmLine> streets = planetOsmLineRepository.findAllById(streetSegmentIdsOfRoute);
-		if (streets.isEmpty()) {
-			_logger.error("Could not find any street segments for ride entity with path {}", rideEntity.getPath());
-			return rideEntity;
-		}
-		rideEntity.setPlanetOsmLines(streets);
+		List<PlanetOsmLine> references = planetOsmLineRepository.findExistingIds(streetSegmentIdsOfRoute)
+			.stream()
+			.map(id -> {
+				PlanetOsmLine ref = new PlanetOsmLine();
+				ref.setId(id);
+				return ref;
+			})
+			.toList();
 
-		planetOsmLineService.addModifiedHighways(streets);
+		rideEntity.setPlanetOsmLines(references);
 
 		for (RideIncident incident : rideEntity.getRideIncidents()) {
 			PlanetOsmLine planetOsmLine = planetOsmLineRepository.findClosestStreetSegments(streetSegmentIdsOfRoute,

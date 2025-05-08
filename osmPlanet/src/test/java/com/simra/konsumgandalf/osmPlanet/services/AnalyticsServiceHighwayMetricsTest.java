@@ -149,7 +149,7 @@ public class AnalyticsServiceHighwayMetricsTest {
 
 		analyticsServiceSpy.calculateSafetyMetricsHighway();
 
-		verify(osmHighwayRepository, times(3)).findAllStreets(any(PageRequest.class));
+		verify(osmHighwayRepository, times(4)).findAllStreets(any(PageRequest.class));
 		verify(analyticsServiceSpy, times(1)).updateSafetyMetrics(mockStreetsPage1);
 		verify(analyticsServiceSpy, times(1)).updateSafetyMetrics(mockStreetsPage2);
 	}

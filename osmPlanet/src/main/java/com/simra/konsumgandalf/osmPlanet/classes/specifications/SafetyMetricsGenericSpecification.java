@@ -34,7 +34,8 @@ public class SafetyMetricsGenericSpecification {
 	 */
 	public static <T> Specification<T> filterBy(String joinField, Long id, String name, List<String> highwayType,
 			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
-			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, Geometry regionWay) {
+			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, Geometry regionWay,
+			Integer adminLevel) {
 
 		return (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
@@ -83,9 +84,19 @@ public class SafetyMetricsGenericSpecification {
 
 				predicates.add(cb.isTrue(intersects));
 			}
+			if (adminLevel != null) {
+				predicates.add(cb.equal(join.get("adminLevel"), adminLevel));
+			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));
 		};
+	}
+
+	public static <T> Specification<T> filterBy(String joinField, Long id, String name, List<String> highwayType,
+			Float minDangerousScore, Float maxDangerousScore, Integer minNumberOfRides, Integer minNumberOfIncidents,
+			List<TrafficTimes> trafficTime, List<WeekDays> weekDay, List<Integer> year, Geometry regionWay) {
+		return SafetyMetricsGenericSpecification.filterBy(joinField, id, name, highwayType, minDangerousScore,
+				maxDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, regionWay, null);
 	}
 
 	public static <T> Specification<T> filterBy(String joinField, String name, Float minDangerousScore,
@@ -93,7 +104,15 @@ public class SafetyMetricsGenericSpecification {
 			List<WeekDays> weekDay, List<Integer> year) {
 
 		return SafetyMetricsGenericSpecification.filterBy(joinField, null, name, null, minDangerousScore, null,
-				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, null);
+				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, null, null);
+	}
+
+	public static <T> Specification<T> filterBy(String joinField, String name, Float minDangerousScore,
+			Integer minNumberOfRides, Integer minNumberOfIncidents, Integer adminLevel, List<TrafficTimes> trafficTime,
+			List<WeekDays> weekDay, List<Integer> year) {
+
+		return SafetyMetricsGenericSpecification.filterBy(joinField, null, name, null, minDangerousScore, null,
+				minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year, null, adminLevel);
 	}
 
 }

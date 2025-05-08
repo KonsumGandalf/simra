@@ -1,24 +1,35 @@
 package com.simra.konsumgandalf.osmPlanet.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simra.konsumgandalf.common.constants.CronExpressions;
 import com.simra.konsumgandalf.common.models.entities.PlanetOsmLine;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.enums.RoadTypes;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomDistanceMapper;
 import com.simra.konsumgandalf.osmPlanet.classes.mapper.ZoomRoadTypeMapper;
 import com.simra.konsumgandalf.osmPlanet.repositories.OsmHighwayRepository;
 import com.simra.konsumgandalf.osmPlanet.repositories.RegionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OsmHighwayService {
@@ -27,11 +38,17 @@ public class OsmHighwayService {
 
 	private final ZoomRoadTypeMapper zoomRoadTypeMapper = new ZoomRoadTypeMapper();
 
+	private final String exportPath;
+
 	@Autowired
 	private RegionRepository regionRepository;
 
 	@Autowired
 	private OsmHighwayRepository osmHighwayRepository;
+
+	OsmHighwayService(@Value("${SIMRA_EXPORT_VOLUME_PATH}") String exportPath) {
+		this.exportPath = exportPath;
+	}
 
 	public List<Map<String, Object>> getHighwayInformation(double lat, double lng, int zoom, TrafficTimes trafficTime,
 			WeekDays weekDay, int year) {
@@ -70,6 +87,14 @@ public class OsmHighwayService {
 		List<Long> ids = streets.stream().map(PlanetOsmLine::getId).toList();
 
 		osmHighwayRepository.updateLastAnalysedByIds(ids, Instant.now());
+	}
+
+	public void exportGridJson() throws IOException {
+		List<Map<String, Object>> json = osmHighwayRepository.getGridRaw();
+		ObjectMapper mapper = new ObjectMapper();
+		File target = new File(exportPath + "/street-map.json"); // must be in shared
+																	// volume
+		mapper.writeValue(target, json);
 	}
 
 }

@@ -4,17 +4,24 @@ import com.simra.konsumgandalf.common.constants.CronExpressions;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceHighwayMetrics;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceRegionMetrics;
 import com.simra.konsumgandalf.osmPlanet.services.AnalyticsServiceSimraRegionMetrics;
+import com.simra.konsumgandalf.osmPlanet.services.OsmHighwayService;
+import com.simra.konsumgandalf.osmPlanet.services.RegionService;
 import com.simra.konsumgandalf.profiles.services.AnalyticsProfileService;
 import com.simra.konsumgandalf.profiles.services.ProfileService;
 import com.simra.konsumgandalf.rides.services.RideEntityService;
-import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
+@Profile("docker")
 @Service
 public class SchedulingService {
 
@@ -36,11 +43,35 @@ public class SchedulingService {
 	@Autowired
 	private AnalyticsProfileService analyticsProfileService;
 
-	@Scheduled(cron = CronExpressions.EVERY_DAY)
+	@Autowired
+	private OsmHighwayService osmHighwayService;
+
+	@Autowired
+	private RegionService regionService;
+
+	private static final Logger _logger = LoggerFactory.getLogger(SchedulingService.class);
+
+	@Scheduled(cron = CronExpressions.EVERY_HOUR)
 	public void readNewRidesAndCalculateSafetyMetrics() {
-		rideEntityService.loadAllPreviousRides();
+		rideEntityService.loadAllPreviousRidesBloomFilter();
 
 		analyticsServiceHighwayMetrics.calculateSafetyMetricsHighway();
+	}
+
+	@Scheduled(cron = CronExpressions.EVERY_DAY)
+	public void readNewRidesAndCalculateSafetyMetricsDaily() {
+		this.analyseRegionBasedData();
+	}
+
+	@Scheduled(cron = CronExpressions.EVERY_WEEK)
+	public void readNewRidesAndCalculateSafetyMetricsWeekly() {
+		rideEntityService.loadAllPreviousRidesDatabase();
+
+		analyticsServiceHighwayMetrics.calculateSafetyMetricsHighway();
+		this.analyseRegionBasedData();
+	}
+
+	private void analyseRegionBasedData() {
 		analyticsServiceRegionMetrics.calculateSafetyMetricsRegion();
 		analyticsServiceSimraRegionMetrics.calculateSafetyMetricsSimraRegion();
 	}
@@ -51,15 +82,35 @@ public class SchedulingService {
 		analyticsProfileService.calculateProfileSafetyMetrics();
 	}
 
+	@Scheduled(cron = CronExpressions.EVERY_DAY)
+	public void exportJsons() {
+		try {
+			osmHighwayService.exportGridJson();
+			regionService.exportPolygonJson();
+		}
+		catch (IOException e) {
+			_logger.error("Error exporting JSON files: ", e);
+		}
+	}
+
 	@Async
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() {
-		if (rideEntityService.isEmpty()) {
-			readNewRidesAndCalculateSafetyMetrics();
+		_logger.info("SchedulingService started");
+		this.readNewRidesAndCalculateSafetyMetrics();
+		if (analyticsServiceRegionMetrics.isEmpty()) {
+			_logger.info("No region data found, calculating safety metrics for regions");
+			analyticsServiceRegionMetrics.calculateSafetyMetricsRegion();
 		}
-		if (profileService.isEmpty()) {
+
+		if (profileService.count() <= 3000L) {
+			_logger.info("No profile data found, calculating safety metrics for profiles");
 			readNewProfilesAndCalculateSafetyMetrics();
 		}
+
+		this.exportJsons();
+
+		_logger.info("SchedulingService finished initialization");
 	}
 
 }

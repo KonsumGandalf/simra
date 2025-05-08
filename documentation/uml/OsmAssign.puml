@@ -1,0 +1,28 @@
+@startuml
+start
+
+:Preprocess GPS points;
+if (Time difference > 3 seconds?) then (yes)
+    :Keep point;
+else (no)
+    :Ignore point;
+endif
+
+:Partition the filtered points;
+
+:For each partition, send request with timestamps and GPS points;
+if (Valhalla matching successful?) then (yes)
+    :Store segment IDs;
+else (no)
+    if (Error: no suitable street segment?) then (yes)
+        :Split partition and retry;
+    else (no)
+        :Log error;
+    endif
+endif
+
+:Merge all segment IDs;
+:Remove duplicates;
+
+end
+@enduml

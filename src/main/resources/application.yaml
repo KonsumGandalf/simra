@@ -1,4 +1,6 @@
 server:
+  compression:
+    enabled: true
   port: ${SIMRA_PORT:8080}
   servlet:
     context-path: /api

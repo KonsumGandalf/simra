@@ -1,0 +1,7 @@
+@startuml
+start
+:Read Profile CSV files;
+:Translate to ProfileEntities;
+:Calculate safety metrics for ProfileEntity;
+end
+@enduml

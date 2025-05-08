@@ -31,6 +31,9 @@ public interface RideEntityRepository extends JpaRepository<RideEntity, Long> {
 			      WHERE r.id = :rideId;
 			""",
 			nativeQuery = true)
-	public Map<String, String[]> findRideGeometries(long rideId);
+	Map<String, String[]> findRideGeometries(long rideId);
+
+	@Query(value = "SELECT r.path FROM RideEntity r")
+	List<String> findAllPaths();
 
 }

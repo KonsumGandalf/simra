@@ -1,6 +1,8 @@
 package com.simra.konsumgandalf.rides.controllers;
 
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.rides.models.dtos.RideIncidentDTO;
 import com.simra.konsumgandalf.rides.models.dtos.WithInRangeDTO;
 import com.simra.konsumgandalf.rides.services.RideIncidentService;
@@ -25,8 +27,10 @@ public class RideIncidentController {
 	private RideIncidentService rideIncidentService;
 
 	@GetMapping("street/{id}")
-	public Map<String, List<RideIncident>> getIncidentsOfStreets(@PathVariable long id) {
-		List<RideIncident> incidents = rideIncidentService.getIncidentsOfStreetSegment(id);
+	public Map<String, List<RideIncident>> getIncidentsOfStreets(@PathVariable long id,
+			@RequestParam(required = false) TrafficTimes trafficTime, @RequestParam(required = false) WeekDays weekDay,
+			@RequestParam(required = false) int year) {
+		List<RideIncident> incidents = rideIncidentService.getIncidentsOfStreetSegment(id, trafficTime, weekDay, year);
 		return Map.of("incidents", incidents);
 	}
 

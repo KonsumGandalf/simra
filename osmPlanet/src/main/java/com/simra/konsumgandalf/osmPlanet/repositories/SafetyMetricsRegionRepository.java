@@ -1,7 +1,11 @@
 package com.simra.konsumgandalf.osmPlanet.repositories;
 
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.RideEntityMetricsDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricRegionDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -32,5 +36,15 @@ public interface SafetyMetricsRegionRepository
 				GROUP BY re.name, r.trafficTime, r.weekDay, r.year
 			""")
 	List<RideEntityMetricsDTO> findNumberOfRidesAndLength();
+
+	@Query("""
+			SELECT s.dangerousColor as dangerousColor, s.name as name
+			FROM SafetyMetricsRegion s
+			WHERE s.trafficTime = :trafficTime
+			AND s.weekDay = :weekDay
+			AND s.year = :year
+			AND s.numberOfRides >= 5
+			""")
+	List<SafetyMetricRegionDTO> getFilteredSafetyMetrics(TrafficTimes trafficTime, WeekDays weekDay, int year);
 
 }

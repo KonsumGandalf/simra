@@ -3,7 +3,7 @@ package com.simra.konsumgandalf.profiles.services;
 import com.simra.konsumgandalf.common.models.entities.Profile;
 import com.simra.konsumgandalf.common.models.entities.SimraRegion;
 import com.simra.konsumgandalf.common.models.maps.SimraRegionEnumNameMapper;
-import com.simra.konsumgandalf.common.utils.services.BloomFilterService;
+import com.simra.konsumgandalf.common.utils.ScoreUtils;
 import com.simra.konsumgandalf.common.utils.services.CsvUtilService;
 import com.simra.konsumgandalf.common.utils.services.FileReaderService;
 import com.simra.konsumgandalf.profiles.repositories.ProfileRepository;
@@ -19,10 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Transactional
@@ -34,9 +34,6 @@ public class ProfileService {
 	private FileReaderService fileReaderService;
 
 	@Autowired
-	private BloomFilterService bloomFilterService;
-
-	@Autowired
 	private ProfileRepository profileRepository;
 
 	@Autowired
@@ -44,6 +41,9 @@ public class ProfileService {
 
 	@Autowired
 	private ProfileSimraRegionRepository profileSimraRegionRepository;
+
+	@Autowired
+	private BloomFilterProfileExistenceChecker bloomFilterProfileExistenceChecker;
 
 	private static final Logger _logger = LoggerFactory.getLogger(ProfileService.class);
 
@@ -56,19 +56,24 @@ public class ProfileService {
 	public void loadAllPrevProfiles() {
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 
+		AtomicInteger counter = new AtomicInteger(0);
+
 		try {
 			Files.walk(dataPath, 8)
 				.filter(Files::isRegularFile)
 				.filter(FileReaderService::isEntityFile)
 				.map(Path::toString)
-				.filter(path -> !isProfileUpToDate(path))
+				.filter(bloomFilterProfileExistenceChecker::shouldBeProcessed)
 				.forEach(path -> {
 					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 						try {
-							_logger.info("Processing file: " + path.toString() + " on thread: "
+							_logger.debug("Processing file: " + path.toString() + " on thread: "
 									+ Thread.currentThread().getName());
-							generateNewProfileEntity(path);
-							bloomFilterService.add(path);
+							Optional<Profile> profile = generateNewProfileEntity(path);
+							bloomFilterProfileExistenceChecker.add(path);
+							if (profile.isPresent()) {
+								counter.incrementAndGet();
+							}
 						}
 						catch (Exception e) {
 							_logger.error("Error processing file: " + path.toString(), e);
@@ -82,13 +87,14 @@ public class ProfileService {
 		}
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+		_logger.info("Loaded {} new profiles", counter.get());
 	}
 
-	public boolean isEmpty() {
-		return profileRepository.count() == 0;
+	public long count() {
+		return profileRepository.count();
 	}
 
-	protected Profile generateProfileFromCsv(String path) {
+	protected Optional<Profile> generateProfileFromCsv(String path) {
 		String fileContent = fileReaderService.readFileFromPath(path);
 
 		fileContent = Arrays.stream(fileContent.split("\n"))
@@ -98,10 +104,23 @@ public class ProfileService {
 
 		Optional<Profile> optionalProfile = csvUtilService.parseCsvToSingleModel(fileContent, Profile.class);
 		if (optionalProfile.isEmpty()) {
-			throw new RuntimeException("Error parsing CSV file");
+			_logger.error("Could not parse profile from file: {}", path);
+			return Optional.empty();
 		}
 
 		Profile profile = optionalProfile.get();
+		if (profile.getNumberOfRides() <= 0 || profile.getNumberOfRides() > 5000) {
+			_logger.error("Invalid number of rides in profile: {}", profile);
+			return Optional.empty();
+		}
+
+		float dangerousScore = ScoreUtils.calculateDangerousScore(profile.getNumberOfRides(),
+				profile.getNumberOfIncidents(), profile.getNumberOfScaryIncidents());
+		if (dangerousScore >= 5) {
+			_logger.error("Invalid dangerous score calculated for profile: {}", profile);
+			return Optional.empty();
+		}
+
 		profile.setLastModified(fileReaderService.getFileLastModified(path));
 		profile.setPath(path);
 
@@ -116,30 +135,14 @@ public class ProfileService {
 			profile.setSimraRegion(simraRegion);
 		}
 
-		return profile;
+		return Optional.of(profile);
 	}
 
-	private Profile generateNewProfileEntity(String path) {
-		Profile profile = generateProfileFromCsv(path);
+	private Optional<Profile> generateNewProfileEntity(String path) {
+		Optional<Profile> profile = generateProfileFromCsv(path);
 
-		profileRepository.save(profile);
+		profile.ifPresent(value -> profileRepository.save(value));
 		return profile;
-	}
-
-	private boolean isProfileUpToDate(String path) {
-		Date lastModifiedFile = fileReaderService.getFileLastModified(path);
-		boolean doesExistInBloomFilter = bloomFilterService.mightContain(path);
-		if (!doesExistInBloomFilter) {
-			return false;
-		}
-
-		Optional<Date> maybeLastModified = profileRepository.lastModified(path);
-		if (maybeLastModified.isEmpty()) {
-			return false;
-		}
-
-		Date lastModifiedDB = maybeLastModified.get();
-		return !lastModifiedDB.before(lastModifiedFile);
 	}
 
 }

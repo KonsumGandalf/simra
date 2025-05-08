@@ -82,11 +82,18 @@ public class AnalyticsServiceHighwayMetrics {
 				_logger.info("Waiting for 16 futures to complete. Running for {} seconds.",
 						(System.nanoTime() - startTime) / 1e9);
 				CompletableFuture.allOf(listOfProcessedStreets.toArray(new CompletableFuture[0])).join();
+				pageCounter.set(0);
 				listOfProcessedStreets.clear();
 			}
 		}
 
 		CompletableFuture.allOf(listOfProcessedStreets.toArray(new CompletableFuture[0])).join();
+
+		List<PlanetOsmLine> fetchedStreets = osmHighwayRepository
+			.findAllStreets(PageRequest.of(pageCounter.get(), PAGE_SIZE));
+		if (!fetchedStreets.isEmpty()) {
+			calculateSafetyMetricsHighway();
+		}
 		_logger.info("All highway information updated in {} seconds.", (System.nanoTime() - startTime) / 1e9);
 	}
 

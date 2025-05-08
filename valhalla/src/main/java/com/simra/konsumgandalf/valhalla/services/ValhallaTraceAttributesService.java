@@ -1,7 +1,7 @@
 package com.simra.konsumgandalf.valhalla.services;
 
 import com.google.common.collect.Lists;
-import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
+import com.simra.konsumgandalf.common.models.classes.MatchInformation;
 import com.simra.konsumgandalf.valhalla.models.ValhallaEdge;
 import com.simra.konsumgandalf.valhalla.models.ValhallaTraceAttributesResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,31 +25,31 @@ import java.util.Map;
 public class ValhallaTraceAttributesService extends ValhallaService {
 
 	private static final Map<String, Object> BASE_PAYLOAD = Map.of("costing", "bicycle", "shape_match", "map_snap",
-			"snap_prevention", List.of("motorway", "trunk", "primary"), "filters",
+			"snap_prevention", List.of("motorway", "trunk"), "filters",
 			Map.of("attributes", List.of("edge.way_id"), "action", "include"));
 
 	private final int TURN_PENALTY_FACTOR;
 
 	public ValhallaTraceAttributesService(@Value("${VALHALLA_BACKEND_URL}") String osmrBackendUrl,
 			@Value("${VALHALLA_TURN_PENALTY_FACTOR}") int turnPenaltyFactor) {
-		super(osmrBackendUrl + "/trace_attributes", 500, 10 * 1024 * 1024);
+		super(osmrBackendUrl + "/trace_attributes", 10000, 10 * 1024 * 1024);
 		TURN_PENALTY_FACTOR = turnPenaltyFactor;
 	}
 
-	public List<Long> calculateStreetSegmentIdsOfRoute(List<OsmrMatchInformation> coordinates) {
-		ArrayList<OsmrMatchInformation> filteredTimestampList = new ArrayList<>();
+	public List<Long> calculateStreetSegmentIdsOfRoute(List<MatchInformation> coordinates) {
+		// ArrayList<MatchInformation> filteredTimestampList = new ArrayList<>();
+		//
+		// long lastTimestamp = -1;
+		//
+		// for (MatchInformation coordinate : coordinates) {
+		// // 3 seconds is the minimum time difference between two coordinates
+		// if (lastTimestamp == -1 || coordinate.getTimestamp() - lastTimestamp > 3) {
+		// lastTimestamp = coordinate.getTimestamp();
+		// filteredTimestampList.add(coordinate);
+		// }
+		// }
 
-		long lastTimestamp = -1;
-
-		for (OsmrMatchInformation coordinate : coordinates) {
-			// 3 seconds is the minimum time difference between two coordinates
-			if (lastTimestamp == -1 || coordinate.getTimestamp() - lastTimestamp > 3) {
-				lastTimestamp = coordinate.getTimestamp();
-				filteredTimestampList.add(coordinate);
-			}
-		}
-
-		List<List<OsmrMatchInformation>> partitions = Lists.partition(filteredTimestampList, DEFAULT_PARTITION_SIZE);
+		List<List<MatchInformation>> partitions = Lists.partition(coordinates, DEFAULT_PARTITION_SIZE);
 		return Flux.fromIterable(partitions)
 			.flatMap(this::fetchWithRetry)
 			.collectList()
@@ -61,7 +61,7 @@ public class ValhallaTraceAttributesService extends ValhallaService {
 			.block();
 	}
 
-	public Mono<List<Long>> fetchWithRetry(List<OsmrMatchInformation> chunk) {
+	public Mono<List<Long>> fetchWithRetry(List<MatchInformation> chunk) {
 		return fetchIdsFromChunk(chunk).onErrorResume(WebClientResponseException.class, ex -> {
 			if (isNotFoundStreetSegmentError(ex)) {
 				return retryWithSmallerPartitions(chunk);
@@ -72,8 +72,8 @@ public class ValhallaTraceAttributesService extends ValhallaService {
 		});
 	}
 
-	private Mono<List<Long>> retryWithSmallerPartitions(List<OsmrMatchInformation> chunk) {
-		List<List<OsmrMatchInformation>> subPartitions = Lists.partition(chunk, chunk.size() / 2);
+	private Mono<List<Long>> retryWithSmallerPartitions(List<MatchInformation> chunk) {
+		List<List<MatchInformation>> subPartitions = Lists.partition(chunk, chunk.size() / 2);
 		return Flux.fromIterable(subPartitions)
 			.filter(subPartition -> subPartition.size() > 4)
 			.flatMap(subPartition -> fetchIdsFromChunk(subPartition).onErrorResume(WebClientResponseException.class,
@@ -88,9 +88,11 @@ public class ValhallaTraceAttributesService extends ValhallaService {
 			.map(this::combineChunks);
 	}
 
-	public Mono<List<Long>> fetchIdsFromChunk(List<OsmrMatchInformation> coordinates) {
+	public Mono<List<Long>> fetchIdsFromChunk(List<MatchInformation> coordinates) {
 		Map<String, Object> payload = new HashMap<>(BASE_PAYLOAD);
 		payload.put("shape", coordinates);
+		payload.put("begin_time", coordinates.getFirst().getTimestamp());
+		payload.put("use_timestamps", true);
 		payload.put("trace_options", Map.of("turn_penalty_factor", TURN_PENALTY_FACTOR));
 
 		return webClient.post()

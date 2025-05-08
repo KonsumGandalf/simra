@@ -14,6 +14,8 @@ USER spring:spring
 
 COPY --from=builder /home/gradle/src/build/libs/*.jar /app/app.jar
 
+VOLUME ["/app/export"]
+
 EXPOSE 8080
 
 CMD ["java", "-XX:+UseContainerSupport", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-jar","/app/app.jar"]

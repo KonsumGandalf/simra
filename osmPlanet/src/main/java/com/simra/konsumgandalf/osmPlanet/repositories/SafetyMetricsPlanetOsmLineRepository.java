@@ -4,12 +4,14 @@ import com.simra.konsumgandalf.common.models.entities.SafetyMetricsPlanetOsmLine
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.RegionSafetyMetricsProjection;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -56,5 +58,15 @@ public interface SafetyMetricsPlanetOsmLineRepository
 			    GROUP BY b.osm_id, b.name, b.admin_level, sm.traffic_time, sm.week_day, sm.year
 			""", nativeQuery = true)
 	List<RegionSafetyMetricsProjection> getRegionSafetyMetricsOfAdminLevel(List<String> adminLevel);
+
+	@Query("""
+			SELECT s.dangerousColor as dangerousColor, s.osmId as osmId
+			FROM SafetyMetricsPlanetOsmLine s
+			WHERE s.trafficTime = :trafficTime
+			AND s.weekDay = :weekDay
+			AND s.year = :year
+			AND s.numberOfRides >= 5
+			""")
+	List<SafetyMetricDTO> getFilteredSafetyMetrics(TrafficTimes trafficTime, WeekDays weekDay, int year);
 
 }
