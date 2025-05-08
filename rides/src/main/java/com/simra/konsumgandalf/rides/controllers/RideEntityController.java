@@ -21,9 +21,15 @@ public class RideEntityController {
 	private RideEntityService rideEntityService;
 
 	@Async
-	@PostMapping("")
+	@PostMapping("/bloom-filter")
 	public void loadAllPreviousRides() throws Exception {
-		rideEntityService.loadAllPreviousRides();
+		rideEntityService.loadAllPreviousRidesBloomFilter();
+	}
+
+	@Async
+	@PostMapping("/database-filter")
+	public void loadAllPreviousRidesDatabase() throws Exception {
+		rideEntityService.loadAllPreviousRidesDatabase();
 	}
 
 	@GetMapping("geometries/{id}")

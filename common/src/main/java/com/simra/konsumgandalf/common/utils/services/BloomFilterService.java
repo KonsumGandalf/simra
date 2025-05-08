@@ -16,9 +16,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
-@Service
-public class BloomFilterService {
+public abstract class BloomFilterService {
 
 	private static String BLOOM_FILTER_FILE_PATH;
 
@@ -32,15 +32,10 @@ public class BloomFilterService {
 
 	private boolean wasCreated = false;
 
-	public BloomFilterService(@Value("${BLOOM_FILTER_FILE}") String filePath,
-			@Value("${BLOOM_FILTER_EXPECTED_INSERTIONS}") int expectedInsertions,
-			@Value("${BLOOM_FILTER_ERROR_RATE}") double fpp) {
-		if (filePath == null) {
-			return;
-		}
+	protected BloomFilterService(String filePath, int expectedInsertions, double errorRate) {
 		BLOOM_FILTER_FILE_PATH = filePath;
 		EXPECTED_INSERTIONS = expectedInsertions;
-		ERROR_RATE = fpp;
+		ERROR_RATE = errorRate;
 
 		bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), EXPECTED_INSERTIONS, ERROR_RATE);
 	}
@@ -79,6 +74,12 @@ public class BloomFilterService {
 		bloomFilter.put(element);
 	}
 
+	public void add(Collection<String> elements) {
+		for (String element : elements) {
+			bloomFilter.put(element);
+		}
+	}
+
 	/**
 	 * Bloom filter might contain an element but there's always a chance of false positive
 	 * @param element
@@ -90,6 +91,10 @@ public class BloomFilterService {
 
 	public boolean wasCreated() {
 		return wasCreated;
+	}
+
+	public long size() {
+		return bloomFilter.approximateElementCount();
 	}
 
 }

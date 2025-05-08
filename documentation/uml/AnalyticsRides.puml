@@ -1,0 +1,15 @@
+@startuml
+start
+
+:Import ride CSV data;
+:Map GPS traces to OSM segments;
+
+:Assign each record to time window\n(TrafficTime, Weekday, Year);
+
+:Aggregate events per OSM segment;
+:Compute safety score per segment;
+
+:Aggregate segment scores per administrative region;
+
+stop
+@enduml

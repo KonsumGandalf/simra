@@ -4,6 +4,7 @@ import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE;
 import static com.simra.konsumgandalf.common.constants.AppDates.START_OF_RECORDING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -191,10 +192,9 @@ public class RideEntityServiceTest {
 			mockRideEntity = new RideEntity("invalid.csv");
 			when(fileReaderService.readFileFromPath("invalid.csv")).thenReturn("manual1,manual2\nvalue1,value2");
 
-			assertThrows(IllegalArgumentException.class, () -> {
-				rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
-			});
+			RideEntity result = rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
 
+			assertNull(result);
 			verify(csvUtilService, times(0)).parseCsvToModel(any(String.class), eq(RideIncident.class));
 		}
 

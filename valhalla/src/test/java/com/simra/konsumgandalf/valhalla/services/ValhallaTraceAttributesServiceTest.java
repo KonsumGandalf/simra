@@ -12,11 +12,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simra.konsumgandalf.common.models.classes.OsmrMatchInformation;
+import com.simra.konsumgandalf.common.models.classes.MatchInformation;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -24,9 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
@@ -53,16 +50,16 @@ public class ValhallaTraceAttributesServiceTest {
 
 		@Test
 		public void filterOutEvery3rdStep() {
-			ArrayList<OsmrMatchInformation> coordinates = new ArrayList<>();
+			ArrayList<MatchInformation> coordinates = new ArrayList<>();
 			for (int i = 0; i <= 10; i++) {
-				coordinates.add(new OsmrMatchInformation(52.520007, 13.404954, i));
+				coordinates.add(new MatchInformation(52.520007, 13.404954, i));
 			}
 
-			List<OsmrMatchInformation> expectedFilteredList = new ArrayList<>();
-			expectedFilteredList.add(new OsmrMatchInformation(52.520007, 13.404954, 0));
-			expectedFilteredList.add(new OsmrMatchInformation(52.520007, 13.404954, 4));
-			expectedFilteredList.add(new OsmrMatchInformation(52.520007, 13.404954, 8));
-			List<List<OsmrMatchInformation>> expectedPartitions = new ArrayList<>();
+			List<MatchInformation> expectedFilteredList = new ArrayList<>();
+			expectedFilteredList.add(new MatchInformation(52.520007, 13.404954, 0));
+			expectedFilteredList.add(new MatchInformation(52.520007, 13.404954, 4));
+			expectedFilteredList.add(new MatchInformation(52.520007, 13.404954, 8));
+			List<List<MatchInformation>> expectedPartitions = new ArrayList<>();
 			expectedPartitions.add(expectedFilteredList);
 
 			Mono<List<Long>> mockIds = Mono.just(Collections.singletonList(1L));
@@ -78,9 +75,9 @@ public class ValhallaTraceAttributesServiceTest {
 
 		@Test
 		public void use2Chunks() {
-			ArrayList<OsmrMatchInformation> coordinates = new ArrayList<>();
-			for (int i = 0; i <= 501; i++) {
-				coordinates.add(new OsmrMatchInformation(52.520007, 13.404954, i * 4));
+			ArrayList<MatchInformation> coordinates = new ArrayList<>();
+			for (int i = 0; i <= 10001; i++) {
+				coordinates.add(new MatchInformation(52.520007, 13.404954, i * 4));
 			}
 
 			Mono<List<Long>> mockIds = Mono.just(Collections.singletonList(1L));
@@ -133,9 +130,9 @@ public class ValhallaTraceAttributesServiceTest {
 
 		@Test
 		public void testFetchStepsFromChunk_ChunkSizing() throws InterruptedException, JsonProcessingException {
-			ArrayList<OsmrMatchInformation> chunk = new ArrayList<>();
-			chunk.add(new OsmrMatchInformation(52.520007, 13.404954, 1693842834));
-			chunk.add(new OsmrMatchInformation(42.520007, 23.404954, 1693842835));
+			ArrayList<MatchInformation> chunk = new ArrayList<>();
+			chunk.add(new MatchInformation(52.520007, 13.404954, 1693842834));
+			chunk.add(new MatchInformation(42.520007, 23.404954, 1693842835));
 
 			String jsonResponse = "{ \"edges\": [ { \"way_id\": 1 }, { \"way_id\": 2 } ] }";
 			mockWebServer
@@ -148,7 +145,7 @@ public class ValhallaTraceAttributesServiceTest {
 			assertEquals("POST", request.getMethod());
 
 			JsonNode expectedNode = objectMapper.readTree(
-					"{\"costing\":\"bicycle\",\"filters\":{\"attributes\":[\"edge.way_id\"],\"action\":\"include\"},\"trace_options\":{\"turn_penalty_factor\":100000},\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"timestamp\":1693842834,\"lon\":52.520007},{\"lat\":23.404954,\"timestamp\":1693842835,\"lon\":42.520007}],\"snap_prevention\":[\"motorway\",\"trunk\",\"primary\"]}");
+					"{\"shape_match\":\"map_snap\",\"shape\":[{\"lat\":13.404954,\"lon\":52.520007,\"time\":1693842834},{\"lat\":23.404954,\"lon\":42.520007,\"time\":1693842835}],\"costing\":\"bicycle\",\"begin_time\":1693842834,\"filters\":{\"action\":\"include\",\"attributes\":[\"edge.way_id\"]},\"trace_options\":{\"turn_penalty_factor\":100000},\"use_timestamps\":true,\"snap_prevention\":[\"motorway\",\"trunk\"]}");
 			JsonNode actualNode = objectMapper.readTree(request.getBody().readUtf8());
 			assertEquals(expectedNode, actualNode);
 			assertEquals(List.of(1L, 2L), ids);

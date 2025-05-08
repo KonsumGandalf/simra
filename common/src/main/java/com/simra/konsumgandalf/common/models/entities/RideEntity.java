@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import static com.simra.konsumgandalf.common.constants.AppDates.FALLBACK_DATE_MILLIS;
+
 /**
  * This class is the root entity for all OSM objects.
  */
@@ -152,13 +154,25 @@ public class RideEntity extends TimeBaseClass {
 		}
 
 		Date rideMedianDate = new Date((rideStart.getTime() + rideEnd.getTime()) / 2);
-		TrafficTimes trafficTime = TrafficTimesMapper.getTrafficTime(rideMedianDate);
-		calendar.setTime(rideMedianDate);
 
-		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+		TrafficTimes trafficTime;
+		WeekDays weekDay;
+		int year;
 
-		WeekDays weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
-		int year = calendar.get(Calendar.YEAR);
+		if (rideStart.getTime() == FALLBACK_DATE_MILLIS || rideEnd.getTime() == FALLBACK_DATE_MILLIS) {
+			trafficTime = TrafficTimes.ALL_DAY;
+			weekDay = WeekDays.WEEK;
+			year = 2000;
+		}
+		else {
+			trafficTime = TrafficTimesMapper.getTrafficTime(rideMedianDate);
+			calendar.setTime(rideMedianDate);
+
+			int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+
+			weekDay = dayOfWeek <= 5 ? WeekDays.WEEK : WeekDays.WEEKEND;
+			year = calendar.get(Calendar.YEAR);
+		}
 
 		super.setYear(year);
 		super.setWeekDay(weekDay);

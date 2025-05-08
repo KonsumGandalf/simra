@@ -81,3 +81,44 @@ CREATE INDEX IF NOT EXISTS idx_rel_ride_entity_id ON ride_entity__planet_osm_lin
 CREATE INDEX IF NOT EXISTS idx_region_way_gist ON region USING GIST (way);
 CREATE INDEX IF NOT EXISTS idx_simra_region_way_gist ON region USING GIST (way);
 CREATE INDEX IF NOT EXISTS idx_ride_entity_way_gist ON simra_region USING GIST (way);
+
+---Set Index for filtering streets
+CREATE INDEX IF NOT EXISTS idx_planetosmline_lower_name_prefix
+ON planet_osm_line (lower(name))
+WHERE last_modified IS NOT NULL AND last_analysed IS NOT NULL;
+
+CREATE OR REPLACE FUNCTION find_names_with_prefix(_prefix TEXT)
+RETURNS TABLE(name VARCHAR)
+LANGUAGE plpgsql
+AS '
+BEGIN
+  SET LOCAL enable_seqscan = OFF;
+
+  RETURN QUERY
+    SELECT DISTINCT p.name
+    FROM planet_osm_line p
+    WHERE p.last_modified IS NOT NULL
+      AND p.last_analysed IS NOT NULL
+      AND LOWER(p.name) LIKE LOWER(_prefix || ''%'')
+    ORDER BY p.name
+    LIMIT 10;
+END;
+';
+
+CREATE OR REPLACE FUNCTION find_osm_ids_with_prefix(_prefix TEXT)
+RETURNS TABLE(osm_id TEXT)
+LANGUAGE plpgsql
+AS '
+BEGIN
+  SET LOCAL enable_seqscan = OFF;
+
+  RETURN QUERY
+    SELECT DISTINCT text(p.osm_id)
+    FROM planet_osm_line p
+    WHERE p.last_modified IS NOT NULL
+      AND p.last_analysed IS NOT NULL
+      AND text(p.osm_id) LIKE _prefix || ''%''
+    ORDER BY text(p.osm_id)
+    LIMIT 10;
+END;
+';

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Long> {
@@ -27,5 +28,8 @@ public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Lo
 	@Modifying
 	@Query("UPDATE PlanetOsmLine p SET p.lastModified = :timestamp WHERE p.id IN :ids")
 	void updateLastModifiedByIds(Collection<Long> ids, Instant timestamp);
+
+	@Query("SELECT p.id FROM PlanetOsmLine p WHERE p.id IN :ids")
+	List<Long> findExistingIds(@Param("ids") Collection<Long> ids);
 
 }

@@ -6,6 +6,8 @@ import com.simra.konsumgandalf.common.models.entities.SafetyMetricsRegion;
 import com.simra.konsumgandalf.common.models.entities.SafetyMetricsSimraRegion;
 import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
 import com.simra.konsumgandalf.common.models.enums.WeekDays;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricDTO;
+import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.specifications.SafetyMetricsGenericSpecification;
@@ -22,7 +24,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SafetyMetricsService {
@@ -69,12 +73,12 @@ public class SafetyMetricsService {
 	}
 
 	@Cacheable(value = "regionMetrics",
-			key = "T(java.util.Objects).hash(#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
+			key = "T(java.util.Objects).hash(#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #p9, #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
 	public PageResult<SafetyMetricsRegionDTO> getRegionMetrics(String name, Float minDangerousScore,
-			Integer minNumberOfRides, Integer minNumberOfIncidents, List<TrafficTimes> trafficTime,
+			Integer minNumberOfRides, Integer minNumberOfIncidents, Integer adminLevel, List<TrafficTimes> trafficTime,
 			List<WeekDays> weekDay, List<Integer> year, Pageable pageable) {
 		Specification<SafetyMetricsRegion> spec = SafetyMetricsGenericSpecification.filterBy("region", name,
-				minDangerousScore, minNumberOfRides, minNumberOfIncidents, trafficTime, weekDay, year);
+				minDangerousScore, minNumberOfRides, minNumberOfIncidents, adminLevel, trafficTime, weekDay, year);
 
 		Page<SafetyMetricsRegionDTO> page = safetyMetricsRegionRepository.findAll(spec, pageable)
 			.map(safetyMetrics -> new SafetyMetricsRegionDTO(safetyMetrics.getRegion().getName(),
@@ -108,6 +112,20 @@ public class SafetyMetricsService {
 
 	public List<SafetyMetricsSimraRegion> getSimraRegionSafetyMetrics(String name) {
 		return safetyMetricsSimraRegionRepository.findByName(name);
+	}
+
+	@Cacheable(value = "getMetricsForHighways", key = "T(java.util.Objects).hash(#p0, #p1, #p2)")
+	public Map<String, String> getMetricsForHighways(TrafficTimes trafficTimes, WeekDays weekDay, int year) {
+		return safetyMetricsRepository.getFilteredSafetyMetrics(trafficTimes, weekDay, year)
+			.stream()
+			.collect(Collectors.toMap(SafetyMetricDTO::getOsmId, SafetyMetricDTO::getDangerousColor));
+	}
+
+	@Cacheable(value = "getMetricsForRegions", key = "T(java.util.Objects).hash(#p0, #p1, #p2)")
+	public Map<String, String> getMetricsForRegions(TrafficTimes trafficTimes, WeekDays weekDay, int year) {
+		return safetyMetricsRegionRepository.getFilteredSafetyMetrics(trafficTimes, weekDay, year)
+			.stream()
+			.collect(Collectors.toMap(SafetyMetricRegionDTO::getName, SafetyMetricRegionDTO::getDangerousColor));
 	}
 
 }

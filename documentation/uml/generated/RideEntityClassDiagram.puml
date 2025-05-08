@@ -1,0 +1,40 @@
+@startuml
+
+class ride_entity {
+   traffic_time: varchar(21)
+   week_day: varchar(12)
+   year: integer
+   coordinates: text
+   path: varchar(255)
+   ride_end: timestamp(6)
+   ride_start: timestamp(6)
+   way: geometry
+   id: bigint
+}
+class ride_incident {
+   traffic_time: varchar(21)
+   week_day: varchar(12)
+   year: integer
+   bike: varchar(20)
+   child_check_box: boolean
+   description: text
+   incident_type: varchar(20)
+   lat: double precision
+   lng: double precision
+   phone_location: varchar(16)
+   scary: boolean
+   time_stamp: timestamp(6)
+   trailer_check_box: boolean
+   way: geometry(point,4326)
+   planet_osm_line_osm_id: bigint
+   ride_entity_id: bigint
+   id: bigint
+}
+class ride_incident_participants_involved {
+   ride_incident_id: bigint
+   participants_involved: varchar(16)
+}
+
+ride_incident                        -[#595959,plain]-^  ride_entity                         : "ride_entity_id:id"
+ride_incident_participants_involved  -[#595959,plain]-^  ride_incident                       : "ride_incident_id:id"
+@enduml

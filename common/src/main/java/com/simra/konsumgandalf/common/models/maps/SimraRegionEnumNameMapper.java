@@ -25,7 +25,7 @@ public class SimraRegionEnumNameMapper {
 		enumNameMap.put(SimraRegionGroup.EICHWALDE_ZEUTHEN_SCHULZENDORF, "Eichwalde-Zeuthen-Schulzendorf");
 		enumNameMap.put(SimraRegionGroup.HANNOVER, "Hannover");
 		enumNameMap.put(SimraRegionGroup.BIELEFELD, "Bielefeld");
-		enumNameMap.put(SimraRegionGroup.MUNICH, "Munich");
+		enumNameMap.put(SimraRegionGroup.MUNICH, "München");
 		enumNameMap.put(SimraRegionGroup.ZES_EXPERIMENTAL, "ZES-Experimental");
 		enumNameMap.put(SimraRegionGroup.KONSTANZ, "Konstanz");
 		enumNameMap.put(SimraRegionGroup.WEIMAR, "Weimar");

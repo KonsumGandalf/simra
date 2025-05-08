@@ -1,0 +1,76 @@
+@startuml
+
+abstract class SafetyMetrics {
+  + trafficTime: TrafficTimes
+  + weekDay: WeekDays
+  + year: Integer
+  + dangerousColor: String
+  + numberOfRides: Integer
+  + numberOfIncidents: Integer
+  + numberOfScaryIncidents: Integer
+  + dangerousScore: Float
+  + numberOfClosePasses: Integer
+  + numberOfPullInOuts: Integer
+  + numberOfNearLeftRightHooks: Integer
+  + numberOfHeadOnApproaches: Integer
+  + numberOfTailgating: Integer
+  + numberOfNearDoorings: Integer
+  + numberOfObstacleDodges: Integer
+}
+
+' === Subclasses of SafetyMetrics ===
+class SafetyMetricsRegion {
+  + totalDistance: Float
+}
+
+class SafetyMetricsSimraRegion {
+  + totalDistance: Float
+}
+
+SafetyMetrics <|-- SafetyMetricsRegion
+SafetyMetrics <|-- SafetyMetricsSimraRegion
+
+abstract class RegionClass {
+  + name: String
+  + way: Geometry
+}
+class Region {
+  + id: Long
+  + adminLevel: Integer
+}
+
+class SimraRegion {
+}
+
+Region --> RegionClass
+SimraRegion --> RegionClass
+
+class Profile {
+  + lastModified: Date
+  + path: String
+  + numberOfRides: Integer
+  + duration: Long
+  + numberOfIncidents: Integer
+  + numberOfScaryIncidents: Integer
+  + behaviour: Integer
+}
+
+' === Enums ===
+enum SimraRegionGroup
+enum AgeGroup
+enum Gender
+enum ExperienceGroup
+
+Region "0..*" o-- "0..*" SimraRegion
+Region "1" *-- "0..*" SafetyMetricsRegion
+
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion: profiles
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion: osm-segment
+SimraRegion "1" *-- "0..*" Profile
+
+Profile --> SimraRegionGroup
+Profile --> AgeGroup
+Profile --> Gender
+Profile --> ExperienceGroup
+
+@enduml

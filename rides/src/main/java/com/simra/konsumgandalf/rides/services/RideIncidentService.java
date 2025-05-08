@@ -1,7 +1,10 @@
 package com.simra.konsumgandalf.rides.services;
 
 import com.simra.konsumgandalf.common.models.entities.RideIncident;
+import com.simra.konsumgandalf.common.models.enums.TrafficTimes;
+import com.simra.konsumgandalf.common.models.enums.WeekDays;
 import com.simra.konsumgandalf.rides.models.dtos.RideIncidentDTO;
+import com.simra.konsumgandalf.rides.models.specifications.RideIncidentSpecification;
 import com.simra.konsumgandalf.rides.repositories.RideIncidentRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +21,9 @@ public class RideIncidentService {
 	@Autowired
 	private RideIncidentRepository rideIncidentRepository;
 
-	public List<RideIncident> getIncidentsOfStreetSegment(long id) {
-		return this.rideIncidentRepository.getRideIncidentsByPlanetOsmLineId(id);
+	public List<RideIncident> getIncidentsOfStreetSegment(long id, TrafficTimes trafficTime, WeekDays weekDay,
+			int year) {
+		return this.rideIncidentRepository.findAll(RideIncidentSpecification.filterBy(id, trafficTime, weekDay, year));
 	}
 
 	@Autowired

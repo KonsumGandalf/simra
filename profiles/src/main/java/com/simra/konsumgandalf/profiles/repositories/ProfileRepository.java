@@ -15,6 +15,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	@Query("SELECT p.lastModified FROM Profile p WHERE p.path = :path")
 	Optional<Date> lastModified(String path);
 
+	@Query("SELECT p FROM Profile p WHERE p.simraRegion = :simraRegion")
 	List<Profile> findBySimraRegion(SimraRegion simraRegion);
 
 	@Query("""
@@ -29,5 +30,8 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 			    GROUP BY s.groupType, sm.groupName
 			""")
 	List<AggregatedSafetyMetricsDTO> getAggregatedSafetyMetrics();
+
+	@Query(value = "SELECT r.path FROM Profile r")
+	List<String> findAllPaths();
 
 }

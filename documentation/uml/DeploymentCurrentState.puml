@@ -1,43 +1,35 @@
 @startuml
-actor "User" as User
-actor App
 
-node "Docker Host" as DockerHost {
-    frame "Containerized Environment" {
+actor "Inspecting User" as User
+actor "Recording App User" as App
 
-        node "Apache Server Webserver" as Dashboard {
-            [Dashboard (HTML/TypeScript)]
-        }
-        database "Colored Shapes Data" as OSMColoredShapes
-        database "Shapes Data" as OSMShapes
-        database "CSV Files" as CSV
+node "Virtual Machine" as VM {
 
-        node "Processing Container " as OSMAggregator {
-            [OSM Aggregator]
-        }
+    component Dashboard
 
-        node "Processing Container Coloring" as OSMColoring {
-            [OSM Coloring]
-        }
+    database "Colored Shapes" as OSMColoredShapes
+    database "Raw Shapes" as OSMShapes
+    database "CSV Ride Files" as CSV
 
-        node "Backend Container" as Backend {
-            [SimRa Backend]
-        }
-    }
+    component "OSM Preparation" as OSMPreparation
+    component "OSM Coloring" as OSMColoring
+    component "SimRa Backend" as Backend
+
 }
 
 note "Is runnning as Linux Cron Job" as cron_note
-cron_note -down-> OSMAggregator
+cron_note -down-> OSMPreparation
 cron_note -down-> OSMColoring
 
-App -down-> Backend: Send the newest ride date
-Backend -down-> CSV: Creates new rides
-CSV -down-> OSMAggregator: Read Rides, aggregating them
-OSMAggregator --> OSMShapes
-OSMShapes --> OSMColoring: Read Shapes, coloring them
-OSMColoring -up-> OSMColoredShapes
+App --> Backend : Send new ride data
+Backend --> CSV : Store ride as CSV
 
-OSMColoredShapes -up-> Dashboard
-User -down-> Dashboard: See Map
+CSV --> OSMPreparation : Read and preprocess rides
+OSMPreparation --> OSMShapes : Write processed OSM shapes
+OSMShapes --> OSMColoring : Read shapes, apply coloring
+OSMColoring --> OSMColoredShapes : Output colored data
+
+OSMColoredShapes --> Dashboard : Load data for map
+User --> Dashboard : View interactive map
 
 @enduml

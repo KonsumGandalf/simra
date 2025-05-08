@@ -83,7 +83,7 @@ public class AnalyticsServiceRegionMetrics {
 	@LogExecutionTime
 	public void calculateSafetyMetricsRegion() {
 		List<RegionSafetyMetricsProjection> statesSafetyMetrics = safetyMetricsLineRepository
-			.getRegionSafetyMetricsOfAdminLevel(List.of("4", "6"));
+			.getRegionSafetyMetricsOfAdminLevel(List.of("4", "6", "9"));
 
 		_logger.info("Safety metrics for regions calculated.");
 		Set<String> seenNames = new HashSet<>();
@@ -155,6 +155,10 @@ public class AnalyticsServiceRegionMetrics {
 		}
 		safetyMetricsRegionRepository.saveAll(safetyMetricsRegionList);
 		_logger.info("Safety metrics for regions calculated and saved.");
+	}
+
+	public boolean isEmpty() {
+		return safetyMetricsRegionRepository.count() == 0;
 	}
 
 }

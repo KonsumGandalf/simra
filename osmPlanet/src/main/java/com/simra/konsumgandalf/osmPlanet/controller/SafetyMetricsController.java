@@ -10,7 +10,6 @@ import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsLineDTO;
 import com.simra.konsumgandalf.osmPlanet.classes.dtos.SafetyMetricsRegionDTO;
 import com.simra.konsumgandalf.osmPlanet.services.SafetyMetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -54,11 +54,12 @@ public class SafetyMetricsController {
 			@RequestParam(required = false) Float minDangerousScore,
 			@RequestParam(required = false) Integer minNumberOfRides,
 			@RequestParam(required = false) Integer minNumberOfIncidents,
+			@RequestParam(required = false) Integer adminLevel,
 			@RequestParam(required = false) List<TrafficTimes> trafficTime,
 			@RequestParam(required = false) List<WeekDays> weekDay, @RequestParam(required = false) List<Integer> year,
 			Pageable pageable) {
 		return safetyMetricsService.getRegionMetrics(name, minDangerousScore, minNumberOfRides, minNumberOfIncidents,
-				trafficTime, weekDay, year, pageable);
+				adminLevel, trafficTime, weekDay, year, pageable);
 	}
 
 	@GetMapping("/regions/{name}")
@@ -81,6 +82,18 @@ public class SafetyMetricsController {
 	@GetMapping("/simra-regions/{name}")
 	public List<SafetyMetricsSimraRegion> getSimraRegionSafetyMetrics(@PathVariable String name) {
 		return safetyMetricsService.getSimraRegionSafetyMetrics(name);
+	}
+
+	@GetMapping("/streets-grid")
+	public Map<String, String> getSafetyMetrics(@RequestParam TrafficTimes trafficTime, @RequestParam WeekDays weekDay,
+			@RequestParam int year) {
+		return safetyMetricsService.getMetricsForHighways(trafficTime, weekDay, year);
+	}
+
+	@GetMapping("/region-map")
+	public Map<String, String> getRegionSafetyMetrics(@RequestParam TrafficTimes trafficTime,
+			@RequestParam WeekDays weekDay, @RequestParam int year) {
+		return safetyMetricsService.getMetricsForRegions(trafficTime, weekDay, year);
 	}
 
 }
