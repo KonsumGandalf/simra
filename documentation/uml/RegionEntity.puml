@@ -4,11 +4,11 @@ abstract class SafetyMetrics {
   + trafficTime: TrafficTimes
   + weekDay: WeekDays
   + year: Integer
-  + dangerousColor: String
+  + riskColor: String
   + numberOfRides: Integer
   + numberOfIncidents: Integer
   + numberOfScaryIncidents: Integer
-  + dangerousScore: Float
+  + riskScore: Float
   + numberOfClosePasses: Integer
   + numberOfPullInOuts: Integer
   + numberOfNearLeftRightHooks: Integer
@@ -34,43 +34,27 @@ abstract class RegionClass {
   + name: String
   + way: Geometry
 }
-class Region {
+class Region extends RegionClass {
   + id: Long
   + adminLevel: Integer
 }
 
-class SimraRegion {
+class SimraRegion extends RegionClass {
 }
 
-Region --> RegionClass
-SimraRegion --> RegionClass
-
-class Profile {
-  + lastModified: Date
-  + path: String
-  + numberOfRides: Integer
-  + duration: Long
-  + numberOfIncidents: Integer
-  + numberOfScaryIncidents: Integer
-  + behaviour: Integer
+class SafetyMetricsPlanetOsmLine extends SafetyMetrics{
 }
+PlanetOsmLine "1" -- "0..*" SafetyMetricsPlanetOsmLine
+PlanetOsmLine "1" -- "0..*" RideIncident
+PlanetOsmLine "1" -- "0..*" RideEntity
+RideEntity "0..*" -- "0..*" RideIncident
 
-' === Enums ===
-enum SimraRegionGroup
-enum AgeGroup
-enum Gender
-enum ExperienceGroup
 
 Region "0..*" o-- "0..*" SimraRegion
 Region "1" *-- "0..*" SafetyMetricsRegion
 
-SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion: profiles
-SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion: osm-segment
-SimraRegion "1" *-- "0..*" Profile
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion
 
-Profile --> SimraRegionGroup
-Profile --> AgeGroup
-Profile --> Gender
-Profile --> ExperienceGroup
-
+PlanetOsmPolygon <-- Region: Serves as a data source
 @enduml

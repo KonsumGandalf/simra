@@ -17,10 +17,15 @@ public interface PlanetOsmLineRepository extends JpaRepository<PlanetOsmLine, Lo
 
 	@Query(value = """
 				SELECT *
-					FROM planet_osm_line
-					WHERE osm_id IN (:streetSegmentIds)
-					ORDER BY way <-> ST_Transform(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326), 3857)
-					LIMIT 1;
+			 FROM planet_osm_line
+			 WHERE osm_id IN (:streetSegmentIds)
+			   AND ST_DWithin(
+			         way,
+			         ST_Transform(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326), 3857),
+			         200
+			       )
+			 ORDER BY way <-> ST_Transform(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326), 3857)
+			 LIMIT 1;
 			""", nativeQuery = true)
 	PlanetOsmLine findClosestStreetSegments(@Param("streetSegmentIds") List<Long> streetSegmentIds,
 			@Param("lng") double lng, @Param("lat") double lat);

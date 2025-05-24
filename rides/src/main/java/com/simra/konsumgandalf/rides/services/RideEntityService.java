@@ -173,6 +173,11 @@ public class RideEntityService {
 						return new long[] { minValue, maxValue };
 					}));
 
+		if (rideTimestamps[0] == FALLBACK_DATE_MILLIS || rideTimestamps[1] == FALLBACK_DATE_MILLIS) {
+			_logger.warn("RideEntity at path {} uses fallback timestamp and will be discarded.", rideEntity.getPath());
+			return null;
+		}
+
 		rideEntity.setRideStart(new Date(rideTimestamps[0]));
 		rideEntity.setRideEnd(new Date(rideTimestamps[1]));
 
@@ -194,6 +199,7 @@ public class RideEntityService {
 				return incident;
 			})
 			.filter(this::validateRideIncident)
+			.distinct()
 			.toList();
 
 		rideEntity.setRideIncidents(rideIncidentList);

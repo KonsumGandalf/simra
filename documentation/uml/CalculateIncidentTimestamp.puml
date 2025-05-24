@@ -17,6 +17,6 @@ if (Ride-level timestamps available?) then (Use ride timestamp)
     stop
 endif
 
-:Use FALLBACK_DATE as last resort;
+:Discard ride entity and incident;
 end
 @enduml

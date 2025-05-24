@@ -34,6 +34,7 @@ public class SimraRegionMapper {
 		map.put("ZES-Experimental", List.of(""));
 		map.put("Konstanz", List.of("Konstanz"));
 		map.put("Weimar", List.of("Weimar"));
+		map.put("Karlsruhe", List.of("Karlsruhe", "Landkreis Karlsruhe"));
 	}
 
 	public List<String> getRegionsForSimraRegion(String simraRegion) {
