@@ -79,13 +79,13 @@ public class RideEntityServiceTest {
 		public void testEnrichRideEntityWithCsv_ValidFile() throws Exception {
 
 			when(fileReaderService.readFileFromPath("valid.csv"))
-				.thenReturn("bike,incident\n1,3\n====\nlat,lng,timeStamp\n1.0,4.0,1000");
+				.thenReturn("bike,incident\n1,3" + "\n====\nlat,lng\n1.0,4.0");
 
 			RideIncident mockRideIncident = new RideIncident();
 			mockRideIncident.setLat(1.0);
 			mockRideIncident.setLng(4.0);
 			mockRideIncident.setI1(1);
-			mockRideIncident.setTs(2000);
+			mockRideIncident.setTs(START_OF_RECORDING.getTime());
 			mockRideIncident.setIncidentType(IncidentType.CLOSE_PASS);
 			mockRideIncident.setParticipantsInvolved(new ArrayList<>());
 			when(csvUtilService.parseCsvToModel("bike,incident\n1,3", RideIncident.class))
@@ -94,19 +94,19 @@ public class RideEntityServiceTest {
 			RideLocation mockRideLocationValid = new RideLocation();
 			mockRideLocationValid.setLat(1.0);
 			mockRideLocationValid.setLng(4.0);
-			mockRideLocationValid.setTimeStamp(1000);
+			mockRideLocationValid.setTimeStamp(START_OF_RECORDING.getTime());
 			RideLocation mockRideLocationValid2 = new RideLocation();
 			mockRideLocationValid2.setLat(1.2);
 			mockRideLocationValid2.setLng(4.1);
-			mockRideLocationValid2.setTimeStamp(FALLBACK_DATE.getTime());
+			mockRideLocationValid2.setTimeStamp(START_OF_RECORDING.getTime());
 			RideLocation mockRideLocationValid3 = new RideLocation();
 			mockRideLocationValid3.setLat(1.4);
 			mockRideLocationValid3.setLng(4.3);
-			mockRideLocationValid3.setTimeStamp(FALLBACK_DATE.getTime());
+			mockRideLocationValid3.setTimeStamp(START_OF_RECORDING.getTime());
 			RideLocation mockInvalidRideLocation = new RideLocation();
 			mockInvalidRideLocation.setLat(1.0);
 			mockInvalidRideLocation.setLng(4.0);
-			when(csvUtilService.parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class)).thenReturn(List
+			when(csvUtilService.parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class)).thenReturn(List
 				.of(mockRideLocationValid, mockRideLocationValid2, mockRideLocationValid3, mockInvalidRideLocation));
 
 			mockRideEntity = new RideEntity("valid.csv");
@@ -116,7 +116,7 @@ public class RideEntityServiceTest {
 			RideEntity result = rideEntityService.enrichRideEntityWithCsv(mockRideEntity);
 
 			InOrder inOrder = inOrder(csvUtilService);
-			inOrder.verify(csvUtilService).parseCsvToModel("lat,lng,timeStamp\n1.0,4.0,1000", RideLocation.class);
+			inOrder.verify(csvUtilService).parseCsvToModel("lat,lng\n1.0,4.0", RideLocation.class);
 			inOrder.verify(csvUtilService).parseCsvToModel("bike,incident\n1,3", RideIncident.class);
 
 			RideIncident resultRideIncident = result.getRideIncidents().get(0);
@@ -124,8 +124,8 @@ public class RideEntityServiceTest {
 					resultRideIncident.getParticipantsInvolved());
 			assertEquals(FALLBACK_DATE, resultRideIncident.getTimeStamp());
 
-			assertEquals(FALLBACK_DATE, result.getRideStart());
-			assertEquals(FALLBACK_DATE, result.getRideEnd());
+			assertEquals(START_OF_RECORDING, result.getRideStart());
+			assertEquals(START_OF_RECORDING, result.getRideEnd());
 			assertEquals(List.of(mockRideLocationValid, mockRideLocationValid2, mockRideLocationValid3),
 					result.getRideLocations());
 		}

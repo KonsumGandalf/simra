@@ -161,7 +161,7 @@ public class RideEntity extends TimeBaseClass {
 
 		if (rideStart.getTime() == FALLBACK_DATE_MILLIS || rideEnd.getTime() == FALLBACK_DATE_MILLIS) {
 			trafficTime = TrafficTimes.ALL_DAY;
-			weekDay = WeekDays.WEEK;
+			weekDay = WeekDays.ALL_WEEK;
 			year = 2000;
 		}
 		else {

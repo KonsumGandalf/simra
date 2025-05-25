@@ -4,11 +4,11 @@ abstract class SafetyMetrics {
   +TrafficTimes trafficTime
   +WeekDays weekDay
   +Integer year
-  +String dangerousColor
+  +String riskColor
   +int numberOfRides
   +int numberOfIncidents
   +int numberOfScaryIncidents
-  +float dangerousScore
+  +float riskScore
   +int numberOfClosePasses
   +int numberOfPullInOuts
   +int numberOfNearLeftRightHooks

@@ -2,7 +2,6 @@
 skinparam componentStyle rectangle
 @startuml
 skinparam componentStyle rectangle
-skinparam shadowing true
 skinparam defaultTextAlignment center
 
 actor "User" as User
@@ -13,27 +12,33 @@ node "Docker Host" {
     [Angular Frontend] as Angular
   }
 
-  node "Redis Cache" as Redis
-  node "Spring Backend Container" {
-    [Spring Boot Application] as Backend
-  }
+  node "Redis" as Redis
+  node "Spring Boot Application" as Backend
 
-  database "PostGIS Database" as DB
+  database "PostGIS" as DB
 
   node "Valhalla Routing Server" as Valhalla
 
-  file "Rides CSV\n(Fahrtdaten)" as RidesCSV
-  file "Profile CSV\n(Nutzerprofile)" as ProfileCSV
+  file "Rides CSV" as RidesCSV
+
+  node "Shared Volume" {
+
+      file "Street Segment GeoJSON" as osmStreets
+      file "Region GeoJSON" as osmRegions
+  }
 }
 
 User --> Angular : HTTPS Request
 Angular --> Backend : REST API Call
 Backend --> DB : SQL Query
-Backend --> RidesCSV : CSV Read
-Backend --> ProfileCSV : CSV Read
-Backend --> Valhalla : Send GPS Track
-Valhalla --> Backend : Return matched OSM Segments
-Backend --> Redis : Check for cached responses
+Backend --> RidesCSV
+Backend -right-> Valhalla : Match GPS Tracks to OSM Segments
+Backend --> Redis : Check for\ncached responses
 
+Backend -up-> osmStreets
+Backend -up-> osmRegions
+
+Angular -down-> osmStreets
+Angular -down-> osmRegions
 
 @enduml

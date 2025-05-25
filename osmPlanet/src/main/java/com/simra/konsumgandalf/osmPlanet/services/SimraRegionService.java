@@ -43,18 +43,4 @@ public class SimraRegionService {
 		return sr;
 	}
 
-	@PostConstruct
-	public void createSimraRegions() {
-		List<SimraRegion> simraRegions = simraRegionRepository.findAll();
-		Set<String> simraRegionNames = new SimraRegionMapper().map.keySet();
-
-		List<SimraRegion> toBeCreated = new ArrayList<>();
-		for (String simraRegionName : simraRegionNames) {
-			if (simraRegions.stream().noneMatch(simraRegion -> simraRegion.getName().equals(simraRegionName))) {
-				toBeCreated.add(new SimraRegion(simraRegionName));
-			}
-		}
-		simraRegionRepository.saveAll(toBeCreated);
-	}
-
 }

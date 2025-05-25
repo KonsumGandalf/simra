@@ -29,6 +29,7 @@ public class SimraRegionEnumNameMapper {
 		enumNameMap.put(SimraRegionGroup.ZES_EXPERIMENTAL, "ZES-Experimental");
 		enumNameMap.put(SimraRegionGroup.KONSTANZ, "Konstanz");
 		enumNameMap.put(SimraRegionGroup.WEIMAR, "Weimar");
+		enumNameMap.put(SimraRegionGroup.KARLSRUHE, "Karlsruhe");
 		enumNameMap.put(SimraRegionGroup.ALL, "All");
 	}
 

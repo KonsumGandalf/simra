@@ -92,8 +92,7 @@ public class OsmHighwayService {
 	public void exportGridJson() throws IOException {
 		List<Map<String, Object>> json = osmHighwayRepository.getGridRaw();
 		ObjectMapper mapper = new ObjectMapper();
-		File target = new File(exportPath + "/street-map.json"); // must be in shared
-																	// volume
+		File target = new File(exportPath + "/street-map.json");
 		mapper.writeValue(target, json);
 	}
 
