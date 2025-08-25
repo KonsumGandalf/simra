@@ -41,7 +41,7 @@ Before you begin, ensure you have the following installed on your local machine:
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/KonsumGandalf/data-engine
+    git clone https://github.com/simra/result-viewer-backend
     ```
 2. Edit environment variables in .env use the .env.example as a template
 
