@@ -1,5 +1,4 @@
-# SIMRA - Sicherheit im Radverkehr
-The backend application for the SIMRA dashboard to analyze bicycle safety with crowdsourced ride and near miss data.
+# SIMRA Result Viewer Backend
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -24,7 +23,7 @@ The backend application for the SIMRA dashboard to analyze bicycle safety with c
   </ol>
 </details>
 
-# About The Project
+## About The Project
 
 SIMRA is a data-driven platform for improving cycling safety by analyzing crowdsourced ride and near-miss incident data. The project identifies high-risk areas, evaluates urban cycling infrastructure, and provides actionable insights to enhance cyclist safety.
 
@@ -53,7 +52,7 @@ To deploy and explore the application, you can use Docker Compose to set up the 
    docker compose up
    ```
 
-2. Access the api of the application at `http://localhost:3000`.
+2. Access the api of the application at `http://localhost:8080`.
 
 
 ## Development
@@ -104,11 +103,11 @@ The spring project is structured into several modules, each responsible for spec
 
 # Resources
 
-| Resource Type               | Description                                                                                                                                        | Link                                                                      |
-|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| **Project Management**      | Kanban board tracking development progress and tasks                                                                                               | [Simra Project Board](https://github.com/users/KonsumGandalf/projects/11) |
-| **System Architecture**     | PlantUML diagrams documenting the system design and component interactions                                                                         | [Architecture Diagrams](documentation/uml)                                |
-| **Research & Publications** | Academic research and technical documentation related to the SIMRA initiative (including the foundational master's thesis and future publications) | [Research Documents](documentation/research)                              |
-| **Live Demonstration**      | Interactive dashboard showcasing real-time cycling safety analytics                                                                                | [Simra Dashboard](https://simra.codinggandalf.com)                        |
+| Resource Type               | Description                                                                   | Link                                                                      |
+|-----------------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| **Project Management**      | Kanban board tracking development progress and tasks                          | [Simra Project Board](https://github.com/users/KonsumGandalf/projects/11) |
+| **System Architecture**     | PlantUML diagrams documenting the system design and component interactions    | [Architecture Diagrams](documentation/uml)                                |
+| **Research & Publications** | Academic research and technical documentation related to the SIMRA initiative | [Research Documents](documentation/research)                              |
+| **Live Demonstration**      | Interactive dashboard showcasing real-time cycling safety analytics           | [Simra Dashboard](https://simra.codinggandalf.com)                        |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
