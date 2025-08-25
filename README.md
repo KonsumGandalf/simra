@@ -59,19 +59,19 @@ To deploy and explore the application, you can use Docker Compose to set up the 
 To set up the development environment, ensure you have Java installed and follow these steps:
 
 1. Init database service
-```shell
-docker compose up init-postgis
-```
+   ```shell
+   docker compose up init-postgis
+   ```
 
 2. Spin up database, cache and routing engine
-```shell
+   ```shell
    docker compose up postgis redis valhalla
-```
+   ```
 3. Run the spring boot application
 
-```shell
-./gradlew bootRun
-```
+   ```shell
+   ./gradlew bootRun
+   ```
 
 # Apps
 
