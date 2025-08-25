@@ -15,9 +15,14 @@
         <li><a href="#development">Development</a></li>
       </ul>
     </li>
-    <li><a href="#apps">Apps</a></li>
-    <li><a href="#modules">Modules</a></li>
-    <li><a href="#architecture-overview">Architecture Overview</a></li>
+    <li>
+      <a href="#project-structure">Project Structure</a>
+      <ul>
+        <li><a href="#apps">Apps</a></li>
+        <li><a href="#domains">Domains</a></li>
+        <li><a href="#architectural-overview">Architectural Overview</a></li>
+      </ul>
+    </li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
@@ -40,7 +45,7 @@ Before you begin, ensure you have the following installed on your local machine:
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/simra/result-viewer-backend
+    git clone https://github.com/simra-project/result-viewer-backend
     ```
 2. Edit environment variables in .env use the .env.example as a template
 
@@ -73,13 +78,15 @@ To set up the development environment, ensure you have Java installed and follow
    ./gradlew bootRun
    ```
 
-# Apps
+
+# Project Structure
+## Apps
 
 | Name      | Path                       | Description                 |
 | --------- |----------------------------| --------------------------- |
 | `backend` | [src/main/java](src/main/java/com/simra/konsumgandalf/backend) | The backend of the platform |
 
-# Modules
+## Modules
 
 The spring project is structured into several modules, each responsible for specific functionalities. 
 
@@ -91,7 +98,7 @@ The spring project is structured into several modules, each responsible for spec
 | `valhalla`  | [valhalla](osmPlanet/src/main/java/com/simra/konsumgandalf/osmPlanet)  | Encapsulates the logic that interacts with the routing engine, which maps the GPS traces of the rides to the OSM Street grid.                                                                             |
 
 
-# Architecture Overview
+## Architectural Overview
 <img src="documentation/uml/images/Deployment.png" alt="Architecture Overview" width="500"/>
 
 # Contacts
@@ -99,7 +106,7 @@ The spring project is structured into several modules, each responsible for spec
 | Role                   | Name               | Contact                                                                                     |
 |------------------------|--------------------|---------------------------------------------------------------------------------------------|
 | **Project Supervisor** | David Bermbach     | [TU Berlin Profile](https://www.tu.berlin/3s/ueber-uns/team/prof-dr-ing-david-bermbach)      |
-| **Developer**          | David Schmidt      | [Portfolio](https://david.codinggandalf.com) • [LinkedIn](https://www.linkedin.com/in/david-schmidt-berlin/) |
+| **Developer**          | David Schmidt      | [Portfolio](https://david.codinggandalf.com) • [Github](https://github.com/KonsumGandalf) |
 
 # Resources
 
