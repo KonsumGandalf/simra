@@ -40,7 +40,7 @@ Before you begin, ensure you have the following installed on your local machine:
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/simra/result-viewer-backend
+    git clone https://github.com/simra-project/result-viewer-backend
     ```
 2. Edit environment variables in .env use the .env.example as a template
 
@@ -99,7 +99,7 @@ The spring project is structured into several modules, each responsible for spec
 | Role                   | Name               | Contact                                                                                     |
 |------------------------|--------------------|---------------------------------------------------------------------------------------------|
 | **Project Supervisor** | David Bermbach     | [TU Berlin Profile](https://www.tu.berlin/3s/ueber-uns/team/prof-dr-ing-david-bermbach)      |
-| **Developer**          | David Schmidt      | [Portfolio](https://david.codinggandalf.com) • [LinkedIn](https://www.linkedin.com/in/david-schmidt-berlin/) |
+| **Developer**          | David Schmidt      | [Portfolio](https://david.codinggandalf.com) • [Github](https://github.com/KonsumGandalf) |
 
 # Resources
 
