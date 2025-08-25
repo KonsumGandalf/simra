@@ -1,0 +1,44 @@
+@startuml
+skinparam componentStyle rectangle
+@startuml
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+
+actor "User" as User
+
+node "Docker Host" {
+
+  node "NGINX Container" {
+    [Angular Frontend] as Angular
+  }
+
+  node "Redis" as Redis
+  node "Spring Boot Application" as Backend
+
+  database "PostGIS" as DB
+
+  node "Valhalla Routing Server" as Valhalla
+
+  file "Rides CSV" as RidesCSV
+
+  node "Shared Volume" {
+
+      file "Street Segment GeoJSON" as osmStreets
+      file "Region GeoJSON" as osmRegions
+  }
+}
+
+User --> Angular : HTTPS Request
+Angular --> Backend : REST API Call
+Backend --> DB : SQL Query
+Backend --> RidesCSV
+Backend -right-> Valhalla : Match GPS Tracks to OSM Segments
+Backend --> Redis : Check for\ncached responses
+
+Backend -up-> osmStreets
+Backend -up-> osmRegions
+
+Angular -down-> osmStreets
+Angular -down-> osmRegions
+
+@enduml

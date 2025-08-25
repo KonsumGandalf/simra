@@ -1,0 +1,35 @@
+@startuml
+
+actor "Inspecting User" as User
+actor "Recording App User" as App
+
+node "Virtual Machine" as VM {
+
+    component Dashboard
+
+    database "Colored Shapes" as OSMColoredShapes
+    database "Raw Shapes" as OSMShapes
+    database "CSV Ride Files" as CSV
+
+    component "OSM Preparation" as OSMPreparation
+    component "OSM Coloring" as OSMColoring
+    component "SimRa Backend" as Backend
+
+}
+
+note "Is runnning as Linux Cron Job" as cron_note
+cron_note -down-> OSMPreparation
+cron_note -down-> OSMColoring
+
+App --> Backend : Send new ride data
+Backend --> CSV : Store ride as CSV
+
+CSV --> OSMPreparation : Read and preprocess rides
+OSMPreparation --> OSMShapes : Write processed OSM shapes
+OSMShapes --> OSMColoring : Read shapes, apply coloring
+OSMColoring --> OSMColoredShapes : Output colored data
+
+OSMColoredShapes --> Dashboard : Load data for map
+User --> Dashboard : View interactive map
+
+@enduml

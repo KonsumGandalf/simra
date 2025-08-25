@@ -1,0 +1,60 @@
+@startuml
+
+abstract class SafetyMetrics {
+  + trafficTime: TrafficTimes
+  + weekDay: WeekDays
+  + year: Integer
+  + riskColor: String
+  + numberOfRides: Integer
+  + numberOfIncidents: Integer
+  + numberOfScaryIncidents: Integer
+  + riskScore: Float
+  + numberOfClosePasses: Integer
+  + numberOfPullInOuts: Integer
+  + numberOfNearLeftRightHooks: Integer
+  + numberOfHeadOnApproaches: Integer
+  + numberOfTailgating: Integer
+  + numberOfNearDoorings: Integer
+  + numberOfObstacleDodges: Integer
+}
+
+' === Subclasses of SafetyMetrics ===
+class SafetyMetricsRegion {
+  + totalDistance: Float
+}
+
+class SafetyMetricsSimraRegion {
+  + totalDistance: Float
+}
+
+SafetyMetrics <|-- SafetyMetricsRegion
+SafetyMetrics <|-- SafetyMetricsSimraRegion
+
+abstract class RegionClass {
+  + name: String
+  + way: Geometry
+}
+class Region extends RegionClass {
+  + id: Long
+  + adminLevel: Integer
+}
+
+class SimraRegion extends RegionClass {
+}
+
+class SafetyMetricsPlanetOsmLine extends SafetyMetrics{
+}
+PlanetOsmLine "1" -- "0..*" SafetyMetricsPlanetOsmLine
+PlanetOsmLine "1" -- "0..*" RideIncident
+PlanetOsmLine "1" -- "0..*" RideEntity
+RideEntity "0..*" -- "0..*" RideIncident
+
+
+Region "0..*" o-- "0..*" SimraRegion
+Region "1" *-- "0..*" SafetyMetricsRegion
+
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion
+SimraRegion "1" *-- "0..*" SafetyMetricsSimraRegion
+
+PlanetOsmPolygon <-- Region: Serves as a data source
+@enduml

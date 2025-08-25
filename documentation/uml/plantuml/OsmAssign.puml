@@ -1,0 +1,21 @@
+@startuml
+start
+
+:Partition the filtered GPS traces;
+
+:For each partition, send request with timestamps and traces;
+if (Valhalla matching successful?) then (Yes)
+else (No)
+    if (Error: no suitable street segment?) then (Yes)
+        :Split partition and retry;
+    else (no)
+        :Log error;
+    endif
+endif
+
+:Merge all segment IDs;
+:Remove duplicates;
+
+:Find closest osm segment for each incident;
+end
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+start
+
+if (Is incident timestamp valid?) then (Use incident timestamp)
+    stop
+endif
+
+if (Matching GPS location timestamp available?) then (Use GPS timestamp)
+    stop
+endif
+
+if (File has a modified timestamp?) then (Use file modification timestamp)
+    stop
+endif
+
+if (Ride-level timestamps available?) then (Use ride timestamp)
+    stop
+endif
+
+:Discard ride entity and incident;
+end
+@enduml
