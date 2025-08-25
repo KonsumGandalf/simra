@@ -93,7 +93,7 @@ The spring project is structured into several modules, each responsible for spec
 
 
 # Architecture Overview
-<img src="documentation/uml/images/Deployment.png" alt="Architecture Overview" style="max-height:30rem"/>
+<img src="documentation/uml/images/Deployment.png" alt="Architecture Overview" width="500"/>
 
 # Contacts
 
