@@ -1,29 +1,113 @@
+version: '3.8'
+
+name: simra
+
 services:
+    spring:
+        container_name: spring-backend
+        image: codinggandalf/simra-backend:latest
+        platform: linux/arm64
+        env_file:
+            - .env
+        ports:
+            - 8081:8080
+        depends_on:
+            postgis:
+                condition: service_healthy
+            valhalla:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - /home/konsumpi/Downloads/Simra/dataset-master:/rides
+            - /home/konsumpi/Downloads/Simra/Profiles:/profiles
+            - bloomfilter:/bloomfilter
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:8080/api/actuator/health || true"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+        networks:
+            - postgis-service
+            - valhalla-service
+            - redis-service
+
+    valhalla:
+        image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
+        ports:
+            - 25001:8002
+        networks:
+            - valhalla-service
+        volumes:
+            - ./valhalla/custom_files/:/custom_files
+            - ./valhalla/gtfs_feeds:/gtfs_feeds
+        environment:
+            - tile_urls=https://download.geofabrik.de/europe/dach-latest.osm.pbf
+            - server_threads=8
+            - use_tiles_ignore_pbf=True
+            - tileset_name=valhalla_tiles
+            - buildTar=True
+            - update_existing_config=True
+        healthcheck:
+            test: curl --fail -s http://localhost:8002/status || exit 1
+            interval: 20s
+            retries: 10
+            start_period: 5s
+            timeout: 10s
+
+    redis:
+        image: redis:bookworm
+        ports:
+            - 25002:6379
+        volumes:
+            - redis-data:/data
+        env_file:
+            - .env
+        networks:
+            - redis-service
+        healthcheck:
+            test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
     init-postgis:
+        container_name: init-postgis
         image: codinggandalf/postgis:arm64-init-postgis
-        command: ["sh", "-c", "export PGPASSWORD=${POSTGRES_PASSWORD} && osm2pgsql -d ${POSTGRES_DB} -U ${POSTGRES_USER} -H ${POSTGRES_HOST} -C 4096 --number-processes=4 --hstore /tmp/${OSM_MAP_SOURCE}"]
+        platform: linux/arm64
+        restart: "no"
+        command:
+          [
+              "sh",
+              "-c",
+              "export PGPASSWORD=${POSTGRES_PASSWORD} &&
+         osm2pgsql -d ${POSTGRES_DB} -U ${POSTGRES_USER} -H ${POSTGRES_HOST} -C 4096 --number-processes=4 --slim --hstore /tmp/${OSM_MAP_SOURCE}"
+          ]
         depends_on:
             postgis:
                 condition: service_healthy
         volumes:
-            - ./data/${OSM_MAP_SOURCE}:/tmp/${OSM_MAP_SOURCE}
+            - ./postgis/data/${OSM_MAP_SOURCE}:/tmp/${OSM_MAP_SOURCE}
         env_file:
-            - ./.env
+            - .env
         networks:
-            - simra-network
+            - postgis-service
 
     postgis:
         container_name: postgis
         image: codinggandalf/postgis:arm64
         platform: linux/arm64
-        restart: always
+        shm_size: 4gb
         env_file:
-            - ./.env
+            - .env
         ports:
             - 25432:5432
         volumes:
             - postgis-data:/var/lib/postgresql/data
-            - ./10_postgis.sh:/docker-entrypoint-initdb.d/10_postgis.sh
+            # If you want to run initialization scripts, uncomment the following line and add your scripts to the postgis folder
+            # - ./postgis/10_postgis.sh:/docker-entrypoint-initdb.d/10_postgis.sh
         healthcheck:
             test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}", "-h", "localhost"]
             interval: 10s
@@ -31,30 +115,14 @@ services:
             start_period: 10s
             timeout: 5s
         networks:
-            - simra-network
-
-    backend:
-        container_name: spring-backend
-        image: codinggandalf/simra-backend:latest
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: production
-        platform: linux/arm64
-        restart: always
-        env_file:
-            -   .env
-        ports:
-            - 8081:8080
-        volumes:
-            - /Users/davidschmidt/Programmierung/Master/data/dataset-master:/data
-            - bloomfilter:/bloomfilter
+            - postgis-service
 
 volumes:
     postgis-data:
-    postgis-data-temp:
     bloomfilter:
+    redis-data:
 
 networks:
-    simra-network:
-        driver: bridge
+    postgis-service:
+    valhalla-service:
+    redis-service:
